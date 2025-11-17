@@ -1,0 +1,979 @@
+basePath: /
+definitions:
+  request.CreateMenuRequest:
+    properties:
+      activePath:
+        description: 激活路径
+        maxLength: 200
+        type: string
+      component:
+        description: 组件路径
+        maxLength: 200
+        type: string
+      fixedTab:
+        description: 固定标签
+        type: boolean
+      icon:
+        description: 图标
+        maxLength: 50
+        type: string
+      isEnable:
+        description: 是否启用
+        type: boolean
+      isFullPage:
+        description: 全屏页面
+        type: boolean
+      isHide:
+        description: 隐藏菜单
+        type: boolean
+      isHideTab:
+        description: 隐藏标签
+        type: boolean
+      isIframe:
+        description: 是否内嵌
+        type: boolean
+      isMenu:
+        description: 是否菜单
+        type: boolean
+      keepAlive:
+        description: 页面缓存
+        type: boolean
+      label:
+        description: 路由名称/权限标识（前端form.label）
+        maxLength: 100
+        type: string
+      link:
+        description: 外部链接
+        maxLength: 500
+        type: string
+      name:
+        description: 菜单显示名称（前端form.name）
+        maxLength: 50
+        type: string
+      parentId:
+        type: integer
+      path:
+        description: 路由地址
+        maxLength: 200
+        type: string
+      redirect:
+        description: 重定向路径
+        maxLength: 200
+        type: string
+      roles:
+        description: 角色权限（前端用）
+        items:
+          type: string
+        type: array
+      showBadge:
+        description: 显示徽章
+        type: boolean
+      showTextBadge:
+        description: 文本徽章
+        maxLength: 50
+        type: string
+      sort:
+        description: 排序
+        type: integer
+    required:
+    - label
+    - name
+    - path
+    type: object
+  request.CreateRoleRequest:
+    properties:
+      buttonIds:
+        items:
+          type: integer
+        type: array
+      description:
+        maxLength: 200
+        type: string
+      enabled:
+        type: boolean
+      menuIds:
+        items:
+          type: integer
+        type: array
+      roleCode:
+        maxLength: 50
+        type: string
+      roleName:
+        maxLength: 50
+        type: string
+    required:
+    - roleCode
+    - roleName
+    type: object
+  request.CreateUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      nickName:
+        maxLength: 50
+        type: string
+      password:
+        minLength: 6
+        type: string
+      roleIds:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+      status:
+        enum:
+        - "0"
+        - "1"
+        type: string
+      userGender:
+        enum:
+        - male
+        - female
+        - unknown
+        type: string
+      userName:
+        maxLength: 50
+        minLength: 3
+        type: string
+      userPhone:
+        type: string
+    required:
+    - email
+    - nickName
+    - password
+    - roleIds
+    - status
+    - userGender
+    - userName
+    - userPhone
+    type: object
+  request.LoginRequest:
+    properties:
+      password:
+        example: "123456"
+        type: string
+      userName:
+        example: admin
+        type: string
+    required:
+    - password
+    - userName
+    type: object
+  request.ResetPasswordRequest:
+    properties:
+      id:
+        type: integer
+      newPassword:
+        minLength: 6
+        type: string
+    required:
+    - id
+    - newPassword
+    type: object
+  request.UpdateMenuRequest:
+    properties:
+      activePath:
+        maxLength: 200
+        type: string
+      component:
+        maxLength: 200
+        type: string
+      fixedTab:
+        type: boolean
+      icon:
+        maxLength: 50
+        type: string
+      id:
+        type: integer
+      isEnable:
+        type: boolean
+      isFullPage:
+        type: boolean
+      isHide:
+        type: boolean
+      isHideTab:
+        type: boolean
+      isIframe:
+        type: boolean
+      isMenu:
+        type: boolean
+      keepAlive:
+        type: boolean
+      label:
+        maxLength: 100
+        type: string
+      link:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 50
+        type: string
+      parentId:
+        type: integer
+      path:
+        maxLength: 200
+        type: string
+      redirect:
+        maxLength: 200
+        type: string
+      roles:
+        items:
+          type: string
+        type: array
+      showBadge:
+        type: boolean
+      showTextBadge:
+        maxLength: 50
+        type: string
+      sort:
+        type: integer
+    required:
+    - id
+    - label
+    - name
+    - path
+    type: object
+  request.UpdateRoleRequest:
+    properties:
+      buttonIds:
+        items:
+          type: integer
+        type: array
+      description:
+        maxLength: 200
+        type: string
+      enabled:
+        type: boolean
+      menuIds:
+        items:
+          type: integer
+        type: array
+      roleCode:
+        maxLength: 50
+        type: string
+      roleId:
+        type: integer
+      roleName:
+        maxLength: 50
+        type: string
+    required:
+    - roleCode
+    - roleId
+    - roleName
+    type: object
+  request.UpdateUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      nickName:
+        maxLength: 50
+        type: string
+      roleIds:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+      status:
+        enum:
+        - "0"
+        - "1"
+        type: string
+      userGender:
+        enum:
+        - male
+        - female
+        - unknown
+        type: string
+      userPhone:
+        type: string
+    required:
+    - email
+    - id
+    - nickName
+    - roleIds
+    - status
+    - userGender
+    - userPhone
+    type: object
+  response.AuthButton:
+    properties:
+      authMark:
+        type: string
+      title:
+        type: string
+    type: object
+  response.LoginResponse:
+    properties:
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  response.MenuMeta:
+    properties:
+      authList:
+        items:
+          $ref: '#/definitions/response.AuthButton'
+        type: array
+      fixedTab:
+        type: boolean
+      icon:
+        type: string
+      isFullPage:
+        type: boolean
+      isHide:
+        type: boolean
+      isHideTab:
+        type: boolean
+      keepAlive:
+        type: boolean
+      title:
+        type: string
+    type: object
+  response.MenuResponse:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/response.MenuResponse'
+        type: array
+      component:
+        type: string
+      id:
+        type: integer
+      meta:
+        $ref: '#/definitions/response.MenuMeta'
+      name:
+        type: string
+      parentId:
+        description: 父菜单ID
+        type: integer
+      path:
+        type: string
+      redirect:
+        type: string
+    type: object
+  response.PaginatedData:
+    properties:
+      current:
+        description: 当前页码
+        type: integer
+      records:
+        description: 记录列表
+      size:
+        description: 每页条数
+        type: integer
+      total:
+        description: 总记录数
+        type: integer
+    type: object
+  response.Response:
+    properties:
+      code:
+        description: 状态码
+        type: integer
+      data:
+        description: 数据
+      msg:
+        description: 消息
+        type: string
+    type: object
+  response.UserInfoResponse:
+    properties:
+      avatar:
+        example: https://...
+        type: string
+      buttons:
+        example:
+        - user:add
+        - user:edit
+        items:
+          type: string
+        type: array
+      email:
+        example: admin@example.com
+        type: string
+      roles:
+        example:
+        - admin
+        - user
+        items:
+          type: string
+        type: array
+      userId:
+        example: 1
+        type: integer
+      userName:
+        example: admin
+        type: string
+    type: object
+host: localhost:48080
+info:
+  contact: {}
+  description: Art Admin Backend API Documentation
+  title: Art Admin API
+  version: "1.0"
+paths:
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录接口
+      parameters:
+      - description: 登录参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登录成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.LoginResponse'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 用户登录
+      tags:
+      - 认证管理
+  /api/menu/all:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有菜单（管理用）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/response.MenuResponse'
+                  type: array
+              type: object
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取所有菜单
+      tags:
+      - 菜单管理
+  /api/menu/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建新菜单
+      parameters:
+      - description: 菜单信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateMenuRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建菜单
+      tags:
+      - 菜单管理
+  /api/menu/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除菜单
+      parameters:
+      - description: 菜单ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除菜单
+      tags:
+      - 菜单管理
+  /api/menu/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新菜单信息
+      parameters:
+      - description: 菜单信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateMenuRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新菜单
+      tags:
+      - 菜单管理
+  /api/role/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建新角色
+      parameters:
+      - description: 角色信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建角色
+      tags:
+      - 角色管理
+  /api/role/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除角色
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除角色
+      tags:
+      - 角色管理
+  /api/role/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询角色列表
+      parameters:
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: current
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        required: true
+        type: integer
+      - description: 角色ID
+        in: query
+        name: roleId
+        type: integer
+      - description: 角色名
+        in: query
+        name: roleName
+        type: string
+      - description: 角色编码
+        in: query
+        name: roleCode
+        type: string
+      - description: 描述
+        in: query
+        name: description
+        type: string
+      - description: 是否启用
+        in: query
+        name: enabled
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取角色列表
+      tags:
+      - 角色管理
+  /api/role/permissions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取角色的菜单和按钮权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取角色权限
+      tags:
+      - 角色管理
+  /api/role/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新角色信息
+      parameters:
+      - description: 角色信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新角色
+      tags:
+      - 角色管理
+  /api/system/menus:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前用户的菜单树
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/response.MenuResponse'
+                  type: array
+              type: object
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取菜单列表
+      tags:
+      - 菜单管理
+  /api/user/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建新用户
+      parameters:
+      - description: 用户信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建用户
+      tags:
+      - 用户管理
+  /api/user/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除用户
+      tags:
+      - 用户管理
+  /api/user/info:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录用户信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.UserInfoResponse'
+              type: object
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取用户信息
+      tags:
+      - 认证管理
+  /api/user/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询用户列表
+      parameters:
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: current
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        required: true
+        type: integer
+      - description: 用户ID
+        in: query
+        name: id
+        type: integer
+      - description: 用户名
+        in: query
+        name: userName
+        type: string
+      - description: 性别
+        in: query
+        name: userGender
+        type: string
+      - description: 手机号
+        in: query
+        name: userPhone
+        type: string
+      - description: 邮箱
+        in: query
+        name: userEmail
+        type: string
+      - description: 状态
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取用户列表
+      tags:
+      - 用户管理
+  /api/user/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: 重置用户密码
+      parameters:
+      - description: 重置密码信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 重置成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 重置用户密码
+      tags:
+      - 用户管理
+  /api/user/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新用户信息
+      parameters:
+      - description: 用户信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新用户
+      tags:
+      - 用户管理
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

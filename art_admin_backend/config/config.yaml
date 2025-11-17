@@ -1,0 +1,56 @@
+server:
+  port: 48080
+  mode: debug # debug, release, test
+
+database:
+  driver: mysql
+  host: 127.0.0.1
+  port: 3306
+  database: gin_admin
+  username: root
+  password: 123456
+  charset: utf8mb4
+  parseTime: true
+  maxIdleConns: 10
+  maxOpenConns: 100
+  connMaxLifetime: 3600 # 秒
+
+jwt:
+  secret: art-admin-secret-key-change-in-production-32bytes
+  accessTokenExpire: 7200 # 2小时，单位秒
+  refreshTokenExpire: 604800 # 7天，单位秒
+  issuer: art-admin
+
+log:
+  level: info # debug, info, warn, error
+  filename: logs/app.log
+  maxSize: 100 # MB
+  maxAge: 30 # days
+  maxBackups: 5
+  compress: true
+
+cors:
+  allowOrigins:
+    - http://localhost:5173
+    - http://localhost:3000
+  allowMethods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowHeaders:
+    - Authorization
+    - Content-Type
+  exposeHeaders:
+    - Content-Length
+  allowCredentials: true
+  maxAge: 43200 # 12小时
+
+swagger:
+  title: Art Admin API
+  version: 1.0.0
+  description: Art Admin Backend API Documentation
+  host: localhost:48080
+  basePath: /
+

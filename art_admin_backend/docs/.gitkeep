@@ -1,0 +1,11 @@
+# Swagger 文档目录
+
+此目录用于存放自动生成的 Swagger 文档文件。
+
+运行项目时会自动生成以下文件：
+- docs.go
+- swagger.json
+- swagger.yaml
+
+无需手动创建，项目启动时自动生成。
+
