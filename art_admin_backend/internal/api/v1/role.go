@@ -154,3 +154,37 @@ func GetRolePermissions(c *gin.Context) {
 		"buttonIds": buttonIDs,
 	})
 }
+
+// UpdateRolePermissions 更新角色权限
+// @Summary 更新角色权限
+// @Description 更新角色的菜单和按钮权限
+// @Tags 角色管理
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "角色ID"
+// @Param request body request.UpdateRolePermissionsRequest true "权限信息"
+// @Success 200 {object} response.Response "更新成功"
+// @Failure 400 {object} response.Response "参数错误"
+// @Router /api/role/permissions/{id} [put]
+func UpdateRolePermissions(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		response.BadRequest(c, "参数错误")
+		return
+	}
+
+	var req request.UpdateRolePermissionsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "参数错误: "+err.Error())
+		return
+	}
+
+	if err := roleService.UpdateRolePermissions(id, &req); err != nil {
+		response.Error(c, response.CodeBadRequest, err.Error())
+		return
+	}
+
+	response.SuccessWithMsg(c, "更新角色权限成功", nil)
+}

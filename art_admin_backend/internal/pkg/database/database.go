@@ -68,6 +68,8 @@ func AutoMigrate() error {
 		&model.Role{},
 		&model.Menu{},
 		&model.Button{},
+		&model.DictionaryType{},
+		&model.Dictionary{},
 	)
 
 	if err != nil {

@@ -67,6 +67,764 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/dictionary": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新字典数据信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "更新字典数据",
+                "parameters": [
+                    {
+                        "description": "字典数据信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateDictionaryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "字典数据不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "更新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建新的字典数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "创建字典数据",
+                "parameters": [
+                    {
+                        "description": "字典数据信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateDictionaryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "创建失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除字典数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "删除字典数据",
+                "parameters": [
+                    {
+                        "description": "字典数据ID",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DeleteDictionaryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "字典数据不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "删除失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/by-type": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "根据类型编码获取字典数据列表（用于下拉框等）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "根据类型编码获取字典数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "字典类型编码",
+                        "name": "typeCode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.DictionaryResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/list": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "分页查询字典数据列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "获取字典数据列表",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "当前页码",
+                        "name": "current",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "每页条数",
+                        "name": "size",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "字典数据ID",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典类型编码",
+                        "name": "typeCode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典标签",
+                        "name": "label",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典值",
+                        "name": "value",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否启用",
+                        "name": "enabled",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.PaginatedData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/type": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新字典类型信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "更新字典类型",
+                "parameters": [
+                    {
+                        "description": "字典类型信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateDictionaryTypeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "字典类型不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "更新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建新的字典类型",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "创建字典类型",
+                "parameters": [
+                    {
+                        "description": "字典类型信息",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateDictionaryTypeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "创建失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除字典类型",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "删除字典类型",
+                "parameters": [
+                    {
+                        "description": "字典类型ID",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.DeleteDictionaryTypeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "字典类型不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "删除失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/type/list": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "分页查询字典类型列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "获取字典类型列表",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "当前页码",
+                        "name": "current",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "每页条数",
+                        "name": "size",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "字典类型ID",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典类型名称",
+                        "name": "typeName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典类型编码",
+                        "name": "typeCode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "描述",
+                        "name": "description",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否启用",
+                        "name": "enabled",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.PaginatedData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/type/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "根据ID获取字典类型详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "根据ID获取字典类型",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "字典类型ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.DictionaryTypeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "字典类型不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionary/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "根据ID获取字典数据详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典管理"
+                ],
+                "summary": "根据ID获取字典数据",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "字典数据ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.DictionaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "字典数据不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/menu/all": {
             "get": {
                 "security": [
@@ -468,6 +1226,56 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "查询成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新角色的菜单和按钮权限",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "角色管理"
+                ],
+                "summary": "更新角色权限",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "角色ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "权限信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateRolePermissionsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -908,6 +1716,66 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "request.CreateDictionaryRequest": {
+            "type": "object",
+            "required": [
+                "label",
+                "typeCode",
+                "value"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "orderNum": {
+                    "type": "integer"
+                },
+                "remark": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "typeCode": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "value": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "request.CreateDictionaryTypeRequest": {
+            "type": "object",
+            "required": [
+                "typeCode",
+                "typeName"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "remark": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "typeCode": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "typeName": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
         "request.CreateMenuRequest": {
             "type": "object",
             "required": [
@@ -1108,6 +1976,28 @@ const docTemplate = `{
                 }
             }
         },
+        "request.DeleteDictionaryRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "request.DeleteDictionaryTypeRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
         "request.LoginRequest": {
             "type": "object",
             "required": [
@@ -1138,6 +2028,74 @@ const docTemplate = `{
                 "newPassword": {
                     "type": "string",
                     "minLength": 6
+                }
+            }
+        },
+        "request.UpdateDictionaryRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "label",
+                "typeCode",
+                "value"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "orderNum": {
+                    "type": "integer"
+                },
+                "remark": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "typeCode": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "value": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "request.UpdateDictionaryTypeRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "typeCode",
+                "typeName"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "remark": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "typeCode": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "typeName": {
+                    "type": "string",
+                    "maxLength": 50
                 }
             }
         },
@@ -1227,6 +2185,27 @@ const docTemplate = `{
                 },
                 "sort": {
                     "type": "integer"
+                }
+            }
+        },
+        "request.UpdateRolePermissionsRequest": {
+            "type": "object",
+            "required": [
+                "buttonIds",
+                "menuIds"
+            ],
+            "properties": {
+                "buttonIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "menuIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
@@ -1329,6 +2308,79 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.DictionaryResponse": {
+            "type": "object",
+            "properties": {
+                "createBy": {
+                    "type": "string"
+                },
+                "createTime": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "orderNum": {
+                    "type": "integer"
+                },
+                "remark": {
+                    "type": "string"
+                },
+                "typeCode": {
+                    "type": "string"
+                },
+                "updateBy": {
+                    "type": "string"
+                },
+                "updateTime": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.DictionaryTypeResponse": {
+            "type": "object",
+            "properties": {
+                "createBy": {
+                    "type": "string"
+                },
+                "createTime": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "remark": {
+                    "type": "string"
+                },
+                "typeCode": {
+                    "type": "string"
+                },
+                "typeName": {
+                    "type": "string"
+                },
+                "updateBy": {
+                    "type": "string"
+                },
+                "updateTime": {
                     "type": "string"
                 }
             }

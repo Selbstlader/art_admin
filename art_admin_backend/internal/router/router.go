@@ -35,6 +35,7 @@ func RegisterRoutes(r *gin.Engine) {
 			authApiGroup.PUT("/role/update", v1.UpdateRole)
 			authApiGroup.DELETE("/role/delete/:id", v1.DeleteRole)
 			authApiGroup.GET("/role/permissions/:id", v1.GetRolePermissions)
+			authApiGroup.PUT("/role/permissions/:id", v1.UpdateRolePermissions)
 
 			// 菜单管理
 			authApiGroup.GET("/system/menus", v1.GetMenuList)
@@ -42,6 +43,21 @@ func RegisterRoutes(r *gin.Engine) {
 			authApiGroup.POST("/menu/create", v1.CreateMenu)
 			authApiGroup.PUT("/menu/update", v1.UpdateMenu)
 			authApiGroup.DELETE("/menu/delete/:id", v1.DeleteMenu)
+
+			// 字典类型管理
+			authApiGroup.GET("/dictionary/type/list", v1.GetDictionaryTypeList)
+			authApiGroup.GET("/dictionary/type/:id", v1.GetDictionaryTypeByID)
+			authApiGroup.POST("/dictionary/type", v1.CreateDictionaryType)
+			authApiGroup.PUT("/dictionary/type", v1.UpdateDictionaryType)
+			authApiGroup.DELETE("/dictionary/type", v1.DeleteDictionaryType)
+
+			// 字典数据管理
+			authApiGroup.GET("/dictionary/list", v1.GetDictionaryList)
+			authApiGroup.GET("/dictionary/:id", v1.GetDictionaryByID)
+			authApiGroup.GET("/dictionary/by-type", v1.GetDictionaryByTypeCode)
+			authApiGroup.POST("/dictionary", v1.CreateDictionary)
+			authApiGroup.PUT("/dictionary", v1.UpdateDictionary)
+			authApiGroup.DELETE("/dictionary", v1.DeleteDictionary)
 		}
 	}
 }

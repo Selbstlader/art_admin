@@ -176,3 +176,29 @@ func (s *RoleService) GetRolePermissions(roleID int64) (menuIDs []int64, buttonI
 
 	return menuIDs, buttonIDs, nil
 }
+
+// UpdateRolePermissions 更新角色权限
+func (s *RoleService) UpdateRolePermissions(roleID int64, req *request.UpdateRolePermissionsRequest) error {
+	// 检查角色是否存在
+	_, err := s.roleRepo.FindByID(roleID)
+	if err != nil {
+		return errors.New("角色不存在")
+	}
+
+	// 不允许修改超级管理员权限
+	if roleID == 1 {
+		return errors.New("不能修改超级管理员角色权限")
+	}
+
+	// 更新菜单权限
+	if err := s.roleRepo.AssignMenus(roleID, req.MenuIDs); err != nil {
+		return err
+	}
+
+	// 更新按钮权限
+	if err := s.roleRepo.AssignButtons(roleID, req.ButtonIDs); err != nil {
+		return err
+	}
+
+	return nil
+}

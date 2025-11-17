@@ -2,13 +2,13 @@ package request
 
 // RoleListRequest 角色列表查询请求
 type RoleListRequest struct {
-	Current     int     `form:"current" binding:"required,min=1" example:"1"`
-	Size        int     `form:"size" binding:"required,min=1,max=100" example:"10"`
-	RoleID      *int64  `form:"roleId" example:"1"`
-	RoleName    string  `form:"roleName" example:"管理员"`
-	RoleCode    string  `form:"roleCode" example:"admin"`
-	Description string  `form:"description" example:"系统"`
-	Enabled     *bool   `form:"enabled" example:"true"`
+	Current     int    `form:"current" binding:"required,min=1" example:"1"`
+	Size        int    `form:"size" binding:"required,min=1,max=100" example:"10"`
+	RoleID      *int64 `form:"roleId" example:"1"`
+	RoleName    string `form:"roleName" example:"管理员"`
+	RoleCode    string `form:"roleCode" example:"admin"`
+	Description string `form:"description" example:"系统"`
+	Enabled     *bool  `form:"enabled" example:"true"`
 }
 
 // CreateRoleRequest 创建角色请求
@@ -35,4 +35,10 @@ type UpdateRoleRequest struct {
 // DeleteRoleRequest 删除角色请求
 type DeleteRoleRequest struct {
 	RoleID int64 `json:"roleId" binding:"required"`
+}
+
+// UpdateRolePermissionsRequest 更新角色权限请求
+type UpdateRolePermissionsRequest struct {
+	MenuIDs   []int64 `json:"menuIds" binding:"required"`
+	ButtonIDs []int64 `json:"buttonIds" binding:"required"`
 }

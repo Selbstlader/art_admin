@@ -121,3 +121,44 @@ CREATE TABLE IF NOT EXISTS `sys_role_button` (
   KEY `idx_button_id` (`button_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色按钮关联表';
 
+-- 字典类型表
+CREATE TABLE IF NOT EXISTS `sys_dictionary_type` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '字典类型ID',
+  `type_name` varchar(50) NOT NULL COMMENT '字典类型名称',
+  `type_code` varchar(50) NOT NULL COMMENT '字典类型编码',
+  `description` varchar(200) DEFAULT NULL COMMENT '描述',
+  `enabled` tinyint(1) DEFAULT 1 COMMENT '是否启用(0:禁用 1:启用)',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+  `create_by` varchar(50) DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_by` varchar(50) DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `deleted_at` datetime DEFAULT NULL COMMENT '删除时间(软删除)',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_type_name` (`type_name`),
+  UNIQUE KEY `uk_type_code` (`type_code`),
+  KEY `idx_enabled` (`enabled`),
+  KEY `idx_deleted_at` (`deleted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典类型表';
+
+-- 字典数据表
+CREATE TABLE IF NOT EXISTS `sys_dictionary` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '字典数据ID',
+  `type_code` varchar(50) NOT NULL COMMENT '字典类型编码',
+  `label` varchar(100) NOT NULL COMMENT '字典标签',
+  `value` varchar(100) NOT NULL COMMENT '字典值',
+  `order_num` int DEFAULT 0 COMMENT '排序号',
+  `enabled` tinyint(1) DEFAULT 1 COMMENT '是否启用(0:禁用 1:启用)',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+  `create_by` varchar(50) DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_by` varchar(50) DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `deleted_at` datetime DEFAULT NULL COMMENT '删除时间(软删除)',
+  PRIMARY KEY (`id`),
+  KEY `idx_type_code` (`type_code`),
+  KEY `idx_enabled` (`enabled`),
+  KEY `idx_deleted_at` (`deleted_at`),
+  KEY `idx_type_order` (`type_code`, `order_num`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='字典数据表';
+

@@ -1,5 +1,48 @@
 basePath: /
 definitions:
+  request.CreateDictionaryRequest:
+    properties:
+      enabled:
+        type: boolean
+      label:
+        maxLength: 100
+        type: string
+      orderNum:
+        type: integer
+      remark:
+        maxLength: 500
+        type: string
+      typeCode:
+        maxLength: 50
+        type: string
+      value:
+        maxLength: 100
+        type: string
+    required:
+    - label
+    - typeCode
+    - value
+    type: object
+  request.CreateDictionaryTypeRequest:
+    properties:
+      description:
+        maxLength: 200
+        type: string
+      enabled:
+        type: boolean
+      remark:
+        maxLength: 500
+        type: string
+      typeCode:
+        maxLength: 50
+        type: string
+      typeName:
+        maxLength: 50
+        type: string
+    required:
+    - typeCode
+    - typeName
+    type: object
   request.CreateMenuRequest:
     properties:
       activePath:
@@ -149,6 +192,20 @@ definitions:
     - userName
     - userPhone
     type: object
+  request.DeleteDictionaryRequest:
+    properties:
+      id:
+        type: integer
+    required:
+    - id
+    type: object
+  request.DeleteDictionaryTypeRequest:
+    properties:
+      id:
+        type: integer
+    required:
+    - id
+    type: object
   request.LoginRequest:
     properties:
       password:
@@ -171,6 +228,55 @@ definitions:
     required:
     - id
     - newPassword
+    type: object
+  request.UpdateDictionaryRequest:
+    properties:
+      enabled:
+        type: boolean
+      id:
+        type: integer
+      label:
+        maxLength: 100
+        type: string
+      orderNum:
+        type: integer
+      remark:
+        maxLength: 500
+        type: string
+      typeCode:
+        maxLength: 50
+        type: string
+      value:
+        maxLength: 100
+        type: string
+    required:
+    - id
+    - label
+    - typeCode
+    - value
+    type: object
+  request.UpdateDictionaryTypeRequest:
+    properties:
+      description:
+        maxLength: 200
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: integer
+      remark:
+        maxLength: 500
+        type: string
+      typeCode:
+        maxLength: 50
+        type: string
+      typeName:
+        maxLength: 50
+        type: string
+    required:
+    - id
+    - typeCode
+    - typeName
     type: object
   request.UpdateMenuRequest:
     properties:
@@ -234,6 +340,20 @@ definitions:
     - label
     - name
     - path
+    type: object
+  request.UpdateRolePermissionsRequest:
+    properties:
+      buttonIds:
+        items:
+          type: integer
+        type: array
+      menuIds:
+        items:
+          type: integer
+        type: array
+    required:
+    - buttonIds
+    - menuIds
     type: object
   request.UpdateRoleRequest:
     properties:
@@ -306,6 +426,54 @@ definitions:
       authMark:
         type: string
       title:
+        type: string
+    type: object
+  response.DictionaryResponse:
+    properties:
+      createBy:
+        type: string
+      createTime:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: integer
+      label:
+        type: string
+      orderNum:
+        type: integer
+      remark:
+        type: string
+      typeCode:
+        type: string
+      updateBy:
+        type: string
+      updateTime:
+        type: string
+      value:
+        type: string
+    type: object
+  response.DictionaryTypeResponse:
+    properties:
+      createBy:
+        type: string
+      createTime:
+        type: string
+      description:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: integer
+      remark:
+        type: string
+      typeCode:
+        type: string
+      typeName:
+        type: string
+      updateBy:
+        type: string
+      updateTime:
         type: string
     type: object
   response.LoginResponse:
@@ -452,6 +620,480 @@ paths:
       summary: 用户登录
       tags:
       - 认证管理
+  /api/dictionary:
+    delete:
+      consumes:
+      - application/json
+      description: 删除字典数据
+      parameters:
+      - description: 字典数据ID
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.DeleteDictionaryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 字典数据不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 删除失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除字典数据
+      tags:
+      - 字典管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的字典数据
+      parameters:
+      - description: 字典数据信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateDictionaryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 创建失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建字典数据
+      tags:
+      - 字典管理
+    put:
+      consumes:
+      - application/json
+      description: 更新字典数据信息
+      parameters:
+      - description: 字典数据信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateDictionaryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 字典数据不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 更新失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新字典数据
+      tags:
+      - 字典管理
+  /api/dictionary/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取字典数据详情
+      parameters:
+      - description: 字典数据ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.DictionaryResponse'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 字典数据不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 根据ID获取字典数据
+      tags:
+      - 字典管理
+  /api/dictionary/by-type:
+    get:
+      consumes:
+      - application/json
+      description: 根据类型编码获取字典数据列表（用于下拉框等）
+      parameters:
+      - description: 字典类型编码
+        in: query
+        name: typeCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/response.DictionaryResponse'
+                  type: array
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 根据类型编码获取字典数据
+      tags:
+      - 字典管理
+  /api/dictionary/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询字典数据列表
+      parameters:
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: current
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        required: true
+        type: integer
+      - description: 字典数据ID
+        in: query
+        name: id
+        type: integer
+      - description: 字典类型编码
+        in: query
+        name: typeCode
+        type: string
+      - description: 字典标签
+        in: query
+        name: label
+        type: string
+      - description: 字典值
+        in: query
+        name: value
+        type: string
+      - description: 是否启用
+        in: query
+        name: enabled
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取字典数据列表
+      tags:
+      - 字典管理
+  /api/dictionary/type:
+    delete:
+      consumes:
+      - application/json
+      description: 删除字典类型
+      parameters:
+      - description: 字典类型ID
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.DeleteDictionaryTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 字典类型不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 删除失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除字典类型
+      tags:
+      - 字典管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的字典类型
+      parameters:
+      - description: 字典类型信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateDictionaryTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 创建失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建字典类型
+      tags:
+      - 字典管理
+    put:
+      consumes:
+      - application/json
+      description: 更新字典类型信息
+      parameters:
+      - description: 字典类型信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateDictionaryTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 字典类型不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 更新失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新字典类型
+      tags:
+      - 字典管理
+  /api/dictionary/type/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取字典类型详情
+      parameters:
+      - description: 字典类型ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.DictionaryTypeResponse'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 字典类型不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 根据ID获取字典类型
+      tags:
+      - 字典管理
+  /api/dictionary/type/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询字典类型列表
+      parameters:
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: current
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        required: true
+        type: integer
+      - description: 字典类型ID
+        in: query
+        name: id
+        type: integer
+      - description: 字典类型名称
+        in: query
+        name: typeName
+        type: string
+      - description: 字典类型编码
+        in: query
+        name: typeCode
+        type: string
+      - description: 描述
+        in: query
+        name: description
+        type: string
+      - description: 是否启用
+        in: query
+        name: enabled
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取字典类型列表
+      tags:
+      - 字典管理
   /api/menu/all:
     get:
       consumes:
@@ -707,6 +1349,38 @@ paths:
       security:
       - BearerAuth: []
       summary: 获取角色权限
+      tags:
+      - 角色管理
+    put:
+      consumes:
+      - application/json
+      description: 更新角色的菜单和按钮权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateRolePermissionsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新角色权限
       tags:
       - 角色管理
   /api/role/update:
