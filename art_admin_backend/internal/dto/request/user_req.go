@@ -3,7 +3,7 @@ package request
 // UserListRequest 用户列表查询请求
 type UserListRequest struct {
 	Current    int    `form:"current" binding:"required,min=1" example:"1"`
-	Size       int    `form:"size" binding:"required,min=1,max=100" example:"10"`
+	Size       int    `form:"size" binding:"required,min=1,max=1000" example:"10"`
 	ID         *int64 `form:"id" example:"1"`
 	UserName   string `form:"userName" example:"admin"`
 	UserGender string `form:"userGender" example:"male"`

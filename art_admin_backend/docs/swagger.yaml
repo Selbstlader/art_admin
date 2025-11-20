@@ -1,5 +1,38 @@
 basePath: /
 definitions:
+  request.CreateDepartmentRequest:
+    properties:
+      deptCode:
+        maxLength: 50
+        type: string
+      deptName:
+        maxLength: 50
+        type: string
+      email:
+        maxLength: 50
+        type: string
+      leader:
+        maxLength: 20
+        type: string
+      orderNum:
+        maximum: 999
+        minimum: 0
+        type: integer
+      parentId:
+        example: 1
+        type: integer
+      phone:
+        maxLength: 11
+        type: string
+      status:
+        enum:
+        - 0
+        - 1
+        type: integer
+    required:
+    - deptCode
+    - deptName
+    type: object
   request.CreateDictionaryRequest:
     properties:
       enabled:
@@ -229,6 +262,42 @@ definitions:
     - id
     - newPassword
     type: object
+  request.UpdateDepartmentRequest:
+    properties:
+      deptCode:
+        maxLength: 50
+        type: string
+      deptId:
+        type: integer
+      deptName:
+        maxLength: 50
+        type: string
+      email:
+        maxLength: 50
+        type: string
+      leader:
+        maxLength: 20
+        type: string
+      orderNum:
+        maximum: 999
+        minimum: 0
+        type: integer
+      parentId:
+        example: 1
+        type: integer
+      phone:
+        maxLength: 11
+        type: string
+      status:
+        enum:
+        - 0
+        - 1
+        type: integer
+    required:
+    - deptCode
+    - deptId
+    - deptName
+    type: object
   request.UpdateDictionaryRequest:
     properties:
       enabled:
@@ -428,6 +497,68 @@ definitions:
       title:
         type: string
     type: object
+  response.DepartmentItem:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/response.DepartmentListItem'
+        type: array
+      createTime:
+        type: string
+      deptCode:
+        type: string
+      deptId:
+        type: integer
+      deptName:
+        type: string
+      email:
+        type: string
+      leader:
+        type: string
+      orderNum:
+        type: integer
+      parentId:
+        type: integer
+      parentName:
+        type: string
+      phone:
+        type: string
+      status:
+        type: integer
+      updateTime:
+        type: string
+    type: object
+  response.DepartmentListItem:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/response.DepartmentListItem'
+        type: array
+      createTime:
+        type: string
+      deptCode:
+        type: string
+      deptId:
+        type: integer
+      deptName:
+        type: string
+      email:
+        type: string
+      leader:
+        type: string
+      orderNum:
+        type: integer
+      parentId:
+        type: integer
+      parentName:
+        type: string
+      phone:
+        type: string
+      status:
+        type: integer
+      updateTime:
+        type: string
+    type: object
   response.DictionaryResponse:
     properties:
       createBy:
@@ -528,6 +659,39 @@ definitions:
       redirect:
         type: string
     type: object
+  response.OperationLogDetail:
+    properties:
+      businessType:
+        type: string
+      costTime:
+        type: integer
+      errorMsg:
+        type: string
+      id:
+        type: integer
+      module:
+        type: string
+      operationTime:
+        type: string
+      operatorAddr:
+        type: string
+      operatorIp:
+        type: string
+      operatorName:
+        type: string
+      requestMethod:
+        type: string
+      requestParam:
+        type: string
+      requestUrl:
+        type: string
+      responseData:
+        type: string
+      status:
+        type: integer
+      userAgent:
+        type: string
+    type: object
   response.PaginatedData:
     properties:
       current:
@@ -620,6 +784,215 @@ paths:
       summary: 用户登录
       tags:
       - 认证管理
+  /api/department:
+    post:
+      consumes:
+      - application/json
+      description: 创建新的部门
+      parameters:
+      - description: 部门信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateDepartmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建部门
+      tags:
+      - 部门管理
+    put:
+      consumes:
+      - application/json
+      description: 更新部门信息
+      parameters:
+      - description: 部门信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateDepartmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 部门不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新部门
+      tags:
+      - 部门管理
+  /api/department/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定部门
+      parameters:
+      - description: 部门ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 部门不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除部门
+      tags:
+      - 部门管理
+    get:
+      consumes:
+      - application/json
+      description: 根据部门ID获取部门详情
+      parameters:
+      - description: 部门ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.DepartmentItem'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 部门不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 根据ID获取部门
+      tags:
+      - 部门管理
+  /api/department/list:
+    get:
+      consumes:
+      - application/json
+      description: 查询部门列表（树形结构）
+      parameters:
+      - description: 部门名称
+        in: query
+        name: deptName
+        type: string
+      - description: 部门编码
+        in: query
+        name: deptCode
+        type: string
+      - description: 部门状态
+        enum:
+        - 0
+        - 1
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/response.DepartmentListItem'
+                  type: array
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取部门列表
+      tags:
+      - 部门管理
   /api/dictionary:
     delete:
       consumes:
@@ -1205,6 +1578,194 @@ paths:
       summary: 更新菜单
       tags:
       - 菜单管理
+  /api/operation-log/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除操作日志
+      parameters:
+      - description: 日志ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除操作日志
+      tags:
+      - 操作日志管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取操作日志详情
+      parameters:
+      - description: 日志ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.OperationLogDetail'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取操作日志详情
+      tags:
+      - 操作日志管理
+  /api/operation-log/batch-delete:
+    delete:
+      consumes:
+      - application/json
+      description: 批量删除操作日志
+      parameters:
+      - description: 日志ID列表
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 批量删除操作日志
+      tags:
+      - 操作日志管理
+  /api/operation-log/clean:
+    post:
+      consumes:
+      - application/json
+      description: 清理指定天数之前的操作日志
+      parameters:
+      - description: 保留天数
+        in: body
+        name: days
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 清理成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 清理操作日志
+      tags:
+      - 操作日志管理
+  /api/operation-log/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询操作日志列表
+      parameters:
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: current
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        required: true
+        type: integer
+      - description: 操作模块
+        in: query
+        name: module
+        type: string
+      - description: 业务类型
+        in: query
+        name: businessType
+        type: string
+      - description: 操作人员
+        in: query
+        name: operatorName
+        type: string
+      - description: 操作状态
+        in: query
+        name: status
+        type: integer
+      - description: 开始时间
+        in: query
+        name: startTime
+        type: string
+      - description: 结束时间
+        in: query
+        name: endTime
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取操作日志列表
+      tags:
+      - 操作日志管理
   /api/role/create:
     post:
       consumes:

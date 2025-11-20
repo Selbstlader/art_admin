@@ -17,6 +17,7 @@ type User struct {
 	UserGender string         `gorm:"type:varchar(10);default:unknown" json:"userGender"`
 	Avatar     string         `gorm:"type:varchar(500)" json:"avatar"`
 	Status     string         `gorm:"type:char(1);default:1;index" json:"status"`
+	DeptID     *int64         `gorm:"index" json:"deptId"`
 	CreateBy   string         `gorm:"type:varchar(50)" json:"createBy"`
 	CreateTime time.Time      `gorm:"autoCreateTime" json:"createTime"`
 	UpdateBy   string         `gorm:"type:varchar(50)" json:"updateBy"`
@@ -24,7 +25,8 @@ type User struct {
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// 关联关系
-	Roles []Role `gorm:"many2many:sys_user_role;foreignKey:ID;joinForeignKey:UserID;References:RoleID;joinReferences:RoleID" json:"-"`
+	Roles      []Role      `gorm:"many2many:sys_user_role;foreignKey:ID;joinForeignKey:UserID;References:RoleID;joinReferences:RoleID" json:"-"`
+	Department *Department `gorm:"foreignKey:DeptID" json:"department,omitempty"`
 }
 
 // TableName 表名

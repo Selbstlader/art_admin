@@ -18,6 +18,7 @@ func RegisterRoutes(r *gin.Engine) {
 		// 需要JWT认证的路由
 		authApiGroup := apiGroup.Group("")
 		authApiGroup.Use(middleware.JWTAuth())
+		authApiGroup.Use(middleware.OperationLog()) // 操作日志中间件
 		{
 			// 用户信息
 			authApiGroup.GET("/user/info", v1.GetUserInfo)
@@ -36,6 +37,13 @@ func RegisterRoutes(r *gin.Engine) {
 			authApiGroup.DELETE("/role/delete/:id", v1.DeleteRole)
 			authApiGroup.GET("/role/permissions/:id", v1.GetRolePermissions)
 			authApiGroup.PUT("/role/permissions/:id", v1.UpdateRolePermissions)
+
+			// 部门管理
+			authApiGroup.GET("/department/list", v1.GetDepartmentList)
+			authApiGroup.GET("/department/:id", v1.GetDepartmentByID)
+			authApiGroup.POST("/department", v1.CreateDepartment)
+			authApiGroup.PUT("/department", v1.UpdateDepartment)
+			authApiGroup.DELETE("/department/:id", v1.DeleteDepartment)
 
 			// 菜单管理
 			authApiGroup.GET("/system/menus", v1.GetMenuList)
@@ -58,6 +66,13 @@ func RegisterRoutes(r *gin.Engine) {
 			authApiGroup.POST("/dictionary", v1.CreateDictionary)
 			authApiGroup.PUT("/dictionary", v1.UpdateDictionary)
 			authApiGroup.DELETE("/dictionary", v1.DeleteDictionary)
+
+			// 操作日志管理
+			authApiGroup.GET("/operation-log/list", v1.GetOperationLogList)
+			authApiGroup.GET("/operation-log/:id", v1.GetOperationLogDetail)
+			authApiGroup.DELETE("/operation-log/:id", v1.DeleteOperationLog)
+			authApiGroup.DELETE("/operation-log/batch-delete", v1.BatchDeleteOperationLog)
+			authApiGroup.POST("/operation-log/clean", v1.CleanOperationLog)
 		}
 	}
 }

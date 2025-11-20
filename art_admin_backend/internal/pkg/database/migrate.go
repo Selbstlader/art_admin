@@ -21,6 +21,7 @@ func MigrateAll() error {
 		&model.Button{},
 		&model.DictionaryType{},
 		&model.Dictionary{},
+		&model.OperationLog{},
 	)
 	if err != nil {
 		return err

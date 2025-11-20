@@ -70,6 +70,7 @@ func AutoMigrate() error {
 		&model.Button{},
 		&model.DictionaryType{},
 		&model.Dictionary{},
+		&model.OperationLog{},
 	)
 
 	if err != nil {

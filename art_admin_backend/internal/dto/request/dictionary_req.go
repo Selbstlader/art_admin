@@ -3,7 +3,7 @@ package request
 // DictionaryTypeListRequest 字典类型列表查询请求
 type DictionaryTypeListRequest struct {
 	Current     int    `form:"current" binding:"required,min=1" example:"1"`
-	Size        int    `form:"size" binding:"required,min=1,max=100" example:"10"`
+	Size        int    `form:"size" binding:"required,min=1,max=1000" example:"10"`
 	ID          *int64 `form:"id" example:"1"`
 	TypeName    string `form:"typeName" example:"用户性别"`
 	TypeCode    string `form:"typeCode" example:"user_gender"`
@@ -38,7 +38,7 @@ type DeleteDictionaryTypeRequest struct {
 // DictionaryListRequest 字典数据列表查询请求
 type DictionaryListRequest struct {
 	Current  int    `form:"current" binding:"required,min=1" example:"1"`
-	Size     int    `form:"size" binding:"required,min=1,max=100" example:"10"`
+	Size     int    `form:"size" binding:"required,min=1,max=1000" example:"10"`
 	ID       *int64 `form:"id" example:"1"`
 	TypeCode string `form:"typeCode" example:"user_gender"`
 	Label    string `form:"label" example:"男"`

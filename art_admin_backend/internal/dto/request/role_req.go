@@ -3,7 +3,7 @@ package request
 // RoleListRequest 角色列表查询请求
 type RoleListRequest struct {
 	Current     int    `form:"current" binding:"required,min=1" example:"1"`
-	Size        int    `form:"size" binding:"required,min=1,max=100" example:"10"`
+	Size        int    `form:"size" binding:"required,min=1,max=1000" example:"10"`
 	RoleID      *int64 `form:"roleId" example:"1"`
 	RoleName    string `form:"roleName" example:"管理员"`
 	RoleCode    string `form:"roleCode" example:"admin"`
