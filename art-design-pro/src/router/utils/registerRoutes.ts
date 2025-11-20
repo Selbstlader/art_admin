@@ -178,6 +178,11 @@ function convertRouteComponent(
     component: undefined
   }
 
+  // 处理甘特图路由的动态参数
+  if (route.path === '/project/gantt' && component === '/project/gantt') {
+    converted.path = '/project/gantt/:id'
+  }
+
   // 判断是否为一级路由
   const isTopLevel = depth === 0
   // 判断是否有子路由

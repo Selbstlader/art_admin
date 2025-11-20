@@ -71,6 +71,16 @@ func AutoMigrate() error {
 		&model.DictionaryType{},
 		&model.Dictionary{},
 		&model.OperationLog{},
+		// 项目管理模块
+		&model.ProjectTemplate{},
+		&model.TemplateTask{},
+		&model.TemplateTaskDependency{},
+		&model.Project{},
+		&model.ProjectMember{},
+		&model.Task{},
+		&model.TaskDependency{},
+		&model.TaskComment{},
+		&model.TaskAttachment{},
 	)
 
 	if err != nil {

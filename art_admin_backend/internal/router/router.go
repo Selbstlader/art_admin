@@ -2,6 +2,7 @@ package router
 
 import (
 	"art_admin_backend/internal/api/middleware"
+	"art_admin_backend/internal/api/project"
 	v1 "art_admin_backend/internal/api/v1"
 
 	"github.com/gin-gonic/gin"
@@ -73,6 +74,45 @@ func RegisterRoutes(r *gin.Engine) {
 			authApiGroup.DELETE("/operation-log/:id", v1.DeleteOperationLog)
 			authApiGroup.DELETE("/operation-log/batch-delete", v1.BatchDeleteOperationLog)
 			authApiGroup.POST("/operation-log/clean", v1.CleanOperationLog)
+
+			// 项目管理模块 - 独立分区
+			projectGroup := authApiGroup.Group("/project")
+			{
+				// 项目模板管理
+				projectGroup.GET("/template/list", project.GetTemplateList)
+				projectGroup.GET("/template/:id", project.GetTemplateDetail)
+				projectGroup.POST("/template", project.CreateTemplate)
+				projectGroup.PUT("/template", project.UpdateTemplate)
+				projectGroup.DELETE("/template/:id", project.DeleteTemplate)
+				projectGroup.POST("/template/dependency", project.CreateTemplateDependency)
+				projectGroup.DELETE("/template/dependency/:id", project.DeleteTemplateDependency)
+
+				// 项目管理
+				projectGroup.GET("/list", project.GetProjectList)
+				projectGroup.GET("/:id", project.GetProjectDetail)
+				projectGroup.POST("", project.CreateProject)
+				projectGroup.POST("/from-template", project.CreateProjectFromTemplate)
+				projectGroup.PUT("", project.UpdateProject)
+				projectGroup.DELETE("/:id", project.DeleteProject)
+				projectGroup.GET("/statistics", project.GetProjectStatistics)
+
+				// 任务管理
+				projectGroup.GET("/task/list", project.GetTaskList)
+				projectGroup.GET("/task/:id", project.GetTaskDetail)
+				projectGroup.POST("/task", project.CreateTask)
+				projectGroup.PUT("/task", project.UpdateTask)
+				projectGroup.PUT("/task/batch", project.BatchUpdateTask)
+				projectGroup.PUT("/task/quick", project.QuickUpdateTask)
+				projectGroup.DELETE("/task/:id", project.DeleteTask)
+				projectGroup.GET("/task/gantt", project.GetTaskGanttData)
+
+				// 任务依赖管理
+				projectGroup.POST("/task/dependency", project.CreateTaskDependency)
+				projectGroup.DELETE("/task/dependency/:id", project.DeleteTaskDependency)
+
+				// 任务评论
+				projectGroup.POST("/task/comment", project.CreateTaskComment)
+			}
 		}
 	}
 }
