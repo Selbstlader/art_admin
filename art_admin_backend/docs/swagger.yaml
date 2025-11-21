@@ -1,5 +1,186 @@
 basePath: /
 definitions:
+  dto.GenerateMaterialRequest:
+    properties:
+      difficulty:
+        maximum: 3
+        minimum: 1
+        type: integer
+      grade:
+        type: string
+      subject_id:
+        type: integer
+      topic:
+        type: string
+    required:
+    - difficulty
+    - grade
+    - subject_id
+    - topic
+    type: object
+  dto.GradeInfo:
+    properties:
+      count:
+        type: integer
+      grade:
+        type: string
+    type: object
+  dto.GradeListResponse:
+    properties:
+      grades:
+        items:
+          $ref: '#/definitions/dto.GradeInfo'
+        type: array
+      subject_id:
+        type: integer
+    type: object
+  dto.MaterialListResponse:
+    properties:
+      limit:
+        type: integer
+      list:
+        items:
+          $ref: '#/definitions/dto.MaterialResponse'
+        type: array
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.MaterialResponse:
+    properties:
+      audio_duration:
+        type: integer
+      audio_url:
+        type: string
+      content:
+        $ref: '#/definitions/model.MaterialContent'
+      created_at:
+        type: string
+      difficulty:
+        type: integer
+      favorite_count:
+        type: integer
+      grade:
+        type: string
+      id:
+        type: integer
+      subject_id:
+        type: integer
+      summary:
+        type: string
+      title:
+        type: string
+      topic:
+        type: string
+      total_time:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      view_count:
+        type: integer
+    type: object
+  dto.SubjectResponse:
+    properties:
+      description:
+        type: string
+      grade_levels:
+        items:
+          type: string
+        type: array
+      icon:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      sort:
+        type: integer
+    type: object
+  dto.TaskResponse:
+    properties:
+      created_at:
+        type: string
+      difficulty:
+        type: integer
+      error_msg:
+        type: string
+      grade:
+        type: string
+      id:
+        type: integer
+      material_id:
+        type: integer
+      status:
+        type: integer
+      subject_id:
+        type: integer
+      topic:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  model.Exercise:
+    properties:
+      answer:
+        type: string
+      explanation:
+        type: string
+      id:
+        type: integer
+      options:
+        items:
+          type: string
+        type: array
+      question:
+        type: string
+      type:
+        description: choice, fill, calculate, essay
+        type: string
+    type: object
+  model.MaterialContent:
+    properties:
+      sections:
+        items:
+          $ref: '#/definitions/model.MaterialSection'
+        type: array
+      summary:
+        type: string
+      title:
+        type: string
+      total_time:
+        type: integer
+    type: object
+  model.MaterialSection:
+    properties:
+      answer:
+        type: string
+      content:
+        type: string
+      difficulty:
+        type: string
+      key_points:
+        items:
+          type: string
+        type: array
+      question:
+        type: string
+      questions:
+        items:
+          $ref: '#/definitions/model.Exercise'
+        type: array
+      solution:
+        type: string
+      title:
+        type: string
+      type:
+        description: knowledge, example, exercise
+        type: string
+    type: object
   request.CreateAppUserRequest:
     properties:
       avatar:
@@ -2200,6 +2381,158 @@ paths:
       summary: 获取建议问题
       tags:
       - Dify
+  /api/learning/grades:
+    get:
+      parameters:
+      - description: 学科ID
+        in: query
+        name: subject_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GradeListResponse'
+      summary: 获取年级列表
+      tags:
+      - Learning
+  /api/learning/material/{id}:
+    delete:
+      parameters:
+      - description: 教材ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除教材
+      tags:
+      - Learning
+    get:
+      parameters:
+      - description: 教材ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MaterialResponse'
+      summary: 获取教材详情
+      tags:
+      - Learning
+  /api/learning/material/generate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 生成教材请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GenerateMaterialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TaskResponse'
+      summary: 生成教材（异步）
+      tags:
+      - Learning
+  /api/learning/material/list:
+    get:
+      parameters:
+      - description: 学科ID
+        in: query
+        name: subject_id
+        type: integer
+      - description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MaterialListResponse'
+      summary: 获取教材列表
+      tags:
+      - Learning
+  /api/learning/material/task/{id}:
+    get:
+      parameters:
+      - description: 任务ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TaskResponse'
+      summary: 获取任务详情
+      tags:
+      - Learning
+  /api/learning/material/tasks:
+    get:
+      parameters:
+      - description: 任务状态,多个用逗号分隔
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.TaskResponse'
+            type: array
+      summary: 获取任务列表
+      tags:
+      - Learning
+  /api/learning/subject/list:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.SubjectResponse'
+            type: array
+      summary: 获取学科列表
+      tags:
+      - Learning
   /api/menu/all:
     get:
       consumes:

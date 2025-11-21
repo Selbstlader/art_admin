@@ -2120,6 +2120,242 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/learning/grades": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Learning"
+                ],
+                "summary": "获取年级列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "学科ID",
+                        "name": "subject_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GradeListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/learning/material/generate": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Learning"
+                ],
+                "summary": "生成教材（异步）",
+                "parameters": [
+                    {
+                        "description": "生成教材请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.GenerateMaterialRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TaskResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/learning/material/list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Learning"
+                ],
+                "summary": "获取教材列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "学科ID",
+                        "name": "subject_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MaterialListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/learning/material/task/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Learning"
+                ],
+                "summary": "获取任务详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "任务ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TaskResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/learning/material/tasks": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Learning"
+                ],
+                "summary": "获取任务列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "任务状态,多个用逗号分隔",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.TaskResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/learning/material/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Learning"
+                ],
+                "summary": "获取教材详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "教材ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MaterialResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Learning"
+                ],
+                "summary": "删除教材",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "教材ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/learning/subject/list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Learning"
+                ],
+                "summary": "获取学科列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.SubjectResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/menu/all": {
             "get": {
                 "security": [
@@ -3313,6 +3549,279 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.GenerateMaterialRequest": {
+            "type": "object",
+            "required": [
+                "difficulty",
+                "grade",
+                "subject_id",
+                "topic"
+            ],
+            "properties": {
+                "difficulty": {
+                    "type": "integer",
+                    "maximum": 3,
+                    "minimum": 1
+                },
+                "grade": {
+                    "type": "string"
+                },
+                "subject_id": {
+                    "type": "integer"
+                },
+                "topic": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GradeInfo": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "grade": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GradeListResponse": {
+            "type": "object",
+            "properties": {
+                "grades": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.GradeInfo"
+                    }
+                },
+                "subject_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.MaterialListResponse": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.MaterialResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.MaterialResponse": {
+            "type": "object",
+            "properties": {
+                "audio_duration": {
+                    "type": "integer"
+                },
+                "audio_url": {
+                    "type": "string"
+                },
+                "content": {
+                    "$ref": "#/definitions/model.MaterialContent"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "difficulty": {
+                    "type": "integer"
+                },
+                "favorite_count": {
+                    "type": "integer"
+                },
+                "grade": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "subject_id": {
+                    "type": "integer"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "topic": {
+                    "type": "string"
+                },
+                "total_time": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "view_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.SubjectResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "grade_levels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sort": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TaskResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "difficulty": {
+                    "type": "integer"
+                },
+                "error_msg": {
+                    "type": "string"
+                },
+                "grade": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "material_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "subject_id": {
+                    "type": "integer"
+                },
+                "topic": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Exercise": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "explanation": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "question": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "choice, fill, calculate, essay",
+                    "type": "string"
+                }
+            }
+        },
+        "model.MaterialContent": {
+            "type": "object",
+            "properties": {
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.MaterialSection"
+                    }
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "total_time": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.MaterialSection": {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "difficulty": {
+                    "type": "string"
+                },
+                "key_points": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "question": {
+                    "type": "string"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Exercise"
+                    }
+                },
+                "solution": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "knowledge, example, exercise",
+                    "type": "string"
+                }
+            }
+        },
         "request.CreateAppUserRequest": {
             "type": "object",
             "required": [

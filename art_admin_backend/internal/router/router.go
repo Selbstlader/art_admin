@@ -1,12 +1,20 @@
 package router
 
 import (
+	"art_admin_backend/internal/api"
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/api/project"
 	v1 "art_admin_backend/internal/api/v1"
 
 	"github.com/gin-gonic/gin"
 )
+
+var learningAPI *api.LearningAPI
+
+// SetLearningAPI 设置学习系统 API（由 main 函数调用）
+func SetLearningAPI(api *api.LearningAPI) {
+	learningAPI = api
+}
 
 // RegisterRoutes 注册所有路由
 func RegisterRoutes(r *gin.Engine) {
@@ -145,5 +153,10 @@ func RegisterRoutes(r *gin.Engine) {
 				difyGroup.GET("/messages/:message_id/suggested", v1.GetSuggestedQuestions)
 			}
 		}
+	}
+
+	// 学习系统模块（独立模块，不在 v1 中）
+	if learningAPI != nil {
+		SetupLearningRoutes(r, learningAPI)
 	}
 }

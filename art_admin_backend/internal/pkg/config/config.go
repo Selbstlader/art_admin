@@ -15,6 +15,8 @@ type Config struct {
 	Log      LogConfig      `mapstructure:"log"`
 	CORS     CORSConfig     `mapstructure:"cors"`
 	Swagger  SwaggerConfig  `mapstructure:"swagger"`
+	Dify     DifyConfig     `mapstructure:"dify"`
+	DeepSeek DeepSeekConfig `mapstructure:"deepseek"`
 }
 
 // ServerConfig 服务器配置
@@ -73,6 +75,25 @@ type SwaggerConfig struct {
 	Description string `mapstructure:"description"`
 	Host        string `mapstructure:"host"`
 	BasePath    string `mapstructure:"basePath"`
+}
+
+// DifyConfig Dify配置
+type DifyConfig struct {
+	DatasetAPIKey string `mapstructure:"datasetApiKey"`
+	ChatAPIKey    string `mapstructure:"chatApiKey"`
+	BaseURL       string `mapstructure:"baseUrl"`
+	Timeout       int    `mapstructure:"timeout"`
+	DatasetID     string `mapstructure:"datasetId"`
+}
+
+// DeepSeekConfig DeepSeek配置
+type DeepSeekConfig struct {
+	APIKey      string  `mapstructure:"apiKey"`
+	BaseURL     string  `mapstructure:"baseUrl"`
+	Model       string  `mapstructure:"model"`
+	Timeout     int     `mapstructure:"timeout"`
+	MaxTokens   int     `mapstructure:"maxTokens"`
+	Temperature float64 `mapstructure:"temperature"`
 }
 
 var GlobalConfig *Config

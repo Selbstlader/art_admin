@@ -9,6 +9,7 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/pkg/config"
 	"art_admin_backend/internal/pkg/database"
+	"art_admin_backend/internal/pkg/learning"
 	"art_admin_backend/internal/pkg/logger"
 	"art_admin_backend/internal/router"
 
@@ -74,6 +75,27 @@ func main() {
 			"message": "Art Admin Backend is running",
 		})
 	})
+
+	// 初始化学习系统
+	learningContainer := learning.NewContainer(database.GetDB(), learning.Config{
+		DeepSeek: learning.DeepSeekConfig{
+			APIKey:      cfg.DeepSeek.APIKey,
+			BaseURL:     cfg.DeepSeek.BaseURL,
+			Model:       cfg.DeepSeek.Model,
+			Timeout:     cfg.DeepSeek.Timeout,
+			MaxTokens:   cfg.DeepSeek.MaxTokens,
+			Temperature: cfg.DeepSeek.Temperature,
+		},
+		Dify: learning.DifyConfig{
+			DatasetAPIKey: cfg.Dify.DatasetAPIKey,
+			BaseURL:       cfg.Dify.BaseURL,
+			Timeout:       cfg.Dify.Timeout,
+			DatasetID:     cfg.Dify.DatasetID,
+		},
+	})
+
+	// 设置学习系统 API
+	router.SetLearningAPI(learningContainer.LearningAPI)
 
 	// 注册业务路由
 	router.RegisterRoutes(r)

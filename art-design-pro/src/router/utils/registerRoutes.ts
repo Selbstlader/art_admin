@@ -182,6 +182,10 @@ function convertRouteComponent(
   if (route.path === '/project/gantt' && component === '/project/gantt') {
     converted.path = '/project/gantt/:id'
   }
+  // 处理动态路由
+  if (route.path === '/learning/learning/detail' && component === '/learning/detail') {
+    converted.path = '/learning/learning/detail/:id'
+  }
 
   // 判断是否为一级路由
   const isTopLevel = depth === 0

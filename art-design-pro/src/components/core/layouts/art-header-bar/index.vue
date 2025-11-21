@@ -123,7 +123,8 @@
             <i class="iconfont-sys">{{ isDark ? '&#xe6b5;' : '&#xe725;' }}</i>
           </div>
         </div>
-
+        <!-- 生成任务 -->
+        <GenerateTaskPopover />
         <!-- 用户头像、菜单 -->
         <div class="user">
           <ElPopover
@@ -199,6 +200,7 @@
   import { themeAnimation } from '@/utils/theme/animation'
   import { useCommon } from '@/composables/useCommon'
   import { useHeaderBar } from '@/composables/useHeaderBar'
+  import GenerateTaskPopover from './GenerateTaskPopover.vue'
 
   defineOptions({ name: 'ArtHeaderBar' })
 
