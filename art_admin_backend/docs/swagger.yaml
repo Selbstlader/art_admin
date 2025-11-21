@@ -1,5 +1,41 @@
 basePath: /
 definitions:
+  request.CreateAppUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      nickName:
+        maxLength: 50
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone:
+        type: string
+      status:
+        enum:
+        - "1"
+        - "2"
+        type: string
+      userName:
+        maxLength: 50
+        minLength: 3
+        type: string
+      userType:
+        enum:
+        - "1"
+        - "2"
+        type: string
+    required:
+    - nickName
+    - password
+    - phone
+    - status
+    - userName
+    - userType
+    type: object
   request.CreateDepartmentRequest:
     properties:
       deptCode:
@@ -296,6 +332,17 @@ definitions:
     - password
     - userName
     type: object
+  request.ResetAppUserPasswordRequest:
+    properties:
+      id:
+        type: integer
+      newPassword:
+        minLength: 6
+        type: string
+    required:
+    - id
+    - newPassword
+    type: object
   request.ResetPasswordRequest:
     properties:
       id:
@@ -306,6 +353,36 @@ definitions:
     required:
     - id
     - newPassword
+    type: object
+  request.UpdateAppUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      nickName:
+        maxLength: 50
+        type: string
+      phone:
+        type: string
+      status:
+        enum:
+        - "1"
+        - "2"
+        type: string
+      userType:
+        enum:
+        - "1"
+        - "2"
+        type: string
+    required:
+    - id
+    - nickName
+    - phone
+    - status
+    - userType
     type: object
   request.UpdateDepartmentRequest:
     properties:
@@ -798,6 +875,185 @@ info:
   title: Art Admin API
   version: "1.0"
 paths:
+  /api/app-user/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建新APP用户
+      parameters:
+      - description: 用户信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateAppUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建APP用户
+      tags:
+      - APP用户管理
+  /api/app-user/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除APP用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除APP用户
+      tags:
+      - APP用户管理
+  /api/app-user/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询APP用户列表
+      parameters:
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: current
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        required: true
+        type: integer
+      - description: 用户ID
+        in: query
+        name: id
+        type: integer
+      - description: 用户账号
+        in: query
+        name: userName
+        type: string
+      - description: 用户昵称
+        in: query
+        name: nickName
+        type: string
+      - description: 手机号
+        in: query
+        name: phone
+        type: string
+      - description: 用户类型
+        in: query
+        name: userType
+        type: string
+      - description: 状态
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取APP用户列表
+      tags:
+      - APP用户管理
+  /api/app-user/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: 重置APP用户密码
+      parameters:
+      - description: 重置密码信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ResetAppUserPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 重置成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 重置APP用户密码
+      tags:
+      - APP用户管理
+  /api/app-user/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新APP用户信息
+      parameters:
+      - description: 用户信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateAppUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新APP用户
+      tags:
+      - APP用户管理
   /api/auth/login:
     post:
       consumes:

@@ -295,3 +295,44 @@ export function fetchCleanOperationLog(days: number) {
     data: { days }
   })
 }
+
+// ========== APP用户管理 ==========
+
+// 获取APP用户列表
+export function fetchGetAppUserList(params: Api.SystemManage.AppUserSearchParams) {
+  return request.get<Api.SystemManage.AppUserList>({
+    url: '/api/app-user/list',
+    params
+  })
+}
+
+// 创建APP用户
+export function fetchCreateAppUser(data: Api.SystemManage.CreateAppUserRequest) {
+  return request.post({
+    url: '/api/app-user/create',
+    data
+  })
+}
+
+// 更新APP用户
+export function fetchUpdateAppUser(data: Api.SystemManage.UpdateAppUserRequest) {
+  return request.put({
+    url: '/api/app-user/update',
+    data
+  })
+}
+
+// 删除APP用户
+export function fetchDeleteAppUser(id: number) {
+  return request.del({
+    url: `/api/app-user/delete/${id}`
+  })
+}
+
+// 重置APP用户密码
+export function fetchResetAppUserPassword(data: Api.SystemManage.ResetAppUserPasswordRequest) {
+  return request.post({
+    url: '/api/app-user/reset-password',
+    data
+  })
+}

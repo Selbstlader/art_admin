@@ -31,6 +31,16 @@ export const systemRoutes: AppRouteRecord = {
       }
     },
     {
+      path: 'app-user',
+      name: 'AppUser',
+      component: '/system/app-user',
+      meta: {
+        title: 'menus.system.appUser',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
+    },
+    {
       path: 'role',
       name: 'Role',
       component: '/system/role',

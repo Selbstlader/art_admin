@@ -353,5 +353,66 @@ declare namespace Api {
           endTime?: string
         }
     >
+
+    // ========== APP用户管理 ==========
+
+    /** APP用户类型 */
+    type AppUserType = '1' | '2' // 1-管理员 2-普通用户
+
+    /** APP用户列表 */
+    type AppUserList = Api.Common.PaginatedResponse<AppUserListItem>
+
+    /** APP用户列表项 */
+    interface AppUserListItem {
+      id: number
+      userName: string
+      nickName: string
+      phone: string
+      email?: string
+      avatar?: string
+      userType: AppUserType
+      status: string // 1-正常 2-禁用
+      lastLoginTime?: string
+      lastLoginIp?: string
+      createBy?: string
+      createTime: string
+      updateBy?: string
+      updateTime?: string
+    }
+
+    /** APP用户搜索参数 */
+    type AppUserSearchParams = Partial<
+      Pick<AppUserListItem, 'id' | 'userName' | 'nickName' | 'phone' | 'userType' | 'status'> &
+        Api.Common.CommonSearchParams
+    >
+
+    /** 创建APP用户请求 */
+    interface CreateAppUserRequest {
+      userName: string
+      nickName: string
+      password: string
+      phone: string
+      email?: string
+      avatar?: string
+      userType: AppUserType
+      status: string
+    }
+
+    /** 更新APP用户请求 */
+    interface UpdateAppUserRequest {
+      id: number
+      nickName: string
+      phone: string
+      email?: string
+      avatar?: string
+      userType: AppUserType
+      status: string
+    }
+
+    /** 重置APP用户密码请求 */
+    interface ResetAppUserPasswordRequest {
+      id: number
+      newPassword: string
+    }
   }
 }

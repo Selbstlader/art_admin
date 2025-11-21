@@ -31,6 +31,13 @@ func RegisterRoutes(r *gin.Engine) {
 			authApiGroup.DELETE("/user/delete/:id", v1.DeleteUser)
 			authApiGroup.POST("/user/reset-password", v1.ResetPassword)
 
+			// APP用户管理
+			authApiGroup.GET("/app-user/list", v1.GetAppUserList)
+			authApiGroup.POST("/app-user/create", v1.CreateAppUser)
+			authApiGroup.PUT("/app-user/update", v1.UpdateAppUser)
+			authApiGroup.DELETE("/app-user/delete/:id", v1.DeleteAppUser)
+			authApiGroup.POST("/app-user/reset-password", v1.ResetAppUserPassword)
+
 			// 角色管理
 			authApiGroup.GET("/role/list", v1.GetRoleList)
 			authApiGroup.POST("/role/create", v1.CreateRole)
