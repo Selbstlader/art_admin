@@ -54,3 +54,9 @@ swagger:
   host: localhost:48080
   basePath: /
 
+dify:
+  datasetApiKey: dataset-QQ8Y3Cxvss4RvQXvU7Gem4sb # 知识库 API Key
+  chatApiKey: app-D7hSHUnPoMt5CQD2IEoBsPJz # AI对话 API Key
+  baseUrl: https://api.dify.ai/v1 # Dify API Base URL
+  timeout: 30 # 请求超时时间(秒)
+

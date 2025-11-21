@@ -113,6 +113,30 @@ func RegisterRoutes(r *gin.Engine) {
 				// 任务评论
 				projectGroup.POST("/task/comment", project.CreateTaskComment)
 			}
+
+			// Dify AI 模块
+			difyGroup := authApiGroup.Group("/dify")
+			{
+				// 知识库管理
+				difyGroup.GET("/dataset/list", v1.GetDatasetList)
+				difyGroup.GET("/dataset/:id", v1.GetDatasetDetail)
+				difyGroup.POST("/dataset/upload", v1.UploadFileToDataset)
+				difyGroup.DELETE("/dataset/:id", v1.DeleteDataset)
+
+				// AI对话
+				difyGroup.POST("/chat", v1.ChatWithAI)
+				difyGroup.POST("/chat/stream", v1.ChatWithAIStreaming)
+				difyGroup.POST("/chat/stop/:task_id", v1.StopChatMessage)
+
+				// 会话管理
+				difyGroup.GET("/conversations", v1.GetConversations)
+				difyGroup.GET("/messages", v1.GetConversationMessages)
+				difyGroup.DELETE("/conversations/:conversation_id", v1.DeleteConversation)
+				difyGroup.POST("/conversations/:conversation_id/name", v1.RenameConversation)
+
+				// 建议问题
+				difyGroup.GET("/messages/:message_id/suggested", v1.GetSuggestedQuestions)
+			}
 		}
 	}
 }
