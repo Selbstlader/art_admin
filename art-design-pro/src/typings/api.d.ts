@@ -415,4 +415,139 @@ declare namespace Api {
       newPassword: string
     }
   }
+
+  /** 聊天室类型 */
+  namespace Chat {
+    /** 聊天室类型 */
+    type RoomType = 'public' | 'private'
+
+    /** 消息类型 */
+    type MessageType = 'text' | 'image' | 'file' | 'system'
+
+    /** 成员角色 */
+    type MemberRole = 'owner' | 'admin' | 'member'
+
+    /** 聊天室列表项 */
+    interface ChatRoomItem {
+      id: number
+      name: string
+      description: string
+      type: RoomType
+      maxMembers: number
+      isActive: boolean
+      createdBy: number
+      memberCount: number
+      onlineCount: number
+      lastMessage?: string
+      lastMessageTime?: string
+      unreadCount?: number
+      createdAt: string
+      updatedAt: string
+    }
+
+    /** 聊天室列表 */
+    type ChatRoomList = Api.Common.PaginatedResponse<ChatRoomItem>
+
+    /** 聊天室搜索参数 */
+    type ChatRoomSearchParams = Partial<
+      Pick<ChatRoomItem, 'name' | 'type' | 'isActive'> &
+        Api.Common.CommonSearchParams & {
+          keyword?: string
+        }
+    >
+
+    /** 创建聊天室请求 */
+    interface CreateChatRoomRequest {
+      name: string
+      description: string
+      type: RoomType
+      maxMembers: number
+    }
+
+    /** 更新聊天室请求 */
+    interface UpdateChatRoomRequest {
+      id: number
+      name: string
+      description: string
+      maxMembers: number
+      isActive: boolean
+    }
+
+    /** 聊天消息项 */
+    interface ChatMessageItem {
+      id: number
+      roomId: number
+      userId: number
+      username: string
+      avatar?: string
+      content: string
+      messageType: MessageType
+      replyTo?: ChatMessageItem
+      isRecalled: boolean
+      createdAt: string
+    }
+
+    /** 消息列表 */
+    type ChatMessageList = Api.Common.PaginatedResponse<ChatMessageItem>
+
+    /** 消息搜索参数 */
+    interface ChatMessageSearchParams extends Api.Common.CommonSearchParams {
+      roomId: number
+      beforeId?: number
+    }
+
+    /** 发送消息请求 */
+    interface SendMessageRequest {
+      roomId: number
+      content: string
+      messageType: MessageType
+      replyToId?: number
+    }
+
+    /** 撤回消息请求 */
+    interface RecallMessageRequest {
+      messageId: number
+    }
+
+    /** 聊天室成员项 */
+    interface ChatRoomMemberItem {
+      id: number
+      roomId: number
+      userId: number
+      username: string
+      avatar?: string
+      role: MemberRole
+      isMuted: boolean
+      isOnline: boolean
+      lastReadAt?: string
+      joinedAt: string
+    }
+
+    /** 加入聊天室请求 */
+    interface JoinRoomRequest {
+      roomId: number
+    }
+
+    /** 在线用户 */
+    interface OnlineUser {
+      userId: number
+      username: string
+      avatar?: string
+    }
+
+    /** WebSocket 消息 */
+    interface WebSocketMessage {
+      type: 'message' | 'join' | 'leave' | 'typing' | 'ping' | 'pong'
+      data?: any
+      timestamp?: string
+    }
+
+    /** 正在输入数据 */
+    interface TypingData {
+      roomId: number
+      userId: number
+      username: string
+      isTyping: boolean
+    }
+  }
 }

@@ -10,10 +10,16 @@ import (
 )
 
 var learningAPI *api.LearningAPI
+var chatAPI *api.ChatAPI
 
 // SetLearningAPI 设置学习系统 API（由 main 函数调用）
 func SetLearningAPI(api *api.LearningAPI) {
 	learningAPI = api
+}
+
+// SetChatAPI 设置聊天室 API（由 main 函数调用）
+func SetChatAPI(api *api.ChatAPI) {
+	chatAPI = api
 }
 
 // RegisterRoutes 注册所有路由
@@ -158,5 +164,10 @@ func RegisterRoutes(r *gin.Engine) {
 	// 学习系统模块（独立模块，不在 v1 中）
 	if learningAPI != nil {
 		SetupLearningRoutes(r, learningAPI)
+	}
+
+	// 聊天室模块
+	if chatAPI != nil {
+		SetupChatRoutes(r, chatAPI)
 	}
 }

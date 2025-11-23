@@ -10,6 +10,7 @@ import { exceptionRoutes } from './exception'
 import { safeguardRoutes } from './safeguard'
 import { helpRoutes } from './help'
 import projectRoutes from './project'
+import chatRoutes from './chat'
 
 /**
  * 导出所有模块化路由
@@ -17,6 +18,7 @@ import projectRoutes from './project'
 export const routeModules: AppRouteRecord[] = [
   dashboardRoutes,
   projectRoutes,
+  chatRoutes,
   templateRoutes,
   widgetsRoutes,
   examplesRoutes,

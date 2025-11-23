@@ -352,6 +352,433 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/chat/message": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "发送消息",
+                "parameters": [
+                    {
+                        "description": "发送消息请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SendMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChatMessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/message/list": {
+            "get": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "获取消息列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "聊天室ID",
+                        "name": "roomId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "获取该消息之前的消息",
+                        "name": "beforeId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "获取该消息之后的消息",
+                        "name": "afterId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/message/recall": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "撤回消息",
+                "parameters": [
+                    {
+                        "description": "撤回消息请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RecallMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/my-rooms": {
+            "get": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "获取用户加入的聊天室列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/room": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "更新聊天室",
+                "parameters": [
+                    {
+                        "description": "更新聊天室请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateChatRoomRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "创建聊天室",
+                "parameters": [
+                    {
+                        "description": "创建聊天室请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateChatRoomRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChatRoomResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/room/join": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "加入聊天室",
+                "parameters": [
+                    {
+                        "description": "加入聊天室请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.JoinRoomRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/room/list": {
+            "get": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "获取聊天室列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关键词",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否启用",
+                        "name": "isActive",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/room/{id}": {
+            "get": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "获取聊天室详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "聊天室ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChatRoomResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "删除聊天室",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "聊天室ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/room/{id}/leave": {
+            "post": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "离开聊天室",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "聊天室ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/room/{id}/members": {
+            "get": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "获取聊天室成员列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "聊天室ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/room/{id}/online-users": {
+            "get": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "获取在线用户列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "聊天室ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/chat/ws": {
+            "get": {
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "WebSocket连接",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "聊天室ID",
+                        "name": "roomId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/department": {
             "put": {
                 "security": [
@@ -3549,6 +3976,110 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.ChatMessageResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isRecalled": {
+                    "type": "boolean"
+                },
+                "messageType": {
+                    "type": "string"
+                },
+                "replyTo": {
+                    "$ref": "#/definitions/dto.ChatMessageResponse"
+                },
+                "replyToId": {
+                    "type": "integer"
+                },
+                "roomId": {
+                    "type": "integer"
+                },
+                "userId": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ChatRoomResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "lastMessageAt": {
+                    "type": "string"
+                },
+                "maxMembers": {
+                    "type": "integer"
+                },
+                "memberCount": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "onlineCount": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateChatRoomRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "maxMembers": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "private"
+                    ]
+                }
+            }
+        },
         "dto.GenerateMaterialRequest": {
             "type": "object",
             "required": [
@@ -3595,6 +4126,17 @@ const docTemplate = `{
                     }
                 },
                 "subject_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.JoinRoomRequest": {
+            "type": "object",
+            "required": [
+                "roomId"
+            ],
+            "properties": {
+                "roomId": {
                     "type": "integer"
                 }
             }
@@ -3672,6 +4214,45 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.RecallMessageRequest": {
+            "type": "object",
+            "required": [
+                "messageId"
+            ],
+            "properties": {
+                "messageId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.SendMessageRequest": {
+            "type": "object",
+            "required": [
+                "content",
+                "messageType",
+                "roomId"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "maxLength": 5000
+                },
+                "messageType": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "image",
+                        "file"
+                    ]
+                },
+                "replyToId": {
+                    "type": "integer"
+                },
+                "roomId": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.SubjectResponse": {
             "type": "object",
             "properties": {
@@ -3733,6 +4314,33 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateChatRoomRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "maxMembers": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
                 }
             }
         },

@@ -6,12 +6,16 @@ import (
 	"os"
 	"os/exec"
 
+	"art_admin_backend/internal/api"
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/pkg/config"
 	"art_admin_backend/internal/pkg/database"
 	"art_admin_backend/internal/pkg/learning"
 	"art_admin_backend/internal/pkg/logger"
+	ws "art_admin_backend/internal/pkg/websocket"
+	"art_admin_backend/internal/repository"
 	"art_admin_backend/internal/router"
+	"art_admin_backend/internal/service"
 
 	_ "art_admin_backend/docs" // swagger docs
 
@@ -96,6 +100,19 @@ func main() {
 
 	// 设置学习系统 API
 	router.SetLearningAPI(learningContainer.LearningAPI)
+
+	// 初始化聊天室系统
+	chatHub := ws.NewHub()
+	go chatHub.Run() // 启动 WebSocket Hub
+
+	chatRoomRepo := repository.NewChatRoomRepository(database.GetDB())
+	chatMessageRepo := repository.NewChatMessageRepository(database.GetDB())
+	chatMemberRepo := repository.NewChatRoomMemberRepository(database.GetDB())
+	chatService := service.NewChatService(chatRoomRepo, chatMessageRepo, chatMemberRepo)
+	chatAPI := api.NewChatAPI(chatService, chatHub)
+
+	// 设置聊天室 API
+	router.SetChatAPI(chatAPI)
 
 	// 注册业务路由
 	router.RegisterRoutes(r)

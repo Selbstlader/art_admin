@@ -309,6 +309,11 @@
       "title": "帮助中心",
       "document": "官方文档",
       "liteVersion": "精简版本"
+    },
+    "chat": {
+      "title": "聊天室",
+      "room": "聊天室列表",
+      "roomDetail": "聊天室"
     }
   },
   "table": {

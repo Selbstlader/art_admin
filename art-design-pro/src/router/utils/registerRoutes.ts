@@ -186,6 +186,10 @@ function convertRouteComponent(
   if (route.path === '/learning/learning/detail' && component === '/learning/detail') {
     converted.path = '/learning/learning/detail/:id'
   }
+  // 处理动态路由
+  if (route.path === '/chat/chat/room-detail' && component === '/chat/room-detail') {
+    converted.path = '/chat/chat/room-detail/:id'
+  }
 
   // 判断是否为一级路由
   const isTopLevel = depth === 0

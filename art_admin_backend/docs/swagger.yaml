@@ -1,5 +1,75 @@
 basePath: /
 definitions:
+  dto.ChatMessageResponse:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      isRecalled:
+        type: boolean
+      messageType:
+        type: string
+      replyTo:
+        $ref: '#/definitions/dto.ChatMessageResponse'
+      replyToId:
+        type: integer
+      roomId:
+        type: integer
+      userId:
+        type: integer
+      username:
+        type: string
+    type: object
+  dto.ChatRoomResponse:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      lastMessageAt:
+        type: string
+      maxMembers:
+        type: integer
+      memberCount:
+        type: integer
+      name:
+        type: string
+      onlineCount:
+        type: integer
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  dto.CreateChatRoomRequest:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      maxMembers:
+        minimum: 0
+        type: integer
+      name:
+        maxLength: 100
+        type: string
+      type:
+        enum:
+        - public
+        - private
+        type: string
+    required:
+    - name
+    - type
+    type: object
   dto.GenerateMaterialRequest:
     properties:
       difficulty:
@@ -33,6 +103,13 @@ definitions:
         type: array
       subject_id:
         type: integer
+    type: object
+  dto.JoinRoomRequest:
+    properties:
+      roomId:
+        type: integer
+    required:
+    - roomId
     type: object
   dto.MaterialListResponse:
     properties:
@@ -82,6 +159,33 @@ definitions:
       view_count:
         type: integer
     type: object
+  dto.RecallMessageRequest:
+    properties:
+      messageId:
+        type: integer
+    required:
+    - messageId
+    type: object
+  dto.SendMessageRequest:
+    properties:
+      content:
+        maxLength: 5000
+        type: string
+      messageType:
+        enum:
+        - text
+        - image
+        - file
+        type: string
+      replyToId:
+        type: integer
+      roomId:
+        type: integer
+    required:
+    - content
+    - messageType
+    - roomId
+    type: object
   dto.SubjectResponse:
     properties:
       description:
@@ -123,6 +227,25 @@ definitions:
         type: string
       user_id:
         type: integer
+    type: object
+  dto.UpdateChatRoomRequest:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      maxMembers:
+        minimum: 0
+        type: integer
+      name:
+        maxLength: 100
+        type: string
+    required:
+    - id
+    - name
     type: object
   model.Exercise:
     properties:
@@ -1266,6 +1389,284 @@ paths:
       summary: 用户登录
       tags:
       - 认证管理
+  /api/chat/message:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 发送消息请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SendMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ChatMessageResponse'
+      summary: 发送消息
+      tags:
+      - Chat
+  /api/chat/message/list:
+    get:
+      parameters:
+      - description: 聊天室ID
+        in: query
+        name: roomId
+        required: true
+        type: integer
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: pageSize
+        type: integer
+      - description: 获取该消息之前的消息
+        in: query
+        name: beforeId
+        type: integer
+      - description: 获取该消息之后的消息
+        in: query
+        name: afterId
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取消息列表
+      tags:
+      - Chat
+  /api/chat/message/recall:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 撤回消息请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RecallMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 撤回消息
+      tags:
+      - Chat
+  /api/chat/my-rooms:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取用户加入的聊天室列表
+      tags:
+      - Chat
+  /api/chat/room:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 创建聊天室请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateChatRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ChatRoomResponse'
+      summary: 创建聊天室
+      tags:
+      - Chat
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 更新聊天室请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateChatRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 更新聊天室
+      tags:
+      - Chat
+  /api/chat/room/{id}:
+    delete:
+      parameters:
+      - description: 聊天室ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除聊天室
+      tags:
+      - Chat
+    get:
+      parameters:
+      - description: 聊天室ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ChatRoomResponse'
+      summary: 获取聊天室详情
+      tags:
+      - Chat
+  /api/chat/room/{id}/leave:
+    post:
+      parameters:
+      - description: 聊天室ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 离开聊天室
+      tags:
+      - Chat
+  /api/chat/room/{id}/members:
+    get:
+      parameters:
+      - description: 聊天室ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取聊天室成员列表
+      tags:
+      - Chat
+  /api/chat/room/{id}/online-users:
+    get:
+      parameters:
+      - description: 聊天室ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取在线用户列表
+      tags:
+      - Chat
+  /api/chat/room/join:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 加入聊天室请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.JoinRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 加入聊天室
+      tags:
+      - Chat
+  /api/chat/room/list:
+    get:
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: pageSize
+        type: integer
+      - description: 关键词
+        in: query
+        name: keyword
+        type: string
+      - description: 类型
+        in: query
+        name: type
+        type: string
+      - description: 是否启用
+        in: query
+        name: isActive
+        type: boolean
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取聊天室列表
+      tags:
+      - Chat
+  /api/chat/ws:
+    get:
+      parameters:
+      - description: 聊天室ID
+        in: query
+        name: roomId
+        required: true
+        type: integer
+      responses: {}
+      summary: WebSocket连接
+      tags:
+      - Chat
   /api/department:
     post:
       consumes:

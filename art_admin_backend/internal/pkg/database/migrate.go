@@ -32,6 +32,10 @@ func MigrateAll() error {
 		&model.TaskDependency{},
 		&model.TaskComment{},
 		&model.TaskAttachment{},
+		// 聊天室模块
+		&model.ChatRoom{},
+		&model.ChatMessage{},
+		&model.ChatRoomMember{},
 	)
 	if err != nil {
 		return err
