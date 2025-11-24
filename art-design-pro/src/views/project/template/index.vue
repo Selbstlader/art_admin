@@ -159,19 +159,19 @@
                     <ElCheckbox v-model="task.isMilestone" size="small"> 里程碑 </ElCheckbox>
                   </div>
                   <div class="task-actions">
-                    <ElButton 
-                      type="primary" 
-                      size="small" 
-                      link 
+                    <ElButton
+                      type="primary"
+                      size="small"
+                      link
                       @click="handleAddSubTask(index)"
                       :disabled="!!editingTemplate"
                     >
                       添加子任务
                     </ElButton>
-                    <ElButton 
-                      type="danger" 
-                      size="small" 
-                      link 
+                    <ElButton
+                      type="danger"
+                      size="small"
+                      link
                       @click="handleRemoveTask(index)"
                       :disabled="!!editingTemplate"
                     >

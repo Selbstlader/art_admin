@@ -35,12 +35,7 @@
       />
     </ElFormItem>
     <ElFormItem label="状态" prop="enabled">
-      <ElSelect
-        v-model="form.enabled"
-        placeholder="请选择状态"
-        clearable
-        style="width: 120px"
-      >
+      <ElSelect v-model="form.enabled" placeholder="请选择状态" clearable style="width: 120px">
         <ElOption label="启用" :value="true" />
         <ElOption label="禁用" :value="false" />
       </ElSelect>

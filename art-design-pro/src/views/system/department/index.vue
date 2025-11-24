@@ -244,7 +244,7 @@
   // 删除部门
   const deleteDepartment = (row: DepartmentListItem) => {
     const hasChildren = row.children && row.children.length > 0
-    const confirmMessage = hasChildren 
+    const confirmMessage = hasChildren
       ? `确定删除部门"${row.deptName}"吗？此部门包含下级部门，删除后下级部门也将被删除！此操作不可恢复！`
       : `确定删除部门"${row.deptName}"吗？此操作不可恢复！`
 

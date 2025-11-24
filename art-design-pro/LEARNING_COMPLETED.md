@@ -13,6 +13,7 @@ src/views/learning/
 ## 🎯 三级导航流程
 
 ### 第一级：学科分类 + 年级列表 (`/learning/list`)
+
 - **左侧**：学科菜单（语文、数学、英语等）
 - **右侧**：年级卡片（初一、初二、大一、大二等）
   - 显示年级名称
@@ -20,6 +21,7 @@ src/views/learning/
   - 点击卡片 → 跳转到第二级
 
 ### 第二级：课程列表 (`/learning/courses?subject_id=1&grade=初一`)
+
 - **顶部**：搜索框（可快捷查询课程标题或题材）
 - **内容**：
   - AI生成的课程（卡片展示）
@@ -32,6 +34,7 @@ src/views/learning/
 - 点击课程卡片 → 跳转到第三级
 
 ### 第三级：课程详情 (`/learning/detail/:id`)
+
 - 完整的课程内容展示
 - 课程信息（标题、年级、难度、时长、浏览数、收藏数）
 - 课程内容（知识点、例题、练习题等）
@@ -42,11 +45,13 @@ src/views/learning/
 ### 已实现的接口
 
 1. **获取学科列表**
+
    ```
    GET /api/learning/subject/list
    ```
 
 2. **获取年级列表**
+
    ```
    GET /api/learning/grades?subject_id=xxx
    响应：
@@ -60,16 +65,19 @@ src/views/learning/
    ```
 
 3. **获取课程列表（支持按年级筛选）**
+
    ```
    GET /api/learning/material/list?subject_id=xxx&grade=xxx&page=1&limit=12
    ```
 
 4. **获取课程详情**
+
    ```
    GET /api/learning/material/:id
    ```
 
 5. **删除课程**
+
    ```
    DELETE /api/learning/material/:id
    ```
@@ -82,6 +90,7 @@ src/views/learning/
 ## 🎨 页面特性
 
 ### list/index.vue
+
 - 左右布局
 - 学科菜单切换
 - 年级卡片网格展示
@@ -89,6 +98,7 @@ src/views/learning/
 - 响应式设计
 
 ### courses/index.vue
+
 - 搜索功能（实时过滤）
 - 分类展示（AI生成、收藏）
 - 课程卡片（标题、年级、难度、时长、统计）
@@ -96,6 +106,7 @@ src/views/learning/
 - 分页功能
 
 ### detail/index.vue
+
 - 完整内容展示
 - 格式化的教材内容
 - 知识点、例题、练习题样式
@@ -118,12 +129,14 @@ src/views/learning/
 ## 🚀 启动测试
 
 1. 启动后端：
+
    ```bash
    cd art_admin_backend
    go run cmd/server/main.go
    ```
 
 2. 启动前端：
+
    ```bash
    cd art-design-pro
    pnpm dev
@@ -147,6 +160,7 @@ src/views/learning/
 ## 🎉 总结
 
 三级导航结构已完全实现：
+
 1. **学科 → 年级** - 用户选择学科后，看到该学科下的所有年级
 2. **年级 → 课程** - 点击年级后，看到该年级下的所有课程（可搜索）
 3. **课程 → 详情** - 点击课程后，查看完整的课程内容

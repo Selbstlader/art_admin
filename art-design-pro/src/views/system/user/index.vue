@@ -250,7 +250,7 @@
           }
         }
       )
-      
+
       await fetchResetPassword({
         id: row.id,
         newPassword

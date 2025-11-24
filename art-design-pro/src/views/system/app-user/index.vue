@@ -2,7 +2,11 @@
 <template>
   <div class="app-user-page art-full-height">
     <!-- 搜索栏 -->
-    <AppUserSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams"></AppUserSearch>
+    <AppUserSearch
+      v-model="searchForm"
+      @search="handleSearch"
+      @reset="resetSearchParams"
+    ></AppUserSearch>
 
     <ElCard class="art-table-card" shadow="never">
       <!-- 表格头部 -->

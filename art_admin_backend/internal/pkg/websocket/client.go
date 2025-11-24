@@ -131,12 +131,42 @@ func (c *Client) handleMessage(message []byte) {
 	case "typing":
 		// 转发正在输入通知
 		c.hub.BroadcastToRoom(c.roomID, message, c.userID)
+
 	case "ping":
 		// 响应心跳
 		c.SendMessage(map[string]interface{}{
 			"type":      "pong",
 			"timestamp": time.Now(),
 		})
+
+	// WebRTC 信令消息 - 转发给房间内的其他用户
+	case "webrtc_offer", "webrtc_answer", "webrtc_ice_candidate":
+		// 检查是否指定了接收者
+		if to, ok := msg["to"].(float64); ok {
+			// 点对点消息,只发送给指定用户
+			c.hub.SendToUser(uint(to), message)
+		} else {
+			// 广播给房间内所有人(除了发送者)
+			c.hub.BroadcastToRoom(c.roomID, message, c.userID)
+		}
+
+	// 通话控制消息
+	case "call_request", "call_accept", "call_reject", "call_cancel", "call_hangup":
+		// 转发给房间内所有人(除了发送者)
+		c.hub.BroadcastToRoom(c.roomID, message, c.userID)
+
+	// 媒体控制消息
+	case "toggle_audio", "toggle_video":
+		// 转发给房间内所有人(除了发送者)
+		c.hub.BroadcastToRoom(c.roomID, message, c.userID)
+
+	// 用户状态消息
+	case "user_joined", "user_left":
+		// 转发给房间内所有人(除了发送者)
+		c.hub.BroadcastToRoom(c.roomID, message, c.userID)
+
+	default:
+		log.Printf("Unknown message type: %s", msgType)
 	}
 }
 

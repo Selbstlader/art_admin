@@ -355,10 +355,20 @@
   // 进入聊天室
   const handleEnter = async (row: Api.Chat.ChatRoomItem) => {
     try {
-      // 加入聊天室（如果已经是成员也会返回成功）
-      await chatRoomApi.joinRoom({ roomId: row.id })
-      // 跳转到聊天室详情页
-      router.push(`/chat/chat/room-detail/${row.id}`)
+      // 判断是否为视频通话房间
+      const isVideoRoom = row.description === '视频通话房间'
+
+      if (isVideoRoom) {
+        // 视频房间直接跳转到视频通话页面，由视频通话页面处理加入逻辑
+        router.push({
+          path: '/chat/chat/video-call',
+          query: { roomId: row.id.toString() }
+        })
+      } else {
+        // 普通聊天室，先加入再跳转
+        await chatRoomApi.joinRoom({ roomId: row.id })
+        router.push(`/chat/chat/room-detail/${row.id}`)
+      }
     } catch (error) {
       console.error('加入聊天室失败:', error)
       ElMessage.error('加入聊天室失败')

@@ -62,7 +62,6 @@ func (h *Hub) Run() {
 // registerClient 注册客户端
 func (h *Hub) registerClient(client *Client) {
 	h.mu.Lock()
-	defer h.mu.Unlock()
 
 	h.clients[client] = true
 
@@ -81,14 +80,24 @@ func (h *Hub) registerClient(client *Client) {
 	log.Printf("Client registered: UserID=%d, Username=%s, RoomID=%d, Total clients=%d",
 		client.userID, client.username, client.roomID, len(h.clients))
 
-	// 通知房间内其他用户有新成员加入
-	h.notifyUserJoined(client)
+	// 检查该用户是否已经有其他设备在线
+	isFirstDevice := len(h.userClients[client.userID]) == 1
+
+	// 释放锁，避免在发送消息时阻塞
+	h.mu.Unlock()
+
+	// 向新用户发送房间内已有用户列表（在锁外执行，避免阻塞）
+	h.sendRoomUsers(client)
+
+	// 通知房间内其他用户有新成员加入（只有第一个设备连接时才通知）
+	if isFirstDevice {
+		h.notifyUserJoined(client)
+	}
 }
 
 // unregisterClient 注销客户端
 func (h *Hub) unregisterClient(client *Client) {
 	h.mu.Lock()
-	defer h.mu.Unlock()
 
 	if _, ok := h.clients[client]; ok {
 		delete(h.clients, client)
@@ -102,19 +111,29 @@ func (h *Hub) unregisterClient(client *Client) {
 			}
 		}
 
-		// 从用户客户端列表移除
+		// 从用户客户端列表移除并检查是否还有其他设备在线
+		hasOtherDevices := false
 		if userClients, ok := h.userClients[client.userID]; ok {
 			delete(userClients, client)
 			if len(userClients) == 0 {
 				delete(h.userClients, client.userID)
+			} else {
+				hasOtherDevices = true
 			}
 		}
 
 		log.Printf("Client unregistered: UserID=%d, Username=%s, RoomID=%d, Total clients=%d",
 			client.userID, client.username, client.roomID, len(h.clients))
 
-		// 通知房间内其他用户有成员离开
-		h.notifyUserLeft(client)
+		// 释放锁
+		h.mu.Unlock()
+
+		// 通知房间内其他用户有成员离开（只有最后一个设备离线时才通知）
+		if !hasOtherDevices {
+			h.notifyUserLeft(client)
+		}
+	} else {
+		h.mu.Unlock()
 	}
 }
 
@@ -244,47 +263,34 @@ func (h *Hub) GetRoomOnlineCount(roomID uint) int {
 
 // GetRoomOnlineUsers 获取房间在线用户列表
 func (h *Hub) GetRoomOnlineUsers(roomID uint) []map[string]interface{} {
-	// 使用带超时的读锁，避免长时间阻塞
-	done := make(chan []map[string]interface{})
-	go func() {
-		h.mu.RLock()
-		defer h.mu.RUnlock()
+	h.mu.RLock()
+	defer h.mu.RUnlock()
 
-		room, ok := h.rooms[roomID]
-		if !ok {
-			done <- []map[string]interface{}{}
-			return
-		}
-
-		// 使用 map 去重
-		users := make(map[uint]map[string]interface{})
-		for client := range room {
-			if _, exists := users[client.userID]; !exists {
-				users[client.userID] = map[string]interface{}{
-					"userId":   client.userID,
-					"username": client.username,
-				}
-			}
-		}
-
-		// 转换为数组
-		result := make([]map[string]interface{}, 0, len(users))
-		for _, user := range users {
-			result = append(result, user)
-		}
-
-		done <- result
-	}()
-
-	// 等待最多100ms，避免阻塞HTTP请求
-	select {
-	case users := <-done:
-		return users
-	case <-time.After(100 * time.Millisecond):
-		// 超时返回默认值，避免阻塞
-		log.Printf("GetRoomOnlineUsers timeout for room %d", roomID)
+	room, ok := h.rooms[roomID]
+	if !ok {
+		log.Printf("Room %d not found", roomID)
 		return []map[string]interface{}{}
 	}
+
+	// 使用 map 去重
+	users := make(map[uint]map[string]interface{})
+	for client := range room {
+		if _, exists := users[client.userID]; !exists {
+			users[client.userID] = map[string]interface{}{
+				"userId":   client.userID,
+				"username": client.username,
+			}
+		}
+	}
+
+	// 转换为数组
+	result := make([]map[string]interface{}, 0, len(users))
+	for _, user := range users {
+		result = append(result, user)
+	}
+
+	log.Printf("GetRoomOnlineUsers for room %d: %d users", roomID, len(result))
+	return result
 }
 
 // IsUserOnline 检查用户是否在线
@@ -310,18 +316,59 @@ func (h *Hub) IsUserOnline(userID uint) bool {
 	}
 }
 
-// notifyUserJoined 通知用户加入
-func (h *Hub) notifyUserJoined(client *Client) {
-	// 检查该用户是否已经有其他设备在线
-	isFirstDevice := len(h.userClients[client.userID]) == 1
-
-	// 只有第一个设备连接时才通知其他用户
-	if !isFirstDevice {
+// sendRoomUsers 向新用户发送房间内已有用户列表
+func (h *Hub) sendRoomUsers(client *Client) {
+	h.mu.RLock()
+	room, ok := h.rooms[client.roomID]
+	if !ok {
+		h.mu.RUnlock()
 		return
 	}
 
+	// 收集房间内其他用户信息（去重）
+	users := make(map[uint]map[string]interface{})
+	for c := range room {
+		// 排除自己
+		if c.userID != client.userID {
+			if _, exists := users[c.userID]; !exists {
+				users[c.userID] = map[string]interface{}{
+					"userId":   c.userID,
+					"username": c.username,
+				}
+			}
+		}
+	}
+	h.mu.RUnlock()
+
+	// 转换为数组
+	userList := make([]map[string]interface{}, 0, len(users))
+	for _, user := range users {
+		userList = append(userList, user)
+	}
+
+	// 发送房间用户列表（在锁外发送，避免阻塞）
+	message := map[string]interface{}{
+		"type":  "room_users",
+		"users": userList,
+		"data": map[string]interface{}{
+			"roomId": client.roomID,
+		},
+	}
+
+	data, _ := json.Marshal(message)
+	// 使用 select 非阻塞发送，避免死锁
+	select {
+	case client.send <- data:
+	default:
+		log.Printf("Failed to send room users to client %d: channel full", client.userID)
+	}
+}
+
+// notifyUserJoined 通知用户加入（isFirstDevice 参数由调用方传入）
+func (h *Hub) notifyUserJoined(client *Client) {
 	notification := map[string]interface{}{
-		"type": "join",
+		"type": "user_joined",
+		"from": client.userID,
 		"data": map[string]interface{}{
 			"roomId":    client.roomID,
 			"userId":    client.userID,
@@ -334,18 +381,11 @@ func (h *Hub) notifyUserJoined(client *Client) {
 	h.BroadcastToRoom(client.roomID, message, client.userID)
 }
 
-// notifyUserLeft 通知用户离开
+// notifyUserLeft 通知用户离开（由调用方确保只在最后一个设备离线时调用）
 func (h *Hub) notifyUserLeft(client *Client) {
-	// 检查该用户是否还有其他设备在线
-	hasOtherDevices := len(h.userClients[client.userID]) > 0
-
-	// 如果还有其他设备在线，不通知
-	if hasOtherDevices {
-		return
-	}
-
 	notification := map[string]interface{}{
-		"type": "leave",
+		"type": "user_left",
+		"from": client.userID,
 		"data": map[string]interface{}{
 			"roomId":    client.roomID,
 			"userId":    client.userID,

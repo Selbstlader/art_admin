@@ -171,7 +171,7 @@
           label: '操作时间',
           width: 180,
           sortable: true
-        },
+        }
         // {
         //   prop: 'operation',
         //   label: '操作',
