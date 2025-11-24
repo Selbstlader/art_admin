@@ -4,7 +4,9 @@
     <div class="chat-header">
       <div class="chat-header-left">
         <ElButton link @click="goBack">
-          <ElIcon><ArrowLeft /></ElIcon>
+          <ElIcon>
+            <ArrowLeft />
+          </ElIcon>
           返回
         </ElButton>
         <ElDivider direction="vertical" />
@@ -19,31 +21,45 @@
           <ElTag v-if="roomInfo?.type === 'public'" type="success">公开</ElTag>
           <ElTag v-else type="warning">私密</ElTag>
 
-          <ElPopover placement="bottom" width="300" trigger="hover">
+          <!-- <ElPopover placement="bottom" width="300" trigger="hover">
             <template #reference>
               <ElButton link>
-                <ElIcon><User /></ElIcon>
-                在线 {{ onlineUsers.length }}
+                <ElIcon>
+                  <User />
+                </ElIcon>
+                在线 {{ onlineMemberUsers.length }}
               </ElButton>
-            </template>
+            </template> -->
 
-            <div class="online-users">
+          <!-- <div class="online-users">
               <div class="online-users-title">在线成员</div>
+              {{ onlineMemberUsers }}
               <div class="online-users-list">
-                <div v-for="user in onlineUsers" :key="user.userId" class="online-user-item">
+                <div v-for="user in onlineMemberUsers" :key="user.userId" class="online-user-item">
                   <ElAvatar :size="24" :src="user.avatar">
                     {{ user.username?.charAt(0) }}
                   </ElAvatar>
                   <span>{{ user.username }}</span>
                 </div>
+                <div v-if="onlineMemberUsers.length === 0" class="no-online-users">
+                  暂无在线成员
+                </div>
               </div>
-            </div>
-          </ElPopover>
-
-          <ElButton @click="showMembers = true">
-            <ElIcon><Setting /></ElIcon>
-            管理
+            </div> -->
+          <!-- </ElPopover> -->
+          <ElButton link>
+            <ElIcon>
+              <User />
+            </ElIcon>
+            在线 {{ onlineMemberUsers.length }}
           </ElButton>
+
+          <!-- <ElButton @click="showMembers = true">
+            <ElIcon>
+              <Setting />
+            </ElIcon>
+            管理
+          </ElButton> -->
         </ElSpace>
       </div>
     </div>
@@ -53,7 +69,9 @@
       <!-- 消息列表 -->
       <div class="chat-messages" ref="messagesRef">
         <div v-if="loading" class="loading-more">
-          <ElIcon class="is-loading"><Loading /></ElIcon>
+          <ElIcon class="is-loading">
+            <Loading />
+          </ElIcon>
           加载中...
         </div>
 
@@ -65,7 +83,9 @@
         >
           <!-- 回复消息 -->
           <div v-if="message.replyTo" class="reply-message">
-            <ElIcon><Reply /></ElIcon>
+            <ElIcon>
+              <Reply />
+            </ElIcon>
             回复 {{ message.replyTo.username }}: {{ message.replyTo.content }}
           </div>
 
@@ -82,7 +102,9 @@
 
               <div class="message-text" :class="{ 'is-recalled': message.isRecalled }">
                 <span v-if="message.isRecalled" class="recalled-text">
-                  <ElIcon><Delete /></ElIcon>
+                  <ElIcon>
+                    <Delete />
+                  </ElIcon>
                   消息已撤回
                 </span>
                 <span v-else>{{ message.content }}</span>
@@ -91,7 +113,9 @@
               <!-- 消息操作 -->
               <div v-if="!message.isRecalled" class="message-actions">
                 <ElButton link size="small" @click="handleReply(message)">
-                  <ElIcon><Reply /></ElIcon>
+                  <ElIcon>
+                    <Reply />
+                  </ElIcon>
                 </ElButton>
                 <ElButton
                   v-if="message.userId === currentUserId && canRecall(message)"
@@ -100,7 +124,9 @@
                   type="danger"
                   @click="handleRecall(message)"
                 >
-                  <ElIcon><Delete /></ElIcon>
+                  <ElIcon>
+                    <Delete />
+                  </ElIcon>
                 </ElButton>
               </div>
             </div>
@@ -109,7 +135,9 @@
 
         <!-- 正在输入提示 -->
         <div v-if="typingUsers.length > 0" class="typing-indicator">
-          <ElIcon class="typing-icon"><Edit /></ElIcon>
+          <ElIcon class="typing-icon">
+            <Edit />
+          </ElIcon>
           {{ getTypingText() }}
         </div>
       </div>
@@ -119,11 +147,15 @@
         <!-- 回复提示 -->
         <div v-if="replyMessage" class="reply-preview">
           <div class="reply-content">
-            <ElIcon><Reply /></ElIcon>
+            <ElIcon>
+              <Reply />
+            </ElIcon>
             回复 {{ replyMessage.username }}: {{ replyMessage.content }}
           </div>
           <ElButton link @click="cancelReply">
-            <ElIcon><Close /></ElIcon>
+            <ElIcon>
+              <Close />
+            </ElIcon>
           </ElButton>
         </div>
 
@@ -219,33 +251,41 @@
   const router = useRouter()
   const userStore = useUserStore()
 
-  const roomId = computed(() => Number(route.params.id))
-  console.log(userStore.info, 'userStore.info?.userIdƒ')
+  const roomId = computed(() => {
+    const id = Number(route.params.id)
+    return isNaN(id) ? 0 : id
+  })
+  console.log(userStore.info, 'userStore.info?.userId')
 
-  const currentUserId = computed(() => userStore.info?.userId?.toString() || 'anonymous')
+  const currentUserId = computed(() => userStore.info?.userId || 0)
 
   // 聊天室信息
   const roomInfo = ref<Api.Chat.ChatRoomItem>()
   const members = ref<Api.Chat.ChatRoomMemberItem[]>([])
   const loading = ref(false)
 
-  // WebSocket 连接
-  const {
-    isConnected,
-    isConnecting,
-    messages,
-    onlineUsers,
-    typingUsers,
-    connect,
-    disconnect,
-    sendChatMessage,
-    sendTypingStatus
-  } = useChatWebSocket(roomId.value)
+  // 计算在线成员（从成员列表中筛选，不依赖WebSocket）
+  const onlineMemberUsers = computed(() => {
+    return members.value.map((member) => ({
+      userId: member.userId,
+      username: member.username,
+      avatar: member.avatar
+    }))
+  })
+
+  // 消息和状态管理（不依赖WebSocket）
+  const messages = ref<Api.Chat.ChatMessageItem[]>([])
+  const typingUsers = ref<Api.Chat.TypingData[]>([])
 
   // 输入相关
   const inputMessage = ref('')
   const replyMessage = ref<Api.Chat.ChatMessageItem>()
   let typingTimer: NodeJS.Timeout | null = null
+
+  // 轮询相关
+  const pollingTimer = ref<NodeJS.Timeout | null>(null)
+  const lastMessageId = ref<number>(0)
+  const isPolling = ref(false)
 
   // 弹窗相关
   const showMembers = ref(false)
@@ -287,25 +327,82 @@
     }
   }
 
-  // 获取历史消息
-  const fetchMessages = async () => {
+  // 加载消息列表
+  const loadMessages = async () => {
     loading.value = true
     try {
-      const res = await chatMessageApi.getMessageList({
+      const response = await chatMessageApi.getMessageList({
         roomId: roomId.value,
         page: 1,
-        pageSize: 50
+        pageSize: 20
       } as any)
-      messages.value = res || []
+      if (response && response.data) {
+        messages.value = response.data
 
-      // 滚动到底部
-      nextTick(() => {
-        scrollToBottom()
-      })
+        // 设置最后一条消息ID用于轮询
+        if (response.data.length > 0) {
+          const messageList = response.data as Api.Chat.ChatMessageItem[]
+          lastMessageId.value = Math.max(...messageList.map((msg) => msg.id))
+        }
+
+        // 滚动到底部
+        nextTick(() => {
+          scrollToBottom()
+        })
+      }
     } catch (error) {
       console.error('获取消息列表失败:', error)
     } finally {
       loading.value = false
+    }
+  }
+
+  // 开始轮询获取新消息
+  const startPolling = () => {
+    if (isPolling.value) return
+
+    isPolling.value = true
+    console.log('开始轮询新消息...')
+
+    // 立即获取一次最新消息
+    pollNewMessages()
+
+    // 每3秒轮询一次
+    pollingTimer.value = setInterval(() => {
+      pollNewMessages()
+    }, 3000)
+  }
+
+  // 停止轮询
+  const stopPolling = () => {
+    if (pollingTimer.value) {
+      clearInterval(pollingTimer.value)
+      pollingTimer.value = null
+    }
+    isPolling.value = false
+    console.log('停止轮询新消息')
+  }
+
+  // 轮询获取新消息
+  const pollNewMessages = async () => {
+    try {
+      const response = await chatMessageApi.getMessageList({
+        roomId: roomId.value,
+        page: 1,
+        pageSize: 20
+      } as any)
+
+      if (response && response.length > 0) {
+        // 直接添加所有消息到列表（后端会处理去重和排序）
+        messages.value.push(...(response as Api.Chat.ChatMessageItem[]))
+
+        // 滚动到底部
+        nextTick(() => {
+          scrollToBottom()
+        })
+      }
+    } catch (error) {
+      console.error('轮询获取新消息失败:', error)
     }
   }
 
@@ -328,14 +425,25 @@
       }
 
       // 通过 HTTP API 发送消息
-      await chatMessageApi.sendMessage(params)
+      const response = await chatMessageApi.sendMessage(params)
+
+      // 将发送成功的消息添加到列表中
+      if (response) {
+        // 发送消息API直接返回消息对象，不是包装在data中
+        messages.value.push(response as Api.Chat.ChatMessageItem)
+
+        // 滚动到底部
+        nextTick(() => {
+          scrollToBottom()
+        })
+      }
 
       // 清空输入
       inputMessage.value = ''
       cancelReply()
 
       // 停止正在输入状态
-      sendTypingStatus(false)
+      // sendTypingStatus(false)
     } catch (error) {
       console.error('发送消息失败:', error)
       ElMessage.error('发送消息失败')
@@ -352,8 +460,8 @@
 
   // 处理输入事件
   const handleInput = () => {
-    // 发送正在输入状态
-    sendTypingStatus(true)
+    // 暂时移除正在输入状态功能，因为未连接WebSocket
+    // sendTypingStatus(true)
 
     // 3秒后停止正在输入状态
     if (typingTimer) {
@@ -361,7 +469,7 @@
     }
 
     typingTimer = setTimeout(() => {
-      sendTypingStatus(false)
+      // sendTypingStatus(false)
     }, 3000)
   }
 
@@ -418,11 +526,13 @@
   }
 
   // 获取角色类型
-  const getRoleType = (role: Api.Chat.MemberRole) => {
+  const getRoleType = (
+    role: Api.Chat.MemberRole
+  ): 'danger' | 'warning' | 'info' | 'success' | 'primary' => {
     const types = {
-      owner: 'danger',
-      admin: 'warning',
-      member: 'info'
+      owner: 'danger' as const,
+      admin: 'warning' as const,
+      member: 'info' as const
     }
     return types[role] || 'info'
   }
@@ -457,22 +567,46 @@
 
   // 返回
   const goBack = () => {
-    router.push('/chat/room')
+    router.push('/chat/chat/room')
   }
 
   // 初始化
   onMounted(async () => {
     await fetchRoomInfo()
     await fetchMembers()
-    await fetchMessages()
+    // await pollNewMessages()
 
-    // 连接 WebSocket
-    connect()
+    // 连接 WebSocket（仅用于在线状态和正在输入功能）
+    // connect()
+
+    // 启动消息轮询
+    startPolling()
+
+    // 监听页面可见性变化
+    document.addEventListener('visibilitychange', handleVisibilityChange)
   })
+
+  // 处理页面可见性变化
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      // 页面不可见时停止轮询
+      stopPolling()
+      console.log('页面不可见，停止轮询')
+    } else {
+      // 页面可见时重新启动轮询
+      if (roomId.value > 0) {
+        startPolling()
+        console.log('页面可见，重新启动轮询')
+      }
+    }
+  }
 
   // 清理
   onUnmounted(() => {
-    disconnect()
+    stopPolling()
+
+    // 移除页面可见性监听
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
 
     if (typingTimer) {
       clearTimeout(typingTimer)
@@ -687,14 +821,25 @@
     .online-users-list {
       max-height: 200px;
       overflow-y: auto;
-    }
 
-    .online-user-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 0;
-      font-size: 14px;
+      .online-user-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+
+        span {
+          font-size: 14px;
+          color: var(--el-text-color-regular);
+        }
+      }
+
+      .no-online-users {
+        padding: 20px 0;
+        text-align: center;
+        color: var(--el-text-color-placeholder);
+        font-size: 14px;
+      }
     }
   }
 
@@ -739,6 +884,7 @@
     100% {
       transform: translateY(0);
     }
+
     30% {
       transform: translateY(-10px);
     }

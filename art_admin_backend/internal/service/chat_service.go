@@ -28,6 +28,7 @@ type ChatService interface {
 	// 消息管理
 	SendMessage(req *dto.SendMessageRequest, userID uint, username string) (*dto.ChatMessageResponse, error)
 	GetMessages(req *dto.MessageListRequest) ([]*dto.ChatMessageResponse, int64, error)
+	GetAllMessages(roomID uint) ([]*dto.ChatMessageResponse, error)
 	RecallMessage(messageID, userID uint) error
 	UpdateLastReadTime(roomID, userID uint) error
 }
@@ -310,6 +311,20 @@ func (s *chatService) GetMessages(req *dto.MessageListRequest) ([]*dto.ChatMessa
 	}
 
 	return responses, total, nil
+}
+
+func (s *chatService) GetAllMessages(roomID uint) ([]*dto.ChatMessageResponse, error) {
+	messages, err := s.msgRepo.FindAllByRoomID(roomID)
+	if err != nil {
+		return nil, err
+	}
+
+	var responses []*dto.ChatMessageResponse
+	for _, msg := range messages {
+		responses = append(responses, s.convertMessageToResponse(msg))
+	}
+
+	return responses, nil
 }
 
 func (s *chatService) RecallMessage(messageID, userID uint) error {

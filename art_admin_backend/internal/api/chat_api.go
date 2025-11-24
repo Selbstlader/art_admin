@@ -327,25 +327,16 @@ func (a *ChatAPI) GetMessages(c *gin.Context) {
 		return
 	}
 
-	if req.Page == 0 {
-		req.Page = 1
-	}
-	if req.PageSize == 0 {
-		req.PageSize = 20
-	}
-
-	messages, total, err := a.chatService.GetMessages(&req)
+	// 取消分页，全量返回消息
+	messages, err := a.chatService.GetAllMessages(req.RoomID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "查询失败: " + err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":     200,
-		"data":     messages,
-		"total":    total,
-		"page":     req.Page,
-		"pageSize": req.PageSize,
+		"code": 200,
+		"data": messages,
 	})
 }
 

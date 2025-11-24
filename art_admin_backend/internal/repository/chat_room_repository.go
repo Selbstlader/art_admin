@@ -91,6 +91,7 @@ type ChatMessageRepository interface {
 	Delete(id uint) error
 	FindByID(id uint) (*model.ChatMessage, error)
 	FindByRoomID(roomID uint, page, pageSize int, beforeID, afterID *uint) ([]*model.ChatMessage, int64, error)
+	FindAllByRoomID(roomID uint) ([]*model.ChatMessage, error)
 	RecallMessage(id uint) error
 	GetLastMessageTime(roomID uint) (*time.Time, error)
 }
@@ -148,12 +149,27 @@ func (r *chatMessageRepository) FindByRoomID(roomID uint, page, pageSize int, be
 
 	// 分页查询，预加载回复消息
 	offset := (page - 1) * pageSize
-	err := query.Preload("ReplyTo").Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&messages).Error
+	err := query.Preload("ReplyTo").Order("created_at ASC").Offset(offset).Limit(pageSize).Find(&messages).Error
 	if err != nil {
 		return nil, 0, err
 	}
 
 	return messages, total, nil
+}
+
+func (r *chatMessageRepository) FindAllByRoomID(roomID uint) ([]*model.ChatMessage, error) {
+	var messages []*model.ChatMessage
+
+	err := r.db.Model(&model.ChatMessage{}).
+		Where("room_id = ?", roomID).
+		Preload("ReplyTo").
+		Order("created_at ASC").
+		Find(&messages).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }
 
 func (r *chatMessageRepository) RecallMessage(id uint) error {

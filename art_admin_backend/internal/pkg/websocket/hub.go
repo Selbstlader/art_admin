@@ -210,60 +210,104 @@ func (h *Hub) SendToUser(userID uint, message []byte) {
 
 // GetRoomOnlineCount 获取房间在线人数
 func (h *Hub) GetRoomOnlineCount(roomID uint) int {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	// 使用带超时的读锁，避免长时间阻塞
+	done := make(chan int)
+	go func() {
+		h.mu.RLock()
+		defer h.mu.RUnlock()
 
-	room, ok := h.rooms[roomID]
-	if !ok {
+		room, ok := h.rooms[roomID]
+		if !ok {
+			done <- 0
+			return
+		}
+
+		// 统计不重复的用户数
+		users := make(map[uint]bool)
+		for client := range room {
+			users[client.userID] = true
+		}
+
+		done <- len(users)
+	}()
+
+	// 等待最多100ms，避免阻塞HTTP请求
+	select {
+	case count := <-done:
+		return count
+	case <-time.After(100 * time.Millisecond):
+		// 超时返回默认值，避免阻塞
+		log.Printf("GetRoomOnlineCount timeout for room %d", roomID)
 		return 0
 	}
-
-	// 统计不重复的用户数
-	users := make(map[uint]bool)
-	for client := range room {
-		users[client.userID] = true
-	}
-
-	return len(users)
 }
 
 // GetRoomOnlineUsers 获取房间在线用户列表
 func (h *Hub) GetRoomOnlineUsers(roomID uint) []map[string]interface{} {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	// 使用带超时的读锁，避免长时间阻塞
+	done := make(chan []map[string]interface{})
+	go func() {
+		h.mu.RLock()
+		defer h.mu.RUnlock()
 
-	room, ok := h.rooms[roomID]
-	if !ok {
-		return []map[string]interface{}{}
-	}
+		room, ok := h.rooms[roomID]
+		if !ok {
+			done <- []map[string]interface{}{}
+			return
+		}
 
-	// 使用 map 去重
-	users := make(map[uint]map[string]interface{})
-	for client := range room {
-		if _, exists := users[client.userID]; !exists {
-			users[client.userID] = map[string]interface{}{
-				"userId":   client.userID,
-				"username": client.username,
+		// 使用 map 去重
+		users := make(map[uint]map[string]interface{})
+		for client := range room {
+			if _, exists := users[client.userID]; !exists {
+				users[client.userID] = map[string]interface{}{
+					"userId":   client.userID,
+					"username": client.username,
+				}
 			}
 		}
-	}
 
-	// 转换为数组
-	result := make([]map[string]interface{}, 0, len(users))
-	for _, user := range users {
-		result = append(result, user)
-	}
+		// 转换为数组
+		result := make([]map[string]interface{}, 0, len(users))
+		for _, user := range users {
+			result = append(result, user)
+		}
 
-	return result
+		done <- result
+	}()
+
+	// 等待最多100ms，避免阻塞HTTP请求
+	select {
+	case users := <-done:
+		return users
+	case <-time.After(100 * time.Millisecond):
+		// 超时返回默认值，避免阻塞
+		log.Printf("GetRoomOnlineUsers timeout for room %d", roomID)
+		return []map[string]interface{}{}
+	}
 }
 
 // IsUserOnline 检查用户是否在线
 func (h *Hub) IsUserOnline(userID uint) bool {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	// 使用带超时的读锁，避免长时间阻塞
+	done := make(chan bool)
+	go func() {
+		h.mu.RLock()
+		defer h.mu.RUnlock()
 
-	clients, ok := h.userClients[userID]
-	return ok && len(clients) > 0
+		clients, ok := h.userClients[userID]
+		done <- (ok && len(clients) > 0)
+	}()
+
+	// 等待最多50ms，避免阻塞HTTP请求
+	select {
+	case isOnline := <-done:
+		return isOnline
+	case <-time.After(50 * time.Millisecond):
+		// 超时返回默认值，避免阻塞
+		log.Printf("IsUserOnline timeout for user %d", userID)
+		return false
+	}
 }
 
 // notifyUserJoined 通知用户加入

@@ -1,4 +1,4 @@
-import { ref, reactive, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 
@@ -217,17 +217,6 @@ export function useChatWebSocket(roomId: number) {
   // 处理聊天消息
   const handleChatMessage = (message: Api.Chat.WebSocketMessage) => {
     switch (message.type) {
-      case 'message':
-        // 新消息
-        if (message.data) {
-          messages.value.push(message.data)
-          // 滚动到底部
-          nextTick(() => {
-            scrollToBottom()
-          })
-        }
-        break
-
       case 'join':
         // 用户加入
         if (message.data) {
@@ -256,7 +245,12 @@ export function useChatWebSocket(roomId: number) {
         break
 
       default:
-        console.log('收到未知类型消息:', message)
+        // 处理未知消息类型，包括error类型
+        if ((message as any).type === 'error' && (message as any).message) {
+          ElMessage.error((message as any).message)
+        } else {
+          console.log('收到未知类型消息:', message)
+        }
     }
   }
 
@@ -291,18 +285,18 @@ export function useChatWebSocket(roomId: number) {
     }
   }
 
-  // 发送聊天消息
-  const sendChatMessage = (content: string, replyToId?: number) => {
-    return sendMessage({
-      type: 'message',
-      data: {
-        roomId,
-        content,
-        messageType: 'text',
-        replyToId
-      }
-    })
-  }
+  // 发送聊天消息 - 已移除，改用HTTP API
+  // const sendChatMessage = (content: string, replyToId?: number) => {
+  //   return sendMessage({
+  //     type: 'message',
+  //     data: {
+  //       roomId,
+  //       content,
+  //       messageType: 'text',
+  //       replyToId
+  //     }
+  //   })
+  // }
 
   // 发送正在输入状态
   const sendTypingStatus = (isTyping: boolean) => {
@@ -326,7 +320,7 @@ export function useChatWebSocket(roomId: number) {
     // 方法
     connect,
     disconnect,
-    sendChatMessage,
+    // sendChatMessage, // 已移除，改用HTTP API
     sendTypingStatus,
     scrollToBottom
   }
