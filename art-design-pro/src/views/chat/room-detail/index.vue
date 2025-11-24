@@ -75,6 +75,13 @@
           加载中...
         </div>
 
+        <!-- 加载更多历史消息 -->
+        <div v-if="hasMoreMessages && !loading" class="load-more-container">
+          <ElButton link :loading="isLoadingMore" @click="loadMoreMessages" class="load-more-btn">
+            {{ isLoadingMore ? '加载中...' : '加载更多历史消息' }}
+          </ElButton>
+        </div>
+
         <div
           v-for="message in messages"
           :key="message.id"
@@ -282,6 +289,13 @@
   const replyMessage = ref<Api.Chat.ChatMessageItem>()
   let typingTimer: NodeJS.Timeout | null = null
 
+  // 分页相关
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const totalCount = ref(0)
+  const hasMoreMessages = ref(true)
+  const isLoadingMore = ref(false)
+
   // 轮询相关
   const pollingTimer = ref<NodeJS.Timeout | null>(null)
   const lastMessageId = ref<number>(0)
@@ -328,32 +342,94 @@
   }
 
   // 加载消息列表
-  const loadMessages = async () => {
-    loading.value = true
+  const loadMessages = async (loadMore = false) => {
+    if (loadMore) {
+      isLoadingMore.value = true
+    } else {
+      loading.value = true
+      currentPage.value = 1
+      messages.value = []
+    }
+
     try {
       const response = await chatMessageApi.getMessageList({
         roomId: roomId.value,
-        page: 1,
-        pageSize: 20
+        page: currentPage.value,
+        pageSize: pageSize.value
       } as any)
-      if (response && response.data) {
-        messages.value = response.data
 
-        // 设置最后一条消息ID用于轮询
-        if (response.data.length > 0) {
-          const messageList = response.data as Api.Chat.ChatMessageItem[]
-          lastMessageId.value = Math.max(...messageList.map((msg) => msg.id))
+      if (response && response.data) {
+        const newMessages = response.data as Api.Chat.ChatMessageItem[]
+
+        if (loadMore) {
+          // 加载更多时，将历史消息添加到前面
+          messages.value = [...newMessages.reverse(), ...messages.value]
+        } else {
+          // 初始加载时，消息按时间正序排列（最新的在底部）
+          messages.value = newMessages.reverse()
         }
 
-        // 滚动到底部
-        nextTick(() => {
-          scrollToBottom()
-        })
+        // 更新分页信息
+        totalCount.value = response.total || 0
+        hasMoreMessages.value = messages.value.length < totalCount.value
+
+        // 设置最后一条消息ID用于轮询
+        if (newMessages.length > 0) {
+          lastMessageId.value = Math.max(...newMessages.map((msg) => msg.id))
+        }
+
+        // 滚动到底部（仅初始加载）
+        if (!loadMore) {
+          nextTick(() => {
+            scrollToBottom()
+          })
+        }
       }
     } catch (error) {
       console.error('获取消息列表失败:', error)
     } finally {
       loading.value = false
+      isLoadingMore.value = false
+    }
+  }
+
+  // 加载更多历史消息
+  const loadMoreMessages = async () => {
+    if (!hasMoreMessages.value || isLoadingMore.value) return
+
+    // 获取当前第一条消息的ID，作为分页基准
+    const firstMessageId = messages.value.length > 0 ? messages.value[0].id : 0
+
+    try {
+      isLoadingMore.value = true
+      currentPage.value++
+
+      const response = await chatMessageApi.getMessageList({
+        roomId: roomId.value,
+        page: currentPage.value,
+        pageSize: pageSize.value
+        // beforeId: firstMessageId
+      } as any)
+
+      if (response && response.data) {
+        const newMessages = response.data as Api.Chat.ChatMessageItem[]
+
+        if (newMessages.length > 0) {
+          // 将历史消息添加到前面
+          messages.value = [...newMessages.reverse(), ...messages.value]
+
+          // 更新是否还有更多消息
+          totalCount.value = response.total || 0
+          hasMoreMessages.value = messages.value.length < totalCount.value
+        } else {
+          hasMoreMessages.value = false
+        }
+      }
+    } catch (error) {
+      console.error('加载更多消息失败:', error)
+      currentPage.value-- // 恢复页码
+    } finally {
+      isLoadingMore.value = false
     }
   }
 
@@ -386,15 +462,21 @@
   // 轮询获取新消息
   const pollNewMessages = async () => {
     try {
+      // 获取当前最后一条消息的ID
+      const lastId = messages.value.length > 0 ? messages.value[messages.value.length - 1].id : 0
+
       const response = await chatMessageApi.getMessageList({
         roomId: roomId.value,
         page: 1,
-        pageSize: 20
+        pageSize: pageSize.value,
+        afterId: lastId
       } as any)
 
-      if (response && response.length > 0) {
-        // 直接添加所有消息到列表（后端会处理去重和排序）
-        messages.value.push(...(response as Api.Chat.ChatMessageItem[]))
+      if (response && response.data && response.data.length > 0) {
+        const newMessages = response.data as Api.Chat.ChatMessageItem[]
+
+        // 将新消息添加到列表末尾
+        messages.value.push(...newMessages)
 
         // 滚动到底部
         nextTick(() => {
@@ -574,7 +656,7 @@
   onMounted(async () => {
     await fetchRoomInfo()
     await fetchMembers()
-    // await pollNewMessages()
+    await loadMessages() // 加载初始消息
 
     // 连接 WebSocket（仅用于在线状态和正在输入功能）
     // connect()
@@ -665,6 +747,21 @@
       padding: 16px;
       color: #909399;
       font-size: 14px;
+    }
+
+    .load-more-container {
+      text-align: center;
+      padding: 8px 0;
+      margin-bottom: 16px;
+
+      .load-more-btn {
+        color: #409eff;
+        font-size: 14px;
+
+        &:hover {
+          color: #66b1ff;
+        }
+      }
     }
 
     .message-item {

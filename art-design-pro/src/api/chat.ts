@@ -66,7 +66,16 @@ export const chatMessageApi = {
 
   // 获取消息列表
   getMessageList: (params: Api.Chat.ChatMessageSearchParams) => {
-    return request.get<any>({ url: '/api/chat/message/list', params })
+    return request.get<{
+      data: Api.Chat.ChatMessageItem[]
+      total: number
+      page: number
+      pageSize: number
+    }>({
+      url: '/api/chat/message/list',
+      params,
+      _fullResponse: true // 返回完整响应，包含分页信息
+    })
   },
 
   // 撤回消息

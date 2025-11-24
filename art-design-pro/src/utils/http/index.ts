@@ -19,6 +19,7 @@ let unauthorizedTimer: NodeJS.Timeout | null = null
 interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
   showErrorMessage?: boolean
   showSuccessMessage?: boolean
+  _fullResponse?: boolean // 是否返回完整响应对象
 }
 
 const { VITE_API_URL, VITE_WITH_CREDENTIALS } = import.meta.env
@@ -167,6 +168,11 @@ async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> 
     // 显示成功消息
     if (config.showSuccessMessage && res.data.msg) {
       showSuccess(res.data.msg)
+    }
+
+    // 如果标记了需要完整响应，则返回完整data对象
+    if (config._fullResponse) {
+      return res.data as T
     }
 
     return res.data.data as T

@@ -327,16 +327,26 @@ func (a *ChatAPI) GetMessages(c *gin.Context) {
 		return
 	}
 
-	// 取消分页，全量返回消息
-	messages, err := a.chatService.GetAllMessages(req.RoomID)
+	// 设置默认分页参数
+	if req.Page == 0 {
+		req.Page = 1
+	}
+	if req.PageSize == 0 {
+		req.PageSize = 10 // 默认每页10条消息
+	}
+
+	messages, total, err := a.chatService.GetMessages(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "查询失败: " + err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": messages,
+		"code":     200,
+		"data":     messages,
+		"total":    total,
+		"page":     req.Page,
+		"pageSize": req.PageSize,
 	})
 }
 

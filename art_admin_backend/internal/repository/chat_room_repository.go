@@ -147,9 +147,9 @@ func (r *chatMessageRepository) FindByRoomID(roomID uint, page, pageSize int, be
 		return nil, 0, err
 	}
 
-	// 分页查询，预加载回复消息
+	// 分页查询，预加载回复消息，按时间倒序排列（最新消息在前）
 	offset := (page - 1) * pageSize
-	err := query.Preload("ReplyTo").Order("created_at ASC").Offset(offset).Limit(pageSize).Find(&messages).Error
+	err := query.Preload("ReplyTo").Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&messages).Error
 	if err != nil {
 		return nil, 0, err
 	}
