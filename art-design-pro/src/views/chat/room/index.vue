@@ -357,8 +357,8 @@
     try {
       // 判断是否为视频通话房间
       const isVideoRoom = row.description === '视频通话房间'
-
       if (isVideoRoom) {
+        await chatRoomApi.joinRoom({ roomId: row.id })
         // 视频房间直接跳转到视频通话页面，由视频通话页面处理加入逻辑
         router.push({
           path: '/chat/chat/video-call',
@@ -371,7 +371,7 @@
       }
     } catch (error) {
       console.error('加入聊天室失败:', error)
-      ElMessage.error('加入聊天室失败')
+      // ElMessage.error('加入聊天室失败')
     }
   }
 </script>

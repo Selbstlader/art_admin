@@ -7,6 +7,9 @@ import (
 	"time"
 )
 
+// RoomCloseCallback 房间关闭回调函数类型
+type RoomCloseCallback func(roomID uint) error
+
 // Hub 维护活动客户端集合并向客户端广播消息
 type Hub struct {
 	// 注册的客户端
@@ -27,6 +30,12 @@ type Hub struct {
 	// 注销客户端请求
 	Unregister chan *Client
 
+	// 房间空闲倒计时器 (5分钟后关闭)
+	roomIdleTimers map[uint]*time.Timer
+
+	// 房间关闭回调
+	onRoomClose RoomCloseCallback
+
 	// 互斥锁
 	mu sync.RWMutex
 }
@@ -34,13 +43,19 @@ type Hub struct {
 // NewHub 创建新的 Hub
 func NewHub() *Hub {
 	return &Hub{
-		clients:     make(map[*Client]bool),
-		rooms:       make(map[uint]map[*Client]bool),
-		userClients: make(map[uint]map[*Client]bool),
-		broadcast:   make(chan []byte, 256),
-		Register:    make(chan *Client),
-		Unregister:  make(chan *Client),
+		clients:        make(map[*Client]bool),
+		rooms:          make(map[uint]map[*Client]bool),
+		userClients:    make(map[uint]map[*Client]bool),
+		broadcast:      make(chan []byte, 256),
+		Register:       make(chan *Client),
+		Unregister:     make(chan *Client),
+		roomIdleTimers: make(map[uint]*time.Timer),
 	}
+}
+
+// SetRoomCloseCallback 设置房间关闭回调
+func (h *Hub) SetRoomCloseCallback(callback RoomCloseCallback) {
+	h.onRoomClose = callback
 }
 
 // Run 启动 Hub
@@ -93,6 +108,9 @@ func (h *Hub) registerClient(client *Client) {
 	if isFirstDevice {
 		h.notifyUserJoined(client)
 	}
+
+	// 停止该房间的空闲倒计时（如果有的话）
+	h.stopRoomIdleTimer(client.roomID)
 }
 
 // unregisterClient 注销客户端
@@ -132,6 +150,9 @@ func (h *Hub) unregisterClient(client *Client) {
 		if !hasOtherDevices {
 			h.notifyUserLeft(client)
 		}
+
+		// 检查房间是否为空，如果为空则启动倒计时
+		h.checkAndStartRoomIdleTimer(client.roomID)
 	} else {
 		h.mu.Unlock()
 	}
@@ -396,4 +417,85 @@ func (h *Hub) notifyUserLeft(client *Client) {
 
 	message, _ := json.Marshal(notification)
 	h.BroadcastToRoom(client.roomID, message, 0)
+}
+
+// checkAndStartRoomIdleTimer 检查房间是否为空，如果为空则启动5分钟倒计时
+func (h *Hub) checkAndStartRoomIdleTimer(roomID uint) {
+	go func() {
+		// 获取房间在线人数
+		count := h.GetRoomOnlineCount(roomID)
+		if count == 0 {
+			log.Printf("房间 %d 已空闲，将在5分钟后自动关闭", roomID)
+			h.startRoomIdleTimer(roomID)
+		}
+	}()
+}
+
+// startRoomIdleTimer 启动房间空闲倒计时
+func (h *Hub) startRoomIdleTimer(roomID uint) {
+	h.mu.Lock()
+	// 如果已存在计时器，先停止
+	if timer, exists := h.roomIdleTimers[roomID]; exists {
+		timer.Stop()
+	}
+
+	// 创建新的5分钟倒计时器
+	timer := time.AfterFunc(5*time.Minute, func() {
+		h.closeIdleRoom(roomID)
+	})
+	h.roomIdleTimers[roomID] = timer
+	h.mu.Unlock()
+
+	log.Printf("已启动房间 %d 的空闲倒计时（5分钟）", roomID)
+}
+
+// stopRoomIdleTimer 停止房间空闲倒计时
+func (h *Hub) stopRoomIdleTimer(roomID uint) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	if timer, exists := h.roomIdleTimers[roomID]; exists {
+		timer.Stop()
+		delete(h.roomIdleTimers, roomID)
+		log.Printf("已取消房间 %d 的空闲倒计时", roomID)
+	}
+}
+
+// closeIdleRoom 关闭空闲房间
+func (h *Hub) closeIdleRoom(roomID uint) {
+	// 再次检查房间是否真的为空（防止竞态条件）
+	count := h.GetRoomOnlineCount(roomID)
+	if count > 0 {
+		log.Printf("房间 %d 有人在线，取消自动关闭", roomID)
+		return
+	}
+
+	log.Printf("自动关闭空闲房间: %d", roomID)
+
+	// 通知房间内的用户（如果还有连接的话）
+	notification := map[string]interface{}{
+		"type": "room_closed",
+		"data": map[string]interface{}{
+			"roomId":    roomID,
+			"reason":    "房间空闲超过5分钟，已自动关闭",
+			"timestamp": time.Now(),
+		},
+	}
+	message, _ := json.Marshal(notification)
+	h.BroadcastToRoomIncludeSelf(roomID, message)
+
+	// 清理房间的倒计时器
+	h.mu.Lock()
+	if timer, exists := h.roomIdleTimers[roomID]; exists {
+		timer.Stop()
+		delete(h.roomIdleTimers, roomID)
+	}
+	h.mu.Unlock()
+
+	// 调用房间关闭回调（如果有的话），用于删除或禁用房间
+	if h.onRoomClose != nil {
+		if err := h.onRoomClose(roomID); err != nil {
+			log.Printf("关闭房间 %d 失败: %v", roomID, err)
+		}
+	}
 }

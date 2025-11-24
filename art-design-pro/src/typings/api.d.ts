@@ -27,6 +27,8 @@ declare namespace Api {
       current: number
       size: number
       total: number
+      pageSize: number
+      page: number
     }
 
     /** 启用状态 */

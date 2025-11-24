@@ -5,8 +5,8 @@ import request from '@/utils/http'
  */
 export const chatRoomApi = {
   // 获取聊天室列表
-  getRoomList: (params: Api.Chat.ChatRoomSearchParams) => {
-    return request.get<Api.Chat.ChatRoomList>({ url: '/api/chat/room/list', params })
+  getRoomList: (params: any) => {
+    return request.get<any>({ url: '/api/chat/room/list', params, _fullResponse: true })
   },
 
   // 获取聊天室详情

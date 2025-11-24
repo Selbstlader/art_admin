@@ -1,50 +1,58 @@
 <template>
-  <div class="video-call-page">
+  <div class="video-call-page art-full-height">
     <!-- 未开始通话 - 显示房间列表 -->
     <div v-if="!isInCall" class="call-lobby">
-      <el-card class="lobby-card">
+      <ElCard class="art-table-card lobby-card" shadow="never">
         <template #header>
           <div class="card-header">
-            <h2>视频通话</h2>
-            <p class="subtitle">选择或创建一个房间开始视频通话</p>
+            <h2 class="text-primary">视频通话</h2>
+            <p class="subtitle text-gray-500">选择或创建一个房间开始视频通话</p>
           </div>
         </template>
 
         <!-- 创建房间 -->
-        <el-form :model="createForm" label-width="80px" class="create-room-form">
-          <el-form-item label="房间名称">
-            <el-input
+        <ElForm :model="createForm" label-width="80px" class="create-room-form">
+          <ElFormItem label="房间名称">
+            <ElInput
               v-model="createForm.roomName"
               placeholder="输入房间名称"
               @keyup.enter="createRoom"
             />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="createRoom" :loading="creating"> 创建房间 </el-button>
-          </el-form-item>
-        </el-form>
+          </ElFormItem>
+          <ElFormItem>
+            <ElButton type="primary" @click="createRoom" :loading="creating">
+              <ElIcon><Plus /></ElIcon>
+              创建房间
+            </ElButton>
+          </ElFormItem>
+        </ElForm>
 
-        <el-divider>或加入现有房间</el-divider>
+        <ElDivider>或加入现有房间</ElDivider>
 
         <!-- 房间列表 -->
         <div v-loading="loadingRooms" class="room-list">
-          <div v-for="room in rooms" :key="room.id" class="room-item" @click="joinRoom(room)">
+          <div v-for="room in activeRooms" :key="room.id" class="room-item" @click="joinRoom(room)">
             <div class="room-info">
-              <h3>{{ room.name }}</h3>
-              <p class="room-desc">{{ room.description || '暂无描述' }}</p>
+              <h3 class="text-gray-800">
+                {{ room.name }}
+                <ElTag v-if="room.isActive === false" type="info" size="small" class="status-tag">
+                  已关闭
+                </ElTag>
+              </h3>
+              <p class="room-desc text-gray-500">{{ room.description || '暂无描述' }}</p>
             </div>
             <div class="room-meta">
-              <el-tag type="success">
-                <el-icon><User /></el-icon>
+              <ElTag :type="room.onlineCount > 0 ? 'success' : 'info'">
+                <ElIcon><User /></ElIcon>
                 {{ room.memberCount || 0 }} 人
-              </el-tag>
-              <el-button type="primary" size="small">加入</el-button>
+              </ElTag>
+              <ElButton type="primary" size="small">加入</ElButton>
             </div>
           </div>
 
-          <el-empty v-if="rooms.length === 0 && !loadingRooms" description="暂无房间" />
+          <ElEmpty v-if="activeRooms.length === 0 && !loadingRooms" description="暂无房间" />
         </div>
-      </el-card>
+      </ElCard>
     </div>
 
     <!-- 视频通话中 -->
@@ -132,6 +140,11 @@
             <el-icon><User /></el-icon>
             {{ videoCount }} 人在线
           </span>
+          <span v-if="showIdleCountdown && idleCountdownSeconds > 0" class="idle-countdown">
+            房间空闲，将在
+            {{ Math.ceil(idleCountdownSeconds / 60) }}
+            分钟后自动关闭
+          </span>
         </div>
       </div>
 
@@ -155,7 +168,8 @@
     VideoCameraFilled,
     Microphone,
     PhoneFilled,
-    Loading
+    Loading,
+    Plus
   } from '@element-plus/icons-vue'
   import { chatRoomApi } from '@/api/chat'
   import { useUserStore } from '@/store/modules/user'
@@ -186,6 +200,11 @@
   const isAudioEnabled = ref(true)
   const isVideoEnabled = ref(true)
 
+  // 房间空闲倒计时（前端提示用，与后端5分钟逻辑保持一致）
+  const idleCountdownSeconds = ref(0)
+  const showIdleCountdown = ref(false)
+  let idleCountdownTimer: number | null = null
+
   // 视频相关
   const localVideoRef = ref<HTMLVideoElement>()
   const remoteVideoRefs = new Map<number, HTMLVideoElement>()
@@ -198,6 +217,11 @@
 
   // 计算属性
   const videoCount = computed(() => onlineCount.value)
+
+  // 只展示启用中的房间（isActive !== false），已关闭房间可以通过 tag 标记
+  const activeRooms = computed(() => {
+    return rooms.value.filter((room) => room.isActive !== false)
+  })
 
   const callStatusText = computed(() => {
     switch (callStatus.value) {
@@ -233,11 +257,12 @@
     try {
       loadingRooms.value = true
       const res = await chatRoomApi.getRoomList({
-        current: 1,
-        size: 20,
-        type: 'public'
+        page: 1,
+        pageSize: 20,
+        type: 'public',
+        isActive: true
       })
-      rooms.value = res.records || []
+      rooms.value = res || []
     } catch (error) {
       console.error('Failed to fetch rooms:', error)
       ElMessage.error('获取房间列表失败')
@@ -329,6 +354,18 @@
           const data = JSON.parse(event.data)
           console.log('WebSocket message:', data)
 
+          // 监听房间关闭消息
+          if (data.type === 'room_closed') {
+            console.log('房间已关闭:', data.data)
+            ElMessage.warning({
+              message: data.data.reason || '房间已关闭',
+              duration: 3000
+            })
+            // 自动退出通话
+            handleCallEnded()
+            return
+          }
+
           // 监听用户加入/离开消息，实时更新在线人数
           if (data.type === 'user_joined' || data.type === 'user_left') {
             fetchOnlineCount()
@@ -358,10 +395,8 @@
         username: currentUser.value.username,
         webSocket: ws,
         onCallStatusChange: (status) => {
+          // 这里只同步状态，避免再次触发 handleCallEnded 导致递归
           callStatus.value = status
-          if (status === CallStatus.ENDED) {
-            handleCallEnded()
-          }
         },
         onRemoteStream: (userId, username, stream) => {
           console.log('Received remote stream:', userId, username, stream)
@@ -420,6 +455,13 @@
     try {
       const users = await chatRoomApi.getOnlineUsers(currentRoom.value.id)
       onlineCount.value = users.length
+
+      // 当前房间无人在线时，启动前端提示倒计时；有人在线则取消
+      if (onlineCount.value === 0 && isInCall.value) {
+        startIdleCountdown()
+      } else {
+        stopIdleCountdown()
+      }
     } catch (error) {
       console.error('获取在线人数失败:', error)
     }
@@ -441,9 +483,13 @@
 
   // 挂断
   const handleHangup = () => {
+    // 先让 WebRTCManager 处理信令和内部清理
     if (webrtcManager) {
       webrtcManager.hangup()
+      // 置空引用，避免后续回调再次进入 destroy 形成递归
+      webrtcManager = null
     }
+    // 再做本页面的 UI/状态收尾
     handleCallEnded()
   }
 
@@ -451,11 +497,6 @@
   const handleCallEnded = () => {
     isInCall.value = false
     callStatus.value = CallStatus.IDLE
-
-    if (webrtcManager) {
-      webrtcManager.destroy()
-      webrtcManager = null
-    }
 
     if (ws) {
       ws.close()
@@ -465,6 +506,8 @@
     remotePeers.value = []
     remoteVideoRefs.clear()
     onlineCount.value = 0 // 重置在线人数
+
+    stopIdleCountdown()
 
     // 刷新房间列表
     fetchRooms()
@@ -512,225 +555,261 @@
     if (updateInterval) {
       clearInterval(updateInterval)
     }
+
+    stopIdleCountdown()
   })
+
+  // 房间空闲倒计时相关
+  const startIdleCountdown = () => {
+    // 与后端逻辑保持一致：5分钟后关闭
+    idleCountdownSeconds.value = 5 * 60
+    showIdleCountdown.value = true
+
+    if (idleCountdownTimer) {
+      window.clearInterval(idleCountdownTimer)
+    }
+
+    idleCountdownTimer = window.setInterval(() => {
+      if (idleCountdownSeconds.value > 0) {
+        idleCountdownSeconds.value -= 1
+      } else {
+        stopIdleCountdown()
+      }
+    }, 1000)
+  }
+
+  const stopIdleCountdown = () => {
+    showIdleCountdown.value = false
+    idleCountdownSeconds.value = 0
+    if (idleCountdownTimer) {
+      window.clearInterval(idleCountdownTimer)
+      idleCountdownTimer = null
+    }
+  }
 </script>
 
 <style scoped lang="scss">
-  .video-call-page {
-    height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  @use '@styles/variables.scss' as *;
 
-  .call-lobby {
-    width: 100%;
-    max-width: 800px;
+  .video-call-page {
+    background-color: var(--art-bg-color);
     padding: 20px;
 
-    .lobby-card {
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    }
+    .call-lobby {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
 
-    .card-header {
-      text-align: center;
-
-      h2 {
-        margin: 0 0 8px 0;
-        color: #303133;
+      .lobby-card {
+        border: 1px solid var(--art-card-border);
+        box-shadow: var(--art-card-shadow);
       }
 
-      .subtitle {
-        margin: 0;
-        color: #909399;
-        font-size: 14px;
+      .card-header {
+        text-align: center;
+
+        h2 {
+          margin: 0 0 8px 0;
+          font-size: 24px;
+          font-weight: 600;
+        }
+
+        .subtitle {
+          margin: 0;
+          font-size: 14px;
+        }
+      }
+
+      .create-room-form {
+        margin-top: 20px;
+      }
+
+      .room-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .room-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        margin-bottom: 12px;
+        background: var(--art-main-bg-color);
+        border: 1px solid var(--art-border-color);
+        border-radius: calc(var(--custom-radius) / 2 + 2px);
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+          background: var(--art-hoverColor);
+          border-color: rgb(var(--art-primary));
+          transform: translateY(-1px);
+          box-shadow: var(--art-box-shadow-sm);
+        }
+
+        .room-info {
+          flex: 1;
+
+          h3 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            font-weight: 500;
+          }
+
+          .room-desc {
+            margin: 0;
+            font-size: 14px;
+          }
+        }
+
+        .room-meta {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
       }
     }
 
-    .create-room-form {
-      margin-top: 20px;
+    .call-container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--art-main-bg-color);
     }
 
-    .room-list {
-      max-height: 400px;
-      overflow-y: auto;
+    .video-grid {
+      flex: 1;
+      display: grid;
+      gap: 10px;
+      padding: 10px;
+      overflow: auto;
+
+      &.grid-1 {
+        grid-template-columns: 1fr;
+      }
+
+      &.grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      &.grid-3,
+      &.grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+      }
     }
 
-    .room-item {
+    .video-wrapper {
+      position: relative;
+      background: var(--art-gray-800);
+      border: 1px solid var(--art-border-color);
+      border-radius: calc(var(--custom-radius) / 2 + 2px);
+      overflow: hidden;
+      min-height: 200px;
+      box-shadow: var(--art-box-shadow-sm);
+
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      &.local-video video {
+        transform: scaleX(-1);
+      }
+    }
+
+    .video-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px;
-      margin-bottom: 12px;
-      background: #f5f7fa;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s;
 
-      &:hover {
-        background: #ecf5ff;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-
-      .room-info {
-        flex: 1;
-
-        h3 {
-          margin: 0 0 4px 0;
-          font-size: 16px;
-          color: #303133;
-        }
-
-        .room-desc {
-          margin: 0;
-          font-size: 14px;
-          color: #909399;
-        }
-      }
-
-      .room-meta {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-    }
-  }
-
-  .call-container {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #1a1a1a;
-  }
-
-  .video-grid {
-    flex: 1;
-    display: grid;
-    gap: 10px;
-    padding: 10px;
-    overflow: auto;
-
-    &.grid-1 {
-      grid-template-columns: 1fr;
-    }
-
-    &.grid-2 {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    &.grid-3,
-    &.grid-4 {
-      grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: repeat(2, 1fr);
-    }
-  }
-
-  .video-wrapper {
-    position: relative;
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    min-height: 200px;
-
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    &.local-video video {
-      transform: scaleX(-1);
-    }
-  }
-
-  .video-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 12px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .username {
-      color: #fff;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .media-status {
-      display: flex;
-      gap: 8px;
-
-      .status-icon {
-        color: #f56c6c;
-        font-size: 20px;
-
-        &.disabled {
-          opacity: 0.8;
-        }
-      }
-    }
-  }
-
-  .control-bar {
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-
-    .control-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    .room-info-bar {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-      color: #fff;
-      font-size: 14px;
-
-      .room-name {
+      .username {
+        color: var(--art-text-gray-100);
+        font-size: 14px;
         font-weight: 500;
       }
 
-      .participant-count {
+      .media-status {
         display: flex;
-        align-items: center;
-        gap: 4px;
+        gap: 8px;
+
+        .status-icon {
+          color: var(--el-color-danger);
+          font-size: 20px;
+
+          &.disabled {
+            opacity: 0.8;
+          }
+        }
       }
     }
-  }
 
-  .call-status-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
+    .control-bar {
+      padding: 20px;
+      background: var(--art-main-bg-color);
+      border-top: 1px solid var(--art-border-color);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 
-    .status-content {
-      text-align: center;
-      color: #fff;
+      .control-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+      }
 
-      p {
-        margin-top: 16px;
-        font-size: 16px;
+      .room-info-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        color: var(--art-text-gray-700);
+        font-size: 14px;
+
+        .room-name {
+          font-weight: 500;
+          color: var(--art-text-gray-800);
+        }
+
+        .participant-count {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+      }
+    }
+
+    .call-status-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(var(--art-gray-800-rgb), 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+
+      .status-content {
+        text-align: center;
+        color: var(--art-text-gray-100);
+
+        p {
+          margin-top: 16px;
+          font-size: 16px;
+        }
       }
     }
   }

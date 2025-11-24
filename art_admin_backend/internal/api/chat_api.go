@@ -32,10 +32,39 @@ type ChatAPI struct {
 
 // NewChatAPI 创建聊天室 API
 func NewChatAPI(chatService service.ChatService, hub *ws.Hub) *ChatAPI {
-	return &ChatAPI{
+	api := &ChatAPI{
 		chatService: chatService,
 		hub:         hub,
 	}
+
+	// 设置房间关闭回调：当房间空闲5分钟后自动禁用
+	hub.SetRoomCloseCallback(func(roomID uint) error {
+		log.Printf("自动禁用空闲房间: %d", roomID)
+		// 这里可以选择删除房间或设置为不活跃
+		// 为了保留历史记录，我们选择设置为不活跃
+
+		// 先获取房间信息
+		room, err := api.chatService.GetRoomByID(roomID)
+		if err != nil {
+			return err
+		}
+
+		// 更新房间为不活跃状态
+		return api.chatService.UpdateRoom(&dto.UpdateChatRoomRequest{
+			ID:          roomID,
+			Name:        room.Name,
+			Description: room.Description,
+			MaxMembers:  room.MaxMembers,
+			IsActive:    boolPtr(false),
+		})
+	})
+
+	return api
+}
+
+// boolPtr 返回bool指针
+func boolPtr(b bool) *bool {
+	return &b
 }
 
 // CreateRoom 创建聊天室

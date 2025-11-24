@@ -20,6 +20,16 @@ export const chatRoutes: AppRouteRecord = {
       }
     },
     {
+      path: 'chat/video-call',
+      name: 'VideoCall',
+      component: '/chat/video-call',
+      meta: {
+        title: '视频通话',
+        keepAlive: false,
+        hideInMenu: true
+      }
+    },
+    {
       path: 'room/:id',
       name: 'ChatRoomDetail',
       component: '/chat/room-detail',
