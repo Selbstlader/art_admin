@@ -55,8 +55,31 @@ declare namespace Api {
       roles: string[]
       userId: number
       userName: string
+      nickName: string
       email: string
+      userPhone: string
+      userGender: string
       avatar?: string
+      address: string
+      des: string
+    }
+
+    /** 更新用户信息请求 */
+    interface UpdateUserInfoParams {
+      nickName: string
+      email: string
+      userPhone: string
+      userGender: string
+      avatar?: string
+      address: string
+      des: string
+    }
+
+    /** 修改密码请求 */
+    interface ChangePasswordParams {
+      password: string
+      newPassword: string
+      confirmPassword: string
     }
   }
 

@@ -87,16 +87,67 @@ func (s *AuthService) GetUserInfo(userID int64) (*response.UserInfoResponse, err
 
 	authMarks := make([]string, 0, len(buttons))
 	for _, button := range buttons {
-		authMarks = append(authMarks, button.AuthLabel)  // Button模型使用AuthLabel
+		authMarks = append(authMarks, button.AuthLabel) // Button模型使用AuthLabel
 	}
 
 	return &response.UserInfoResponse{
-		UserID:   user.ID,
-		UserName: user.UserName,
-		Email:    user.Email,
-		Avatar:   user.Avatar,
-		Roles:    roleCodes,
-		Buttons:  authMarks,
+		UserID:     user.ID,
+		UserName:   user.UserName,
+		NickName:   user.NickName,
+		Email:      user.Email,
+		UserPhone:  user.UserPhone,
+		UserGender: user.UserGender,
+		Avatar:     user.Avatar,
+		Address:    user.Address,
+		Des:        user.Des,
+		Roles:      roleCodes,
+		Buttons:    authMarks,
 	}, nil
 }
 
+// UpdateUserInfo 更新用户信息
+func (s *AuthService) UpdateUserInfo(userID int64, req *request.UpdateUserInfoRequest) error {
+	// 查询用户是否存在
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return errors.New("用户不存在")
+	}
+
+	// 更新用户信息
+	user.NickName = req.NickName
+	user.Email = req.Email
+	user.UserPhone = req.UserPhone
+	user.UserGender = req.UserGender
+	user.Avatar = req.Avatar
+	user.Address = req.Address
+	user.Des = req.Des
+	user.UpdateBy = "system" // 用户自己更新
+
+	if err := s.userRepo.Update(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ChangePassword 修改密码
+func (s *AuthService) ChangePassword(userID int64, req *request.ChangePasswordRequest) error {
+	// 查询用户是否存在
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return errors.New("用户不存在")
+	}
+
+	// 验证当前密码
+	if !utils.CheckPassword(req.Password, user.Password) {
+		return errors.New("当前密码错误")
+	}
+
+	// 加密新密码
+	hashedPassword, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		return errors.New("密码加密失败")
+	}
+
+	return s.userRepo.UpdatePassword(userID, hashedPassword)
+}

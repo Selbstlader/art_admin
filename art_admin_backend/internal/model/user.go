@@ -16,6 +16,8 @@ type User struct {
 	UserPhone  string         `gorm:"type:varchar(20)" json:"userPhone"`
 	UserGender string         `gorm:"type:varchar(10);default:unknown" json:"userGender"`
 	Avatar     string         `gorm:"type:varchar(500)" json:"avatar"`
+	Address    string         `gorm:"type:varchar(200)" json:"address"`
+	Des        string         `gorm:"type:varchar(500)" json:"des"`
 	Status     string         `gorm:"type:char(1);default:1;index" json:"status"`
 	DeptID     *int64         `gorm:"index" json:"deptId"`
 	CreateBy   string         `gorm:"type:varchar(50)" json:"createBy"`

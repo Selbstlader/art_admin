@@ -27,3 +27,27 @@ export function fetchGetUserInfo() {
     // }
   })
 }
+
+/**
+ * 更新用户信息
+ * @param params 用户信息参数
+ * @returns 更新结果
+ */
+export function fetchUpdateUserInfo(params: Api.Auth.UpdateUserInfoParams) {
+  return request.put({
+    url: '/api/user/info',
+    data: params
+  })
+}
+
+/**
+ * 修改密码
+ * @param params 密码参数
+ * @returns 修改结果
+ */
+export function fetchChangePassword(params: Api.Auth.ChangePasswordParams) {
+  return request.post({
+    url: '/api/user/change-password',
+    data: params
+  })
+}

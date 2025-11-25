@@ -37,6 +37,8 @@ func RegisterRoutes(r *gin.Engine) {
 		{
 			// 用户信息
 			authApiGroup.GET("/user/info", v1.GetUserInfo)
+			authApiGroup.PUT("/user/info", v1.UpdateUserInfo)
+			authApiGroup.POST("/user/change-password", v1.ChangePassword)
 
 			// 用户管理
 			authApiGroup.GET("/user/list", v1.GetUserList)

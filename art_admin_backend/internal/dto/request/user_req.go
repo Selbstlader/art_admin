@@ -47,3 +47,21 @@ type ResetPasswordRequest struct {
 	ID          int64  `json:"id" binding:"required"`
 	NewPassword string `json:"newPassword" binding:"required,min=6"`
 }
+
+// UpdateUserInfoRequest 更新用户信息请求（用户中心使用）
+type UpdateUserInfoRequest struct {
+	NickName   string `json:"nickName" binding:"required,max=50"`
+	Email      string `json:"email" binding:"required,email"`
+	UserPhone  string `json:"userPhone" binding:"required"`
+	UserGender string `json:"userGender" binding:"required,oneof=male female unknown"`
+	Avatar     string `json:"avatar"`
+	Address    string `json:"address"`
+	Des        string `json:"des"`
+}
+
+// ChangePasswordRequest 修改密码请求（用户中心使用）
+type ChangePasswordRequest struct {
+	Password        string `json:"password" binding:"required"`
+	NewPassword     string `json:"newPassword" binding:"required,min=6"`
+	ConfirmPassword string `json:"confirmPassword" binding:"required,min=6"`
+}

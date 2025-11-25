@@ -1,0 +1,25 @@
+-- 创建教材内容表
+CREATE TABLE IF NOT EXISTS `learning_materials` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint(20) NOT NULL COMMENT '创建用户ID',
+  `subject_id` bigint(20) NOT NULL COMMENT '学科ID',
+  `title` varchar(200) NOT NULL COMMENT '教材标题',
+  `topic` varchar(200) NOT NULL COMMENT '学习题材',
+  `grade` varchar(50) NOT NULL COMMENT '年级',
+  `difficulty` tinyint(4) DEFAULT 1 COMMENT '难度 1-基础 2-进阶 3-高级',
+  `summary` text COMMENT '内容概要',
+  `content` longtext NOT NULL COMMENT '教材内容(JSON格式)',
+  `audio_url` varchar(500) DEFAULT NULL COMMENT '音频URL',
+  `audio_duration` int(11) DEFAULT NULL COMMENT '音频时长(秒)',
+  `total_time` int(11) DEFAULT NULL COMMENT '预计学习时长(分钟)',
+  `view_count` int(11) DEFAULT 0 COMMENT '浏览次数',
+  `favorite_count` int(11) DEFAULT 0 COMMENT '收藏次数',
+  `status` tinyint(4) DEFAULT 1 COMMENT '状态 1-正常 0-已删除',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_subject_id` (`subject_id`),
+  KEY `idx_created_at` (`created_at`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教材内容表';

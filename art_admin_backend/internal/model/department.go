@@ -8,11 +8,11 @@ import (
 
 // Department 部门模型
 type Department struct {
-	DeptID     int64          `gorm:"primaryKey;autoIncrement" json:"deptId"`
+	DeptID     int64          `gorm:"column:id;primaryKey;autoIncrement" json:"deptId"`
 	ParentID   *int64         `gorm:"index" json:"parentId"`
 	DeptName   string         `gorm:"type:varchar(50);not null" json:"deptName"`
 	DeptCode   string         `gorm:"type:varchar(50);uniqueIndex;not null" json:"deptCode"`
-	OrderNum   int            `gorm:"type:int;default:0" json:"orderNum"`
+	OrderNum   int            `gorm:"column:sort;type:int;default:0" json:"orderNum"`
 	Leader     string         `gorm:"type:varchar(20)" json:"leader"`
 	Phone      string         `gorm:"type:varchar(11)" json:"phone"`
 	Email      string         `gorm:"type:varchar(50)" json:"email"`

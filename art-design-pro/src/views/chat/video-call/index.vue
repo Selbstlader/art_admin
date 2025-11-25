@@ -262,7 +262,7 @@
         type: 'public',
         isActive: true
       })
-      rooms.value = res || []
+      rooms.value = res.data || []
     } catch (error) {
       console.error('Failed to fetch rooms:', error)
       ElMessage.error('获取房间列表失败')

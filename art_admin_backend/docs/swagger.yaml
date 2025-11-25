@@ -304,6 +304,21 @@ definitions:
         description: knowledge, example, exercise
         type: string
     type: object
+  request.ChangePasswordRequest:
+    properties:
+      confirmPassword:
+        minLength: 6
+        type: string
+      newPassword:
+        minLength: 6
+        type: string
+      password:
+        type: string
+    required:
+    - confirmPassword
+    - newPassword
+    - password
+    type: object
   request.CreateAppUserRequest:
     properties:
       avatar:
@@ -878,6 +893,33 @@ definitions:
     - roleId
     - roleName
     type: object
+  request.UpdateUserInfoRequest:
+    properties:
+      address:
+        type: string
+      avatar:
+        type: string
+      des:
+        type: string
+      email:
+        type: string
+      nickName:
+        maxLength: 50
+        type: string
+      userGender:
+        enum:
+        - male
+        - female
+        - unknown
+        type: string
+      userPhone:
+        type: string
+    required:
+    - email
+    - nickName
+    - userGender
+    - userPhone
+    type: object
   request.UpdateUserRequest:
     properties:
       avatar:
@@ -1145,6 +1187,9 @@ definitions:
     type: object
   response.UserInfoResponse:
     properties:
+      address:
+        example: 广东省深圳市
+        type: string
       avatar:
         example: https://...
         type: string
@@ -1155,8 +1200,14 @@ definitions:
         items:
           type: string
         type: array
+      des:
+        example: 个人介绍
+        type: string
       email:
         example: admin@example.com
+        type: string
+      nickName:
+        example: 管理员
         type: string
       roles:
         example:
@@ -1165,11 +1216,17 @@ definitions:
         items:
           type: string
         type: array
+      userGender:
+        example: male
+        type: string
       userId:
         example: 1
         type: integer
       userName:
         example: admin
+        type: string
+      userPhone:
+        example: "13800138000"
         type: string
     type: object
 host: localhost:48080
@@ -3467,6 +3524,38 @@ paths:
       summary: 获取菜单列表
       tags:
       - 菜单管理
+  /api/user/change-password:
+    post:
+      consumes:
+      - application/json
+      description: 当前登录用户修改密码
+      parameters:
+      - description: 密码参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 修改成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 修改密码
+      tags:
+      - 认证管理
   /api/user/create:
     post:
       consumes:
@@ -3546,6 +3635,37 @@ paths:
       security:
       - BearerAuth: []
       summary: 获取用户信息
+      tags:
+      - 认证管理
+    put:
+      consumes:
+      - application/json
+      description: 当前登录用户更新个人信息
+      parameters:
+      - description: 用户信息参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateUserInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新用户信息
       tags:
       - 认证管理
   /api/user/list:

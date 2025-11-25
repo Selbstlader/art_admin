@@ -4,9 +4,10 @@
     :width="400"
     trigger="click"
     popper-class="generate-task-popover"
+    @show="loadTasks"
   >
     <template #reference>
-      <div class="btn-box task-btn" @click="loadTasks">
+      <div class="btn-box task-btn">
         <div class="btn">
           <ElIcon><Document /></ElIcon>
           <ElBadge v-if="processingCount > 0" :value="processingCount" class="task-badge" />
@@ -62,14 +63,13 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, onUnmounted } from 'vue'
+  import { ref } from 'vue'
   import { Document, Refresh, Loading } from '@element-plus/icons-vue'
   import { learningMaterialApi, type GenerateTask } from '@/api/learning'
 
   const loading = ref(false)
   const tasks = ref<GenerateTask[]>([])
   const processingCount = ref(0)
-  let timer: any = null
 
   const loadTasks = async () => {
     try {
@@ -96,18 +96,6 @@
     const texts: Record<number, string> = { 1: '⭐ 基础', 2: '⭐⭐ 进阶', 3: '⭐⭐⭐ 高级' }
     return texts[difficulty] || '未知'
   }
-
-  onMounted(() => {
-    loadTasks()
-    // 每10秒自动刷新一次
-    timer = setInterval(loadTasks, 10000)
-  })
-
-  onUnmounted(() => {
-    if (timer) {
-      clearInterval(timer)
-    }
-  })
 </script>
 
 <style scoped lang="scss">

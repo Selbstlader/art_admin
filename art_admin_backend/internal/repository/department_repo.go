@@ -60,14 +60,14 @@ func (r *DepartmentRepository) FindAll(query map[string]interface{}) ([]model.De
 		}
 	}
 
-	err := db.Order("order_num ASC, dept_id ASC").Find(&departments).Error
+	err := db.Order("sort ASC, id ASC").Find(&departments).Error
 	return departments, err
 }
 
 // FindByParentID 根据父部门ID查询子部门
 func (r *DepartmentRepository) FindByParentID(parentID int64) ([]model.Department, error) {
 	var departments []model.Department
-	err := database.DB.Where("parent_id = ?", parentID).Order("order_num ASC, dept_id ASC").Find(&departments).Error
+	err := database.DB.Where("parent_id = ?", parentID).Order("sort ASC, id ASC").Find(&departments).Error
 	return departments, err
 }
 

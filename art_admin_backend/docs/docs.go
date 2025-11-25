@@ -3643,6 +3643,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/change-password": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "当前登录用户修改密码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "修改密码",
+                "parameters": [
+                    {
+                        "description": "密码参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ChangePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "修改成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/create": {
             "post": {
                 "security": [
@@ -3766,6 +3817,55 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "当前登录用户更新个人信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "更新用户信息",
+                "parameters": [
+                    {
+                        "description": "用户信息参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateUserInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "401": {
@@ -4426,6 +4526,27 @@ const docTemplate = `{
                 },
                 "type": {
                     "description": "knowledge, example, exercise",
+                    "type": "string"
+                }
+            }
+        },
+        "request.ChangePasswordRequest": {
+            "type": "object",
+            "required": [
+                "confirmPassword",
+                "newPassword",
+                "password"
+            ],
+            "properties": {
+                "confirmPassword": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "newPassword": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "password": {
                     "type": "string"
                 }
             }
@@ -5226,6 +5347,44 @@ const docTemplate = `{
                 }
             }
         },
+        "request.UpdateUserInfoRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "nickName",
+                "userGender",
+                "userPhone"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "des": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "nickName": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "userGender": {
+                    "type": "string",
+                    "enum": [
+                        "male",
+                        "female",
+                        "unknown"
+                    ]
+                },
+                "userPhone": {
+                    "type": "string"
+                }
+            }
+        },
         "request.UpdateUserRequest": {
             "type": "object",
             "required": [
@@ -5623,6 +5782,10 @@ const docTemplate = `{
         "response.UserInfoResponse": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "广东省深圳市"
+                },
                 "avatar": {
                     "type": "string",
                     "example": "https://..."
@@ -5637,9 +5800,17 @@ const docTemplate = `{
                         "user:edit"
                     ]
                 },
+                "des": {
+                    "type": "string",
+                    "example": "个人介绍"
+                },
                 "email": {
                     "type": "string",
                     "example": "admin@example.com"
+                },
+                "nickName": {
+                    "type": "string",
+                    "example": "管理员"
                 },
                 "roles": {
                     "type": "array",
@@ -5651,6 +5822,10 @@ const docTemplate = `{
                         "user"
                     ]
                 },
+                "userGender": {
+                    "type": "string",
+                    "example": "male"
+                },
                 "userId": {
                     "type": "integer",
                     "example": 1
@@ -5658,6 +5833,10 @@ const docTemplate = `{
                 "userName": {
                     "type": "string",
                     "example": "admin"
+                },
+                "userPhone": {
+                    "type": "string",
+                    "example": "13800138000"
                 }
             }
         }

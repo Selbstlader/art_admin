@@ -55,22 +55,22 @@ func (r *UserRepository) Delete(id int64) error {
 func (r *UserRepository) AssignRoles(userID int64, roleIDs []int64) error {
 	// 开启事务
 	tx := database.DB.Begin()
-	
+
 	// 删除现有角色关联
 	if err := tx.Exec("DELETE FROM sys_user_role WHERE user_id = ?", userID).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
-	
+
 	// 添加新的角色关联
 	for _, roleID := range roleIDs {
-		if err := tx.Exec("INSERT INTO sys_user_role (user_id, role_id, create_time) VALUES (?, ?, ?)", 
+		if err := tx.Exec("INSERT INTO sys_user_role (user_id, role_id, create_time) VALUES (?, ?, ?)",
 			userID, roleID, time.Now()).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
 	}
-	
+
 	return tx.Commit().Error
 }
 
@@ -90,7 +90,7 @@ func (r *UserRepository) GetUserButtons(userID int64) ([]model.Button, error) {
 	err := database.DB.
 		Joins("JOIN sys_role_button ON sys_role_button.button_id = sys_button.id").
 		Joins("JOIN sys_user_role ON sys_user_role.role_id = sys_role_button.role_id").
-		Where("sys_user_role.user_id = ? AND sys_button.enabled = ?", userID, true).
+		Where("sys_user_role.user_id = ? AND sys_button.is_enable = ?", userID, true).
 		Distinct().
 		Find(&buttons).Error
 	return buttons, err
