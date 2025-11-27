@@ -4,7 +4,7 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	moodAnalyticsSvc "art_admin_backend/internal/service/mood_analytics"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -60,7 +60,7 @@ func AnalyzeUserEmotions(c *gin.Context) {
 	}
 
 	// 构造分析请求
-	analysisReq := &service.EmotionAnalysisRequest{
+	analysisReq := &moodAnalyticsSvc.EmotionAnalysisRequest{
 		UserID:       userID,
 		StartDate:    req.StartDate,
 		EndDate:      req.EndDate,

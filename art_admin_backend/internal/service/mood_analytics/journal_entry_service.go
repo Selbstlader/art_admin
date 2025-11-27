@@ -1,4 +1,4 @@
-package service
+package mood_analytics
 
 import (
 	"art_admin_backend/internal/dto/request"

@@ -85,6 +85,24 @@
 
 - auth_service.go → service/auth/
 
+### mood_analytics复杂合并模块
+- mood_record_service.go → service/mood_analytics/
+- meditation_record_service.go → service/mood_analytics/
+- journal_entry_service.go → service/mood_analytics/
+- meditation_content_service.go → service/mood_analytics/
+- meditation_favorite_service.go → service/mood_analytics/
+- user_goal_service.go → service/mood_analytics/
+- ai_analysis_service.go → service/mood_analytics/
+- analysis_retry_service.go → service/mood_analytics/
+- analysis_debouncer.go → service/mood_analytics/  # 内部依赖工具
+
+### 独立模块重构
+- achievement_service.go → service/achievement/
+- operation_log_service.go → service/operation_log/
+- dictionary_service.go → service/dictionary/
+- app_user_service.go → service/app_user/
+- dify_service.go → service/dify/
+
 ### API层重组
 - chat_api.go → api/chat/
 - learning_api.go → api/learning/

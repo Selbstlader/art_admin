@@ -5,15 +5,15 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/api/project"
 	v1 "art_admin_backend/internal/api/v1"
-	"art_admin_backend/internal/service"
 	achievementSvc "art_admin_backend/internal/service/achievement"
+	moodAnalyticsSvc "art_admin_backend/internal/service/mood_analytics"
 
 	"github.com/gin-gonic/gin"
 )
 
 var learningAPI *api.LearningAPI
 var chatAPI *api.ChatAPI
-var aiAnalysisService *service.AIAnalysisService
+var aiAnalysisService *moodAnalyticsSvc.AIAnalysisService
 var achievementService *achievementSvc.AchievementService
 
 // SetLearningAPI 设置学习系统 API（由 main 函数调用）
@@ -27,7 +27,7 @@ func SetChatAPI(api *api.ChatAPI) {
 }
 
 // SetAIAnalysisService 设置AI分析服务（由 main 函数调用）
-func SetAIAnalysisService(service *service.AIAnalysisService) {
+func SetAIAnalysisService(service *moodAnalyticsSvc.AIAnalysisService) {
 	aiAnalysisService = service
 }
 

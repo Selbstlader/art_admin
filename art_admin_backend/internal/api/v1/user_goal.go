@@ -4,14 +4,14 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	moodAnalyticsSvc "art_admin_backend/internal/service/mood_analytics"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 // 目标服务实例
-var userGoalService = service.NewUserGoalService()
+var userGoalService = moodAnalyticsSvc.NewUserGoalService()
 
 // CreateGoal 创建目标
 // @Summary 创建目标

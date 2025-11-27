@@ -4,19 +4,19 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	moodAnalyticsSvc "art_admin_backend/internal/service/mood_analytics"
 	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var meditationContentService *service.MeditationContentService
+var meditationContentService *moodAnalyticsSvc.MeditationContentService
 
 // getMeditationContentService 获取冥想内容服务实例（懒加载）
-func getMeditationContentService() *service.MeditationContentService {
+func getMeditationContentService() *moodAnalyticsSvc.MeditationContentService {
 	if meditationContentService == nil {
-		meditationContentService = service.NewMeditationContentService()
+		meditationContentService = moodAnalyticsSvc.NewMeditationContentService()
 	}
 	return meditationContentService
 }

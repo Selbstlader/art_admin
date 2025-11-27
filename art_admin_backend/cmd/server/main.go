@@ -16,9 +16,9 @@ import (
 	ws "art_admin_backend/internal/pkg/websocket"
 	"art_admin_backend/internal/repository"
 	"art_admin_backend/internal/router"
-	"art_admin_backend/internal/service"
 	achievementSvc "art_admin_backend/internal/service/achievement"
 	chatSvc "art_admin_backend/internal/service/chat"
+	moodAnalyticsSvc "art_admin_backend/internal/service/mood_analytics"
 
 	_ "art_admin_backend/docs" // swagger docs
 
@@ -124,12 +124,12 @@ func main() {
 	router.SetChatAPI(chatAPI)
 
 	// 初始化情绪管理相关服务
-	moodRecordService := service.NewMoodRecordService()
-	meditationRecordService := service.NewMeditationRecordService()
-	journalEntryService := service.NewJournalEntryService()
-	aiAnalysisService := service.NewAIAnalysisService()
+	moodRecordService := moodAnalyticsSvc.NewMoodRecordService()
+	meditationRecordService := moodAnalyticsSvc.NewMeditationRecordService()
+	journalEntryService := moodAnalyticsSvc.NewJournalEntryService()
+	aiAnalysisService := moodAnalyticsSvc.NewAIAnalysisService()
 	achievementService := achievementSvc.NewAchievementService()
-	meditationFavoriteService := service.NewMeditationFavoriteService()
+	meditationFavoriteService := moodAnalyticsSvc.NewMeditationFavoriteService()
 
 	// 设置v1 API的服务实例
 	v1.SetServices(

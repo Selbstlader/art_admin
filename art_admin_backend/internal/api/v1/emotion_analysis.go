@@ -4,7 +4,7 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/dto/response"
-	"art_admin_backend/internal/service"
+	moodAnalyticsSvc "art_admin_backend/internal/service/mood_analytics"
 	"net/http"
 	"strconv"
 	"time"
@@ -51,7 +51,7 @@ func GetMoodTrends(c *gin.Context) {
 	}
 
 	// 调用服务获取趋势
-	trends, err := moodRecordService.GetMoodTrends(userID, days)
+	trends, err := GetMoodRecordService().GetMoodTrends(userID, days)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -77,7 +77,7 @@ func AnalyzeMeditationSession(c *gin.Context) {
 	}
 
 	// 调用服务分析
-	result, err := meditationRecordService.AnalyzeMeditationSession(c.Request.Context(), userID, recordID)
+	result, err := GetMeditationRecordService().AnalyzeMeditationSession(c.Request.Context(), userID, recordID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -103,7 +103,7 @@ func GetMeditationTrends(c *gin.Context) {
 	}
 
 	// 调用服务获取趋势
-	trends, err := meditationRecordService.GetMeditationTrends(userID, days)
+	trends, err := GetMeditationRecordService().GetMeditationTrends(userID, days)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -121,7 +121,7 @@ func GetMeditationRecommendations(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
 	// 调用服务获取推荐
-	recommendations, err := meditationRecordService.GetMeditationRecommendations(c.Request.Context(), userID)
+	recommendations, err := GetMeditationRecordService().GetMeditationRecommendations(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -147,7 +147,7 @@ func AnalyzeJournalEntry(c *gin.Context) {
 	}
 
 	// 调用服务分析
-	result, err := journalEntryService.AnalyzeJournalEntry(c.Request.Context(), userID, entryID)
+	result, err := GetJournalEntryService().AnalyzeJournalEntry(c.Request.Context(), userID, entryID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -231,7 +231,7 @@ func BatchAnalyze(c *gin.Context) {
 	}
 
 	// 调用AI分析服务进行批量分析
-	aiService := service.NewAIAnalysisService()
+	aiService := moodAnalyticsSvc.NewAIAnalysisService()
 	result := &response.BatchAnalysisResponse{
 		TotalUsers:  len(req.UserIDs),
 		Results:     make(map[int64]interface{}),
@@ -252,7 +252,7 @@ func BatchAnalyze(c *gin.Context) {
 		}
 
 		// 转换为service层请求类型
-		serviceReq := &service.EmotionAnalysisRequest{
+		serviceReq := &moodAnalyticsSvc.EmotionAnalysisRequest{
 			UserID:       dtoReq.UserID,
 			StartDate:    dtoReq.StartDate,
 			EndDate:      dtoReq.EndDate,

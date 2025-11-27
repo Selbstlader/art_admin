@@ -1,4 +1,4 @@
-package service
+package mood_analytics
 
 import (
 	"sync"
