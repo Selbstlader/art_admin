@@ -1,4 +1,4 @@
-package service
+package project
 
 import (
 	"art_admin_backend/internal/dto/request"
