@@ -4,12 +4,12 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	authSvc "art_admin_backend/internal/service/auth"
 
 	"github.com/gin-gonic/gin"
 )
 
-var authService = service.NewAuthService()
+var authService = authSvc.NewAuthService()
 
 // Login 用户登录
 // @Summary 用户登录
