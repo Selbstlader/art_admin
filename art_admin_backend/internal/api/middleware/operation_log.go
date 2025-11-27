@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"art_admin_backend/internal/dto/request"
-	"art_admin_backend/internal/service"
+	operationLogSvc "art_admin_backend/internal/service/operation_log"
 
 	"github.com/gin-gonic/gin"
 )
 
-var operationLogService = service.NewOperationLogService()
+var operationLogService = operationLogSvc.NewOperationLogService()
 
 // 业务类型映射
 var businessTypeMap = map[string]string{

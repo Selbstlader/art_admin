@@ -1,4 +1,4 @@
-package service
+package operation_log
 
 import (
 	"errors"

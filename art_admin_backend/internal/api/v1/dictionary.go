@@ -3,13 +3,13 @@ package v1
 import (
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	dictionarySvc "art_admin_backend/internal/service/dictionary"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var dictionaryService = service.NewDictionaryService()
+var dictionaryService = dictionarySvc.NewDictionaryService()
 
 // ========== 字典类型相关 ==========
 

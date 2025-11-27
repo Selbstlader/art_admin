@@ -3,13 +3,13 @@ package v1
 import (
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	operationLogSvc "art_admin_backend/internal/service/operation_log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var operationLogService = service.NewOperationLogService()
+var operationLogService = operationLogSvc.NewOperationLogService()
 
 // GetOperationLogList 获取操作日志列表
 // @Summary 获取操作日志列表
