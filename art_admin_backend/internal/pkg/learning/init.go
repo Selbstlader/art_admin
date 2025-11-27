@@ -5,7 +5,7 @@ import (
 	"art_admin_backend/internal/pkg/deepseek"
 	"art_admin_backend/internal/pkg/dify"
 	"art_admin_backend/internal/repository"
-	"art_admin_backend/internal/service"
+	learningSvc "art_admin_backend/internal/service/learning"
 
 	"gorm.io/gorm"
 )
@@ -63,8 +63,8 @@ func NewContainer(db *gorm.DB, config Config) *Container {
 	taskRepo := repository.NewMaterialGenerateTaskRepository(db)
 
 	// 创建服务
-	subjectService := service.NewSubjectService(subjectRepo)
-	materialService := service.NewLearningMaterialService(
+	subjectService := learningSvc.NewSubjectService(subjectRepo)
+	materialService := learningSvc.NewLearningMaterialService(
 		materialRepo,
 		subjectRepo,
 		taskRepo,

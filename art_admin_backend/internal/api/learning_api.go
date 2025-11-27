@@ -6,21 +6,21 @@ import (
 	"strings"
 
 	"art_admin_backend/internal/dto"
-	"art_admin_backend/internal/service"
+	learningSvc "art_admin_backend/internal/service/learning"
 
 	"github.com/gin-gonic/gin"
 )
 
 // LearningAPI 学习系统 API
 type LearningAPI struct {
-	materialService *service.LearningMaterialService
-	subjectService  *service.SubjectService
+	materialService *learningSvc.LearningMaterialService
+	subjectService  *learningSvc.SubjectService
 }
 
 // NewLearningAPI 创建学习系统 API
 func NewLearningAPI(
-	materialService *service.LearningMaterialService,
-	subjectService *service.SubjectService,
+	materialService *learningSvc.LearningMaterialService,
+	subjectService *learningSvc.SubjectService,
 ) *LearningAPI {
 	return &LearningAPI{
 		materialService: materialService,
@@ -51,7 +51,7 @@ func (a *LearningAPI) GenerateMaterial(c *gin.Context) {
 	}
 
 	// 构建服务请求
-	serviceReq := &service.GenerateMaterialRequest{
+	serviceReq := &learningSvc.GenerateMaterialRequest{
 		UserID:     userID.(int64),
 		SubjectID:  req.SubjectID,
 		Grade:      req.Grade,
