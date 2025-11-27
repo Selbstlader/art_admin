@@ -4,7 +4,7 @@ import (
 	"art_admin_backend/internal/dto/request"
 	difyResponse "art_admin_backend/internal/dto/response"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	difySvc "art_admin_backend/internal/service/dify"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,11 +16,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var difyService *service.DifyService
+var difyService *difySvc.DifyService
 
-func getDifyService() *service.DifyService {
+func getDifyService() *difySvc.DifyService {
 	if difyService == nil {
-		difyService = service.NewDifyService()
+		difyService = difySvc.NewDifyService()
 	}
 	return difyService
 }

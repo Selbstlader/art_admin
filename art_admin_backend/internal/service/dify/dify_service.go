@@ -1,4 +1,4 @@
-package service
+package dify
 
 import (
 	"art_admin_backend/internal/dto/request"

@@ -3,13 +3,13 @@ package v1
 import (
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	appUserSvc "art_admin_backend/internal/service/app_user"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var appUserService = service.NewAppUserService()
+var appUserService = appUserSvc.NewAppUserService()
 
 // GetAppUserList 获取APP用户列表
 // @Summary 获取APP用户列表
