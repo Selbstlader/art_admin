@@ -4,7 +4,7 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/dto"
 	ws "art_admin_backend/internal/pkg/websocket"
-	"art_admin_backend/internal/service"
+	chatSvc "art_admin_backend/internal/service/chat"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -26,12 +26,12 @@ var upgrader = websocket.Upgrader{
 
 // ChatAPI 聊天室 API
 type ChatAPI struct {
-	chatService service.ChatService
+	chatService chatSvc.ChatService
 	hub         *ws.Hub
 }
 
 // NewChatAPI 创建聊天室 API
-func NewChatAPI(chatService service.ChatService, hub *ws.Hub) *ChatAPI {
+func NewChatAPI(chatService chatSvc.ChatService, hub *ws.Hub) *ChatAPI {
 	api := &ChatAPI{
 		chatService: chatService,
 		hub:         hub,

@@ -21,6 +21,22 @@
 - **mood+ai_analysis应合并为mood_analytics模块**：由于紧密耦合，应视为一个业务域
 - **选择独立模块试点**：优先选择learning或chat等耦合度低的模块验证重构方法
 
+## 成功的重构模式（learning模块）
+### 重构步骤（可复用）
+1. **依赖分析**：确认模块无内部service层耦合
+2. **创建模块目录**：`mkdir -p internal/service/{module}/`
+3. **移动service文件**：`mv service/*_service.go service/{module}/`
+4. **修改package声明**：将`package service`改为`package {module}`
+5. **更新import路径**：使用别名避免命名冲突（如`learningSvc`）
+6. **逐文件更新引用**：API层、pkg层等
+7. **编译测试验证**：确保每步都可编译
+
+### 成功关键因素
+- **低耦合模块**：learning模块只依赖repository层和外部客户端
+- **逐步验证**：每步修改后立即测试编译
+- **别名策略**：使用`{module}Svc`别名避免包名冲突
+- **原子提交**：每个模块重构作为独立提交
+
 ## 后端重构映射
 
 ### Service层重组

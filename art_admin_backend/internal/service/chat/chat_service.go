@@ -1,4 +1,4 @@
-package service
+package chat
 
 import (
 	"art_admin_backend/internal/dto"

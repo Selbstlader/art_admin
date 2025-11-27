@@ -17,6 +17,7 @@ import (
 	"art_admin_backend/internal/repository"
 	"art_admin_backend/internal/router"
 	"art_admin_backend/internal/service"
+	chatSvc "art_admin_backend/internal/service/chat"
 
 	_ "art_admin_backend/docs" // swagger docs
 
@@ -115,7 +116,7 @@ func main() {
 	chatRoomRepo := repository.NewChatRoomRepository(database.GetDB())
 	chatMessageRepo := repository.NewChatMessageRepository(database.GetDB())
 	chatMemberRepo := repository.NewChatRoomMemberRepository(database.GetDB())
-	chatService := service.NewChatService(chatRoomRepo, chatMessageRepo, chatMemberRepo)
+	chatService := chatSvc.NewChatService(chatRoomRepo, chatMessageRepo, chatMemberRepo)
 	chatAPI := api.NewChatAPI(chatService, chatHub)
 
 	// 设置聊天室 API
