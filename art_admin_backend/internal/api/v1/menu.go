@@ -4,13 +4,13 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	systemSvc "art_admin_backend/internal/service/system"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var menuService = service.NewMenuService()
+var menuService = systemSvc.NewMenuService()
 
 // GetMenuList 获取菜单列表
 // @Summary 获取菜单列表

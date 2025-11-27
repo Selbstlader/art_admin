@@ -1,4 +1,4 @@
-package service
+package system
 
 import (
 	"errors"
@@ -170,7 +170,7 @@ func (s *MenuService) buildMenuTree(menus []model.Menu, parentID int64, userID i
 			// 构建菜单节点
 			node := &response.MenuResponse{
 				ID:        menu.ID,
-				ParentID:  menu.ParentID,  // 添加 ParentID
+				ParentID:  menu.ParentID, // 添加 ParentID
 				Name:      menu.Name,
 				Path:      menu.Path,
 				Component: menu.Component,
@@ -223,7 +223,7 @@ func (s *MenuService) buildMenuTreeAdmin(menus []model.Menu, parentID int64) []*
 			// 构建菜单节点
 			node := &response.MenuResponse{
 				ID:        menu.ID,
-				ParentID:  menu.ParentID,  // 添加 ParentID
+				ParentID:  menu.ParentID, // 添加 ParentID
 				Name:      menu.Name,
 				Path:      menu.Path,
 				Component: menu.Component,

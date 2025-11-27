@@ -3,13 +3,13 @@ package v1
 import (
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	systemSvc "art_admin_backend/internal/service/system"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var userService = service.NewUserService()
+var userService = systemSvc.NewUserService()
 
 // GetUserList 获取用户列表
 // @Summary 获取用户列表

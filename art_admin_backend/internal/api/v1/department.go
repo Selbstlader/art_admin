@@ -3,13 +3,13 @@ package v1
 import (
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	systemSvc "art_admin_backend/internal/service/system"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
 
-var departmentService = service.NewDepartmentService()
+var departmentService = systemSvc.NewDepartmentService()
 
 // GetDepartmentList 获取部门列表
 // @Summary 获取部门列表
