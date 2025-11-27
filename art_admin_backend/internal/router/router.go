@@ -6,6 +6,7 @@ import (
 	"art_admin_backend/internal/api/project"
 	v1 "art_admin_backend/internal/api/v1"
 	"art_admin_backend/internal/service"
+	achievementSvc "art_admin_backend/internal/service/achievement"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +14,7 @@ import (
 var learningAPI *api.LearningAPI
 var chatAPI *api.ChatAPI
 var aiAnalysisService *service.AIAnalysisService
-var achievementService *service.AchievementService
+var achievementService *achievementSvc.AchievementService
 
 // SetLearningAPI 设置学习系统 API（由 main 函数调用）
 func SetLearningAPI(api *api.LearningAPI) {
@@ -31,7 +32,7 @@ func SetAIAnalysisService(service *service.AIAnalysisService) {
 }
 
 // SetAchievementService 设置成就服务（由 main 函数调用）
-func SetAchievementService(service *service.AchievementService) {
+func SetAchievementService(service *achievementSvc.AchievementService) {
 	achievementService = service
 }
 

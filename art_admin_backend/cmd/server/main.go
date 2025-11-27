@@ -17,6 +17,7 @@ import (
 	"art_admin_backend/internal/repository"
 	"art_admin_backend/internal/router"
 	"art_admin_backend/internal/service"
+	achievementSvc "art_admin_backend/internal/service/achievement"
 	chatSvc "art_admin_backend/internal/service/chat"
 
 	_ "art_admin_backend/docs" // swagger docs
@@ -127,7 +128,7 @@ func main() {
 	meditationRecordService := service.NewMeditationRecordService()
 	journalEntryService := service.NewJournalEntryService()
 	aiAnalysisService := service.NewAIAnalysisService()
-	achievementService := service.NewAchievementService()
+	achievementService := achievementSvc.NewAchievementService()
 	meditationFavoriteService := service.NewMeditationFavoriteService()
 
 	// 设置v1 API的服务实例

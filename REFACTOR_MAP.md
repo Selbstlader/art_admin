@@ -37,15 +37,33 @@
 - **别名策略**：使用`{module}Svc`别名避免包名冲突
 - **原子提交**：每个模块重构作为独立提交
 
-## 后端重构映射
+## 后端重构进展
+### 已完成模块 ✅
+1. **learning模块** - 教材和学科服务 (低耦合)
+2. **chat模块** - 聊天室服务 (低耦合)
+3. **project模块** - 项目管理服务 (中等复杂度)
+4. **auth模块** - 认证服务 (低耦合)
+5. **system模块** - 系统管理服务 (批量重构：menu、role、user、department)
 
-### Service层重组
-- mood_record_service.go → service/mood/
-- meditation_record_service.go → service/mood/
-- meditation_content_service.go → service/mood/
-- meditation_favorite_service.go → service/mood/
-- journal_entry_service.go → service/mood/
-- user_goal_service.go → service/mood/ (跨模块共享)
+### 剩余模块重构计划
+#### 独立模块 (快速重构)
+6. **achievement模块** - 成就系统服务
+7. **operation_log模块** - 操作日志服务
+8. **dictionary模块** - 字典服务
+9. **app_user模块** - 应用用户服务
+10. **dify模块** - 外部服务集成
+
+#### 模块合并
+11. **project扩展** - 将task_service、project_template_service并入project模块
+12. **mood_analytics合并** - 将mood相关模块与ai_analysis合并为单一模块
+
+#### 通用工具模块
+- **analysis_retry服务** - 分析重试服务 (可考虑独立或合并)
+
+### 重构优先级队列
+1. 🟢 独立模块 (achievement、operation_log、dictionary) - 低风险
+2. 🟡 模块合并 (project扩展) - 中等风险
+3. 🔍 复杂合并 (mood_analytics) - 高风险，最后处理
 
 - learning_material_service.go → service/learning/
 - subject_service.go → service/learning/

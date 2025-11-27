@@ -1,4 +1,4 @@
-package service
+package achievement
 
 import (
 	"art_admin_backend/internal/model"

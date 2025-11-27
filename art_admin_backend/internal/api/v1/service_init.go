@@ -2,6 +2,7 @@ package v1
 
 import (
 	"art_admin_backend/internal/service"
+	achievementSvc "art_admin_backend/internal/service/achievement"
 )
 
 // 全局服务实例 - 统一声明避免重定义
@@ -10,7 +11,7 @@ var (
 	meditationRecordService   *service.MeditationRecordService
 	journalEntryService       *service.JournalEntryService
 	aiAnalysisService         *service.AIAnalysisService
-	achievementService        *service.AchievementService
+	achievementService        *achievementSvc.AchievementService
 	meditationFavoriteService *service.MeditationFavoriteService
 )
 
@@ -20,7 +21,7 @@ func SetServices(
 	meditationService *service.MeditationRecordService,
 	journalService *service.JournalEntryService,
 	aiService *service.AIAnalysisService,
-	achieveService *service.AchievementService,
+	achieveService *achievementSvc.AchievementService,
 	meditationFavService *service.MeditationFavoriteService,
 ) {
 	moodRecordService = moodService
@@ -52,6 +53,6 @@ func GetAIAnalysisService() *service.AIAnalysisService {
 }
 
 // GetAchievementService 获取成就服务
-func GetAchievementService() *service.AchievementService {
-	return achievementService
+func GetAchievementService() *achievementSvc.AchievementService {
+	return achievementSvc.NewAchievementService()
 }
