@@ -3,13 +3,13 @@ package project
 import (
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	projectSvc "art_admin_backend/internal/service/project"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var templateService = service.NewProjectTemplateService()
+var templateService = projectSvc.NewProjectTemplateService()
 
 // GetTemplateList 获取项目模板列表
 func GetTemplateList(c *gin.Context) {

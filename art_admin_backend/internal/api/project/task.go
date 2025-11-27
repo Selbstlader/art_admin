@@ -3,13 +3,13 @@ package project
 import (
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/response"
-	"art_admin_backend/internal/service"
+	projectSvc "art_admin_backend/internal/service/project"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var taskService = service.NewTaskService()
+var taskService = projectSvc.NewTaskService()
 
 // GetTaskList 获取任务列表
 func GetTaskList(c *gin.Context) {
