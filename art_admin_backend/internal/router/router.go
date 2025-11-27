@@ -5,12 +5,15 @@ import (
 	"art_admin_backend/internal/api/middleware"
 	"art_admin_backend/internal/api/project"
 	v1 "art_admin_backend/internal/api/v1"
+	"art_admin_backend/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 var learningAPI *api.LearningAPI
 var chatAPI *api.ChatAPI
+var aiAnalysisService *service.AIAnalysisService
+var achievementService *service.AchievementService
 
 // SetLearningAPI 设置学习系统 API（由 main 函数调用）
 func SetLearningAPI(api *api.LearningAPI) {
@@ -20,6 +23,16 @@ func SetLearningAPI(api *api.LearningAPI) {
 // SetChatAPI 设置聊天室 API（由 main 函数调用）
 func SetChatAPI(api *api.ChatAPI) {
 	chatAPI = api
+}
+
+// SetAIAnalysisService 设置AI分析服务（由 main 函数调用）
+func SetAIAnalysisService(service *service.AIAnalysisService) {
+	aiAnalysisService = service
+}
+
+// SetAchievementService 设置成就服务（由 main 函数调用）
+func SetAchievementService(service *service.AchievementService) {
+	achievementService = service
 }
 
 // RegisterRoutes 注册所有路由
@@ -135,6 +148,137 @@ func RegisterRoutes(r *gin.Engine) {
 
 				// 任务评论
 				projectGroup.POST("/task/comment", project.CreateTaskComment)
+			}
+
+			// 情绪管理模块
+			moodGroup := authApiGroup.Group("/mood-record")
+			{
+				moodGroup.POST("/create", v1.CreateMoodRecord)
+				moodGroup.PUT("/update", v1.UpdateMoodRecord)
+				moodGroup.DELETE("/delete/:id", v1.DeleteMoodRecord)
+				moodGroup.GET("/list", v1.GetMoodRecordList)
+				moodGroup.GET("/statistics", v1.GetMoodStatistics)
+				moodGroup.POST("/analytics", v1.GetMoodAnalytics)
+				moodGroup.GET("/:id", v1.GetMoodRecordDetail)         // 新增：获取单条记录详情
+				moodGroup.GET("/date/:date", v1.GetMoodRecordsByDate) // 新增：按日期查询
+				moodGroup.GET("/calendar", v1.GetMoodCalendar)        // 新增：日历视图数据
+
+				// AI分析相关接口
+				moodGroup.POST("/analyze-patterns", v1.AnalyzeMoodPatterns)
+				moodGroup.GET("/trends", v1.GetMoodTrends)
+			}
+
+			// 冥想记录管理模块
+			meditationRecordGroup := authApiGroup.Group("/meditation-record")
+			{
+				meditationRecordGroup.POST("/create", v1.CreateMeditationRecord)
+				meditationRecordGroup.PUT("/update", v1.UpdateMeditationRecord)
+				meditationRecordGroup.DELETE("/delete/:id", v1.DeleteMeditationRecord)
+				meditationRecordGroup.GET("/list", v1.GetMeditationRecordList)
+				meditationRecordGroup.GET("/:id", v1.GetMeditationRecordDetail)
+				meditationRecordGroup.GET("/statistics", v1.GetMeditationStatistics)
+
+				// AI分析相关接口
+				meditationRecordGroup.POST("/:id/analyze", v1.AnalyzeMeditationSession)
+				meditationRecordGroup.GET("/trends", v1.GetMeditationTrends)
+				meditationRecordGroup.GET("/recommendations", v1.GetMeditationRecommendations)
+			}
+
+			// 冥想内容管理模块
+			meditationGroup := authApiGroup.Group("/meditation-content")
+			{
+				meditationGroup.POST("/create", v1.CreateMeditationContent)
+				meditationGroup.PUT("/update", v1.UpdateMeditationContent)
+				meditationGroup.DELETE("/delete/:id", v1.DeleteMeditationContent)
+				meditationGroup.GET("/list", v1.GetMeditationContentList)
+				meditationGroup.GET("/:id", v1.GetMeditationContentDetail)
+				meditationGroup.GET("/category/:category", v1.GetMeditationContentByCategory)
+				meditationGroup.GET("/difficulty/:difficulty", v1.GetMeditationContentByDifficulty)
+				meditationGroup.GET("/popular", v1.GetPopularMeditationContent)
+				meditationGroup.POST("/like/:id", v1.LikeMeditationContent)
+				meditationGroup.POST("/unlike/:id", v1.UnlikeMeditationContent)
+				meditationGroup.GET("/search", v1.SearchMeditationContent)
+				meditationGroup.GET("/categories", v1.GetMeditationCategories)
+				meditationGroup.GET("/difficulty-levels", v1.GetMeditationDifficultyLevels)
+
+				// 收藏功能
+				meditationGroup.POST("/:id/favorite", v1.AddMeditationFavorite)        // 新增：添加收藏
+				meditationGroup.DELETE("/:id/favorite", v1.RemoveMeditationFavorite)   // 新增：取消收藏
+				meditationGroup.GET("/:id/favorite/check", v1.CheckMeditationFavorite) // 新增：检查是否收藏
+				meditationGroup.GET("/favorites", v1.GetUserFavorites)                 // 新增：获取收藏列表
+
+				// 播放记录功能
+				meditationGroup.POST("/play-record", v1.UpdatePlayRecord)       // 新增：更新播放记录
+				meditationGroup.GET("/:id/play-record", v1.GetPlayRecord)       // 新增：获取播放记录
+				meditationGroup.GET("/play-history", v1.GetUserPlayHistory)     // 新增：获取播放历史
+				meditationGroup.GET("/recently-played", v1.GetRecentlyPlayed)   // 新增：最近播放
+				meditationGroup.GET("/continue-playing", v1.GetContinuePlaying) // 新增：继续播放
+				meditationGroup.GET("/play-stats", v1.GetPlayStats)             // 新增：播放统计
+			}
+
+			// 日记管理模块
+			journalGroup := authApiGroup.Group("/journal-entry")
+			{
+				journalGroup.POST("/create", v1.CreateJournalEntry)
+				journalGroup.PUT("/update", v1.UpdateJournalEntry)
+				journalGroup.DELETE("/delete/:id", v1.DeleteJournalEntry)
+				journalGroup.GET("/list", v1.GetJournalEntryList)
+				journalGroup.GET("/:id", v1.GetJournalEntryDetail)
+				journalGroup.GET("/date-range", v1.GetJournalEntriesByDateRange)
+				journalGroup.GET("/recent", v1.GetRecentJournalEntries)
+				journalGroup.GET("/search", v1.SearchJournalEntries)
+				journalGroup.GET("/statistics", v1.GetJournalStatistics)
+				journalGroup.PUT("/sentiment/:id", v1.UpdateSentimentScore)
+
+				// 标签和图片管理接口
+				journalGroup.GET("/tags", v1.GetAllUserTags)              // 新增：获取所有标签
+				journalGroup.GET("/by-tag", v1.GetJournalsByTag)          // 新增：按标签查询
+				journalGroup.PUT("/:id/tags", v1.UpdateJournalTags)       // 新增：更新标签
+				journalGroup.POST("/:id/images", v1.AddJournalImages)     // 新增：添加图片
+				journalGroup.DELETE("/:id/images", v1.RemoveJournalImage) // 新增：删除图片
+
+				// AI分析相关接口
+				journalGroup.POST("/:id/analyze", v1.AnalyzeJournalEntry)
+				journalGroup.GET("/insights", v1.GetJournalInsights)
+				journalGroup.GET("/trends", v1.GetJournalTrends)
+			}
+
+			// AI分析相关路由
+			authApiGroup.POST("/ai-analysis/emotions", v1.AnalyzeUserEmotions)
+			authApiGroup.GET("/ai-analysis/history", v1.GetEmotionAnalysisHistory)
+			authApiGroup.GET("/ai-analysis/:id", v1.GetEmotionAnalysisDetail)
+			authApiGroup.DELETE("/ai-analysis/:id", v1.DeleteEmotionAnalysis)
+			authApiGroup.GET("/ai-analysis/:id/export", v1.ExportEmotionAnalysis)
+			authApiGroup.POST("/ai-analysis/batch-analyze", v1.BatchAnalyze)
+			authApiGroup.GET("/ai-analysis/status", v1.GetAnalysisStatus)
+
+			// 成就系统相关路由
+			authApiGroup.GET("/achievements", v1.GetAchievementList)
+			authApiGroup.GET("/achievements/stats", v1.GetAchievementStats)
+			authApiGroup.GET("/achievements/leaderboard", v1.GetLeaderboard)
+			authApiGroup.GET("/achievements/recent", v1.GetRecentAchievements)
+			authApiGroup.POST("/achievements/claim", v1.ClaimAchievement)
+
+			// 目标管理模块
+			goalGroup := authApiGroup.Group("/goals")
+			{
+				goalGroup.POST("", v1.CreateGoal)                     // 创建目标
+				goalGroup.GET("", v1.GetUserGoals)                    // 获取目标列表
+				goalGroup.PUT("/:id", v1.UpdateGoal)                  // 更新目标
+				goalGroup.DELETE("/:id", v1.DeleteGoal)               // 删除目标
+				goalGroup.PUT("/:id/progress", v1.UpdateGoalProgress) // 更新目标进度
+				goalGroup.GET("/:id/progress", v1.GetGoalProgress)    // 获取目标进度历史
+			}
+
+			// 打卡管理模块
+			checkinGroup := authApiGroup.Group("/checkin")
+			{
+				checkinGroup.POST("", v1.Checkin)                    // 打卡
+				checkinGroup.GET("/today", v1.GetTodayCheckin)       // 获取今日打卡状态
+				checkinGroup.GET("/history", v1.GetCheckinHistory)   // 获取打卡历史
+				checkinGroup.GET("/streak", v1.GetCheckinStreak)     // 获取连续打卡天数
+				checkinGroup.GET("/calendar", v1.GetCheckinCalendar) // 获取打卡日历
+				checkinGroup.GET("/stats", v1.GetCheckinStats)       // 获取打卡统计
 			}
 
 			// Dify AI 模块

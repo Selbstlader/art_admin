@@ -25,9 +25,9 @@ CREATE TABLE IF NOT EXISTS `app_user` (
   KEY `idx_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='APP用户表';
 
--- 插入测试数据（可选）
+-- 插入测试数据（可选，使用INSERT IGNORE避免重复数据）
 -- 密码为: 123456 (已加密)
-INSERT INTO `app_user` (`user_name`, `nick_name`, `password`, `phone`, `email`, `user_type`, `status`) VALUES
+INSERT IGNORE INTO `app_user` (`user_name`, `nick_name`, `password`, `phone`, `email`, `user_type`, `status`) VALUES
 ('admin_app', 'APP管理员', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '13800138000', 'admin@app.com', '1', '1'),
 ('user001', '张三', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '13800138001', 'user001@app.com', '2', '1'),
 ('user002', '李四', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '13800138002', 'user002@app.com', '2', '1');

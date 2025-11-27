@@ -36,6 +36,11 @@ func MigrateAll() error {
 		&model.ChatRoom{},
 		&model.ChatMessage{},
 		&model.ChatRoomMember{},
+		// 情绪管理模块
+		&model.MoodRecord{},
+		&model.JournalEntry{},
+		&model.MeditationRecord{},
+		&model.MeditationContent{},
 	)
 	if err != nil {
 		return err

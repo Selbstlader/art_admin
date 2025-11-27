@@ -304,6 +304,28 @@ definitions:
         description: knowledge, example, exercise
         type: string
     type: object
+  request.BatchEmotionAnalysisRequest:
+    properties:
+      analysis_type:
+        enum:
+        - pattern
+        - trend
+        - insight
+        type: string
+      end_date:
+        type: string
+      start_date:
+        type: string
+      user_ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - analysis_type
+    - end_date
+    - start_date
+    - user_ids
+    type: object
   request.ChangePasswordRequest:
     properties:
       confirmPassword:
@@ -431,6 +453,60 @@ definitions:
     - typeCode
     - typeName
     type: object
+  request.CreateJournalEntryRequest:
+    properties:
+      content:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      is_private:
+        type: boolean
+      mood_record_id:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    required:
+    - content
+    - title
+    type: object
+  request.CreateMeditationContentRequest:
+    properties:
+      audio_url:
+        type: string
+      category:
+        type: string
+      cover_image:
+        type: string
+      description:
+        type: string
+      difficulty_level:
+        maximum: 5
+        minimum: 1
+        type: integer
+      duration:
+        minimum: 1
+        type: integer
+      is_public:
+        type: boolean
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 255
+        type: string
+    required:
+    - audio_url
+    - category
+    - duration
+    - title
+    type: object
   request.CreateMenuRequest:
     properties:
       activePath:
@@ -510,6 +586,30 @@ definitions:
     - label
     - name
     - path
+    type: object
+  request.CreateMoodRecordRequest:
+    properties:
+      activities:
+        items:
+          type: string
+        type: array
+      intensity:
+        maximum: 10
+        minimum: 1
+        type: integer
+      location:
+        type: string
+      mood_type:
+        type: string
+      note:
+        type: string
+      triggers:
+        items:
+          type: string
+        type: array
+    required:
+    - intensity
+    - mood_type
     type: object
   request.CreateRoleRequest:
     properties:
@@ -639,6 +739,23 @@ definitions:
         description: 远程URL
         type: string
     type: object
+  request.EmotionAnalysisRequest:
+    properties:
+      analysis_type:
+        enum:
+        - pattern
+        - trend
+        - insight
+        type: string
+      end_date:
+        type: string
+      start_date:
+        type: string
+    required:
+    - analysis_type
+    - end_date
+    - start_date
+    type: object
   request.LoginRequest:
     properties:
       password:
@@ -650,6 +767,23 @@ definitions:
     required:
     - password
     - userName
+    type: object
+  request.MoodAnalyticsRequest:
+    properties:
+      analyze_type:
+        enum:
+        - daily
+        - weekly
+        - monthly
+        type: string
+      end_date:
+        type: string
+      start_date:
+        type: string
+    required:
+    - analyze_type
+    - end_date
+    - start_date
     type: object
   request.ResetAppUserPasswordRequest:
     properties:
@@ -788,6 +922,56 @@ definitions:
     - typeCode
     - typeName
     type: object
+  request.UpdateJournalEntryRequest:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+      images:
+        items:
+          type: string
+        type: array
+      is_private:
+        type: boolean
+      mood_record_id:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    required:
+    - id
+    type: object
+  request.UpdateMeditationContentRequest:
+    properties:
+      audio_url:
+        type: string
+      category:
+        type: string
+      cover_image:
+        type: string
+      description:
+        type: string
+      difficulty_level:
+        type: integer
+      duration:
+        type: integer
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    required:
+    - id
+    type: object
   request.UpdateMenuRequest:
     properties:
       activePath:
@@ -851,6 +1035,31 @@ definitions:
     - name
     - path
     type: object
+  request.UpdateMoodRecordRequest:
+    properties:
+      activities:
+        items:
+          type: string
+        type: array
+      id:
+        type: integer
+      intensity:
+        maximum: 10
+        minimum: 1
+        type: integer
+      location:
+        type: string
+      mood_type:
+        type: string
+      note:
+        type: string
+      triggers:
+        items:
+          type: string
+        type: array
+    required:
+    - id
+    type: object
   request.UpdateRolePermissionsRequest:
     properties:
       buttonIds:
@@ -892,6 +1101,15 @@ definitions:
     - roleCode
     - roleId
     - roleName
+    type: object
+  request.UpdateSentimentScoreRequest:
+    properties:
+      sentiment_score:
+        maximum: 1
+        minimum: -1
+        type: number
+    required:
+    - sentiment_score
     type: object
   request.UpdateUserInfoRequest:
     properties:
@@ -1075,6 +1293,65 @@ definitions:
       updateTime:
         type: string
     type: object
+  response.JournalEntryDetail:
+    properties:
+      attachment_url:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      mood_record_id:
+        type: integer
+      privacy_setting:
+        type: string
+      sentiment_score:
+        type: number
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  response.JournalEntryItem:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      mood_record_id:
+        type: integer
+      sentiment_score:
+        type: number
+      title:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  response.JournalStatistics:
+    properties:
+      analysis_date:
+        type: string
+      average_word_count:
+        type: number
+      most_common_mood_type:
+        type: string
+      total_count:
+        type: integer
+      total_entries:
+        type: integer
+      writing_streak:
+        type: integer
+    type: object
   response.LoginResponse:
     properties:
       refreshToken:
@@ -1083,6 +1360,72 @@ definitions:
       token:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
+    type: object
+  response.MeditationContentDetail:
+    properties:
+      audio_url:
+        type: string
+      category:
+        type: string
+      category_label:
+        type: string
+      cover_image:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      description:
+        type: string
+      difficulty_level:
+        type: integer
+      duration:
+        type: integer
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      like_count:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+      view_count:
+        type: integer
+    type: object
+  response.MeditationContentItem:
+    properties:
+      audio_url:
+        type: string
+      category:
+        type: string
+      category_label:
+        type: string
+      cover_image:
+        type: string
+      difficulty_level:
+        type: integer
+      duration:
+        type: integer
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      like_count:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      view_count:
+        type: integer
     type: object
   response.MenuMeta:
     properties:
@@ -1126,6 +1469,82 @@ definitions:
         type: string
       redirect:
         type: string
+    type: object
+  response.MoodAnalyticsItem:
+    properties:
+      analyze_date:
+        type: string
+      analyze_type:
+        type: string
+      average_intensity:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: integer
+      mood_distribution:
+        additionalProperties:
+          type: integer
+        type: object
+      most_common_mood:
+        type: string
+      most_common_mood_label:
+        type: string
+      total_records:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  response.MoodRecordItem:
+    properties:
+      activities:
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      id:
+        type: integer
+      intensity:
+        type: integer
+      location:
+        type: string
+      mood_label:
+        type: string
+      mood_type:
+        type: string
+      note:
+        type: string
+      triggers:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: integer
+    type: object
+  response.MoodStatistics:
+    properties:
+      average_intensity:
+        type: number
+      mood_distribution:
+        additionalProperties:
+          type: integer
+        type: object
+      most_common_mood:
+        type: string
+      most_common_mood_label:
+        type: string
+      recent_trend:
+        description: 最近7天趋势
+        items:
+          $ref: '#/definitions/response.MoodRecordItem'
+        type: array
+      total_records:
+        type: integer
+      weekly_comparison:
+        additionalProperties: true
+        description: 周对比
+        type: object
     type: object
   response.OperationLogDetail:
     properties:
@@ -1229,6 +1648,62 @@ definitions:
         example: "13800138000"
         type: string
     type: object
+  service.EmotionAnalysisResult:
+    properties:
+      analysis_type:
+        type: string
+      analyzed_at:
+        type: string
+      data_points:
+        type: integer
+      end_date:
+        type: string
+      insights:
+        items:
+          type: string
+        type: array
+      patterns:
+        items:
+          $ref: '#/definitions/service.EmotionPattern'
+        type: array
+      recommendations:
+        items:
+          type: string
+        type: array
+      start_date:
+        type: string
+      summary:
+        type: string
+      trends:
+        items:
+          $ref: '#/definitions/service.EmotionTrend'
+        type: array
+      user_id:
+        type: integer
+    type: object
+  service.EmotionPattern:
+    properties:
+      description:
+        type: string
+      frequency:
+        type: integer
+      percentage:
+        type: number
+      type:
+        type: string
+    type: object
+  service.EmotionTrend:
+    properties:
+      change_rate:
+        type: number
+      confidence:
+        type: number
+      direction:
+        description: '"improving", "declining", "stable"'
+        type: string
+      period:
+        type: string
+    type: object
 host: localhost:48080
 info:
   contact: {}
@@ -1236,6 +1711,201 @@ info:
   title: Art Admin API
   version: "1.0"
 paths:
+  /api/ai-analysis/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除特定的情绪分析记录
+      parameters:
+      - description: 分析ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除情绪分析记录
+      tags:
+      - AI分析
+    get:
+      consumes:
+      - application/json
+      description: 获取特定情绪分析的详细信息
+      parameters:
+      - description: 分析ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.EmotionAnalysisResult'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取情绪分析详情
+      tags:
+      - AI分析
+  /api/ai-analysis/{id}/export:
+    get:
+      consumes:
+      - application/json
+      description: 导出情绪分析报告为PDF或JSON格式
+      parameters:
+      - description: 分析ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: json
+        description: 导出格式
+        enum:
+        - json
+        - pdf
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 导出成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 导出情绪分析报告
+      tags:
+      - AI分析
+  /api/ai-analysis/batch:
+    post:
+      consumes:
+      - application/json
+      description: 批量分析多个用户的情绪数据（管理员功能）
+      parameters:
+      - description: 批量分析请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.BatchEmotionAnalysisRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 分析成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 批量分析情绪
+      tags:
+      - AI分析
+  /api/ai-analysis/emotions:
+    post:
+      consumes:
+      - application/json
+      description: 基于用户的情绪记录和日记数据进行AI情绪分析
+      parameters:
+      - description: 情绪分析请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.EmotionAnalysisRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 分析成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.EmotionAnalysisResult'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 分析用户情绪模式
+      tags:
+      - AI分析
+  /api/ai-analysis/history:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户的历史情绪分析记录
+      parameters:
+      - default: 1
+        description: 当前页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页条数
+        in: query
+        name: pageSize
+        type: integer
+      - description: 分析类型
+        in: query
+        name: analysisType
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取情绪分析历史
+      tags:
+      - AI分析
   /api/app-user/create:
     post:
       consumes:
@@ -2839,6 +3509,372 @@ paths:
       summary: 获取建议问题
       tags:
       - Dify
+  /api/journal-entry/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取日记条目详细信息
+      parameters:
+      - description: 日记条目ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.JournalEntryDetail'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取日记条目详情
+      tags:
+      - 日记管理
+  /api/journal-entry/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建新的日记条目
+      parameters:
+      - description: 日记条目信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateJournalEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建日记条目
+      tags:
+      - 日记管理
+  /api/journal-entry/date-range:
+    get:
+      consumes:
+      - application/json
+      description: 根据日期范围获取日记条目列表
+      parameters:
+      - description: 开始日期(YYYY-MM-DD)
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: 结束日期(YYYY-MM-DD)
+        in: query
+        name: endDate
+        required: true
+        type: string
+      - default: 1
+        description: 当前页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页条数
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 根据日期范围获取日记条目
+      tags:
+      - 日记管理
+  /api/journal-entry/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除日记条目
+      parameters:
+      - description: 日记条目ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除日记条目
+      tags:
+      - 日记管理
+  /api/journal-entry/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询日记条目列表
+      parameters:
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      - description: 关联情绪记录ID
+        in: query
+        name: moodRecordId
+        type: integer
+      - description: 是否公开
+        in: query
+        name: isPublic
+        type: boolean
+      - description: 开始日期(YYYY-MM-DD)
+        in: query
+        name: startDate
+        type: string
+      - description: 结束日期(YYYY-MM-DD)
+        in: query
+        name: endDate
+        type: string
+      - description: 是否有附件
+        in: query
+        name: hasAttachment
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取日记条目列表
+      tags:
+      - 日记管理
+  /api/journal-entry/recent:
+    get:
+      consumes:
+      - application/json
+      description: 获取最近的日记条目列表
+      parameters:
+      - default: 10
+        description: 返回数量限制
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/response.JournalEntryItem'
+                  type: array
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取最近的日记条目
+      tags:
+      - 日记管理
+  /api/journal-entry/search:
+    get:
+      consumes:
+      - application/json
+      description: 搜索日记条目
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        required: true
+        type: string
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 搜索成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 搜索日记条目
+      tags:
+      - 日记管理
+  /api/journal-entry/sentiment/{id}:
+    put:
+      consumes:
+      - application/json
+      description: 更新日记条目的情感得分
+      parameters:
+      - description: 日记条目ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 情感得分
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateSentimentScoreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新情感得分
+      tags:
+      - 日记管理
+  /api/journal-entry/statistics:
+    get:
+      consumes:
+      - application/json
+      description: 获取日记统计信息
+      parameters:
+      - default: 30
+        description: 统计天数
+        in: query
+        name: days
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.JournalStatistics'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取日记统计信息
+      tags:
+      - 日记管理
+  /api/journal-entry/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新日记条目信息
+      parameters:
+      - description: 日记条目信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateJournalEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新日记条目
+      tags:
+      - 日记管理
   /api/learning/grades:
     get:
       parameters:
@@ -2991,6 +4027,440 @@ paths:
       summary: 获取学科列表
       tags:
       - Learning
+  /api/meditation-content/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取冥想内容详细信息
+      parameters:
+      - description: 冥想内容ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.MeditationContentDetail'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取冥想内容详情
+      tags:
+      - 冥想管理
+  /api/meditation-content/categories:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有冥想分类
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取冥想分类列表
+      tags:
+      - 冥想管理
+  /api/meditation-content/category/{category}:
+    get:
+      consumes:
+      - application/json
+      description: 根据分类获取冥想内容列表
+      parameters:
+      - description: 冥想分类
+        in: path
+        name: category
+        required: true
+        type: string
+      - default: 10
+        description: 返回数量限制
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/response.MeditationContentItem'
+                  type: array
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 根据分类获取冥想内容
+      tags:
+      - 冥想管理
+  /api/meditation-content/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建新的冥想内容
+      parameters:
+      - description: 冥想内容信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateMeditationContentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建冥想内容
+      tags:
+      - 冥想管理
+  /api/meditation-content/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除冥想内容
+      parameters:
+      - description: 冥想内容ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除冥想内容
+      tags:
+      - 冥想管理
+  /api/meditation-content/difficulty-levels:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有难度等级
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    type: integer
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取难度等级列表
+      tags:
+      - 冥想管理
+  /api/meditation-content/difficulty/{difficulty}:
+    get:
+      consumes:
+      - application/json
+      description: 根据难度等级获取冥想内容列表
+      parameters:
+      - description: 难度等级
+        in: path
+        name: difficulty
+        required: true
+        type: integer
+      - default: 10
+        description: 返回数量限制
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/response.MeditationContentItem'
+                  type: array
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 根据难度等级获取冥想内容
+      tags:
+      - 冥想管理
+  /api/meditation-content/like/{id}:
+    post:
+      consumes:
+      - application/json
+      description: 点赞冥想内容
+      parameters:
+      - description: 冥想内容ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 点赞成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 点赞冥想内容
+      tags:
+      - 冥想管理
+  /api/meditation-content/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询冥想内容列表
+      parameters:
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      - description: 冥想分类
+        in: query
+        name: category
+        type: string
+      - description: 难度等级
+        in: query
+        name: difficultyLevel
+        type: integer
+      - description: 是否公开
+        in: query
+        name: isPublic
+        type: boolean
+      - description: 最小时长(秒)
+        in: query
+        name: minDuration
+        type: integer
+      - description: 最大时长(秒)
+        in: query
+        name: maxDuration
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取冥想内容列表
+      tags:
+      - 冥想管理
+  /api/meditation-content/popular:
+    get:
+      consumes:
+      - application/json
+      description: 获取热门冥想内容列表
+      parameters:
+      - default: 10
+        description: 返回数量限制
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/response.MeditationContentItem'
+                  type: array
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取热门冥想内容
+      tags:
+      - 冥想管理
+  /api/meditation-content/search:
+    get:
+      consumes:
+      - application/json
+      description: 搜索冥想内容
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: keyword
+        required: true
+        type: string
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 搜索成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 搜索冥想内容
+      tags:
+      - 冥想管理
+  /api/meditation-content/unlike/{id}:
+    post:
+      consumes:
+      - application/json
+      description: 取消点赞冥想内容
+      parameters:
+      - description: 冥想内容ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 取消点赞成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 取消点赞冥想内容
+      tags:
+      - 冥想管理
+  /api/meditation-content/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新冥想内容信息
+      parameters:
+      - description: 冥想内容信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateMeditationContentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新冥想内容
+      tags:
+      - 冥想管理
   /api/menu/all:
     get:
       consumes:
@@ -3102,6 +4572,227 @@ paths:
       summary: 更新菜单
       tags:
       - 菜单管理
+  /api/mood-record/analytics:
+    post:
+      consumes:
+      - application/json
+      description: 获取用户情绪深度分析
+      parameters:
+      - description: 分析请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.MoodAnalyticsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 分析成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.MoodAnalyticsItem'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取情绪分析
+      tags:
+      - 情绪管理
+  /api/mood-record/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建新的情绪记录
+      parameters:
+      - description: 情绪记录信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateMoodRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建情绪记录
+      tags:
+      - 情绪管理
+  /api/mood-record/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除情绪记录
+      parameters:
+      - description: 记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除情绪记录
+      tags:
+      - 情绪管理
+  /api/mood-record/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询情绪记录列表
+      parameters:
+      - description: 当前页码
+        in: query
+        minimum: 1
+        name: current
+        required: true
+        type: integer
+      - description: 每页条数
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        required: true
+        type: integer
+      - description: 用户ID
+        in: query
+        name: user_id
+        type: integer
+      - description: 情绪类型
+        in: query
+        name: mood_type
+        type: string
+      - description: 开始日期
+        in: query
+        name: start_date
+        type: string
+      - description: 结束日期
+        in: query
+        name: end_date
+        type: string
+      - description: 最小强度
+        in: query
+        maximum: 10
+        minimum: 1
+        name: min_intensity
+        type: integer
+      - description: 最大强度
+        in: query
+        maximum: 10
+        minimum: 1
+        name: max_intensity
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.PaginatedData'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取情绪记录列表
+      tags:
+      - 情绪管理
+  /api/mood-record/statistics:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户情绪统计信息
+      parameters:
+      - description: 用户ID
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      - default: 30
+        description: 统计天数
+        in: query
+        name: days
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.MoodStatistics'
+              type: object
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取情绪统计
+      tags:
+      - 情绪管理
+  /api/mood-record/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新情绪记录信息
+      parameters:
+      - description: 情绪记录信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateMoodRecordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新情绪记录
+      tags:
+      - 情绪管理
   /api/operation-log/{id}:
     delete:
       consumes:

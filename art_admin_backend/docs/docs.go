@@ -15,6 +15,326 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/ai-analysis/batch": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "批量分析多个用户的情绪数据（管理员功能）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI分析"
+                ],
+                "summary": "批量分析情绪",
+                "parameters": [
+                    {
+                        "description": "批量分析请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.BatchEmotionAnalysisRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "分析成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai-analysis/emotions": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "基于用户的情绪记录和日记数据进行AI情绪分析",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI分析"
+                ],
+                "summary": "分析用户情绪模式",
+                "parameters": [
+                    {
+                        "description": "情绪分析请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.EmotionAnalysisRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "分析成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/service.EmotionAnalysisResult"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai-analysis/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取用户的历史情绪分析记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI分析"
+                ],
+                "summary": "获取情绪分析历史",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "当前页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页条数",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "分析类型",
+                        "name": "analysisType",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.PaginatedData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai-analysis/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取特定情绪分析的详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI分析"
+                ],
+                "summary": "获取情绪分析详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "分析ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/service.EmotionAnalysisResult"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除特定的情绪分析记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI分析"
+                ],
+                "summary": "删除情绪分析记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "分析ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai-analysis/{id}/export": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "导出情绪分析报告为PDF或JSON格式",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI分析"
+                ],
+                "summary": "导出情绪分析报告",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "分析ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "json",
+                            "pdf"
+                        ],
+                        "type": "string",
+                        "default": "json",
+                        "description": "导出格式",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "导出成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/app-user/create": {
             "post": {
                 "security": [
@@ -2547,6 +2867,602 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/journal-entry/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建新的日记条目",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "创建日记条目",
+                "parameters": [
+                    {
+                        "description": "日记条目信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateJournalEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/journal-entry/date-range": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "根据日期范围获取日记条目列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "根据日期范围获取日记条目",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "开始日期(YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束日期(YYYY-MM-DD)",
+                        "name": "endDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "当前页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页条数",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.PaginatedData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/journal-entry/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除日记条目",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "删除日记条目",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "日记条目ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/journal-entry/list": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "分页查询日记条目列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "获取日记条目列表",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "当前页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "每页条数",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "关联情绪记录ID",
+                        "name": "moodRecordId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否公开",
+                        "name": "isPublic",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "开始日期(YYYY-MM-DD)",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束日期(YYYY-MM-DD)",
+                        "name": "endDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否有附件",
+                        "name": "hasAttachment",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.PaginatedData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/journal-entry/recent": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取最近的日记条目列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "获取最近的日记条目",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "返回数量限制",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.JournalEntryItem"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/journal-entry/search": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "搜索日记条目",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "搜索日记条目",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "keyword",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "当前页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "每页条数",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "搜索成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.PaginatedData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/journal-entry/sentiment/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新日记条目的情感得分",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "更新情感得分",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "日记条目ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "情感得分",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateSentimentScoreRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/journal-entry/statistics": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取日记统计信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "获取日记统计信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 30,
+                        "description": "统计天数",
+                        "name": "days",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.JournalStatistics"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/journal-entry/update": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新日记条目信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "更新日记条目",
+                "parameters": [
+                    {
+                        "description": "日记条目信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateJournalEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/journal-entry/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取日记条目详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "日记管理"
+                ],
+                "summary": "获取日记条目详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "日记条目ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.JournalEntryDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/learning/grades": {
             "get": {
                 "produces": [
@@ -2783,6 +3699,721 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/meditation-content/categories": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取所有冥想分类",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "获取冥想分类列表",
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/category/{category}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "根据分类获取冥想内容列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "根据分类获取冥想内容",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "冥想分类",
+                        "name": "category",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "返回数量限制",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.MeditationContentItem"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建新的冥想内容",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "创建冥想内容",
+                "parameters": [
+                    {
+                        "description": "冥想内容信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateMeditationContentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除冥想内容",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "删除冥想内容",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "冥想内容ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/difficulty-levels": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取所有难度等级",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "获取难度等级列表",
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/difficulty/{difficulty}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "根据难度等级获取冥想内容列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "根据难度等级获取冥想内容",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "难度等级",
+                        "name": "difficulty",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "返回数量限制",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.MeditationContentItem"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/like/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "点赞冥想内容",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "点赞冥想内容",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "冥想内容ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "点赞成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/list": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "分页查询冥想内容列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "获取冥想内容列表",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "当前页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "每页条数",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "冥想分类",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "难度等级",
+                        "name": "difficultyLevel",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否公开",
+                        "name": "isPublic",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "最小时长(秒)",
+                        "name": "minDuration",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "最大时长(秒)",
+                        "name": "maxDuration",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.PaginatedData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/popular": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取热门冥想内容列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "获取热门冥想内容",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "返回数量限制",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.MeditationContentItem"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/search": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "搜索冥想内容",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "搜索冥想内容",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "keyword",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "当前页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "每页条数",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "搜索成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.PaginatedData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/unlike/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "取消点赞冥想内容",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "取消点赞冥想内容",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "冥想内容ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "取消点赞成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/update": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新冥想内容信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "更新冥想内容",
+                "parameters": [
+                    {
+                        "description": "冥想内容信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateMeditationContentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/meditation-content/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取冥想内容详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "冥想管理"
+                ],
+                "summary": "获取冥想内容详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "冥想内容ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.MeditationContentDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/menu/all": {
             "get": {
                 "security": [
@@ -2946,6 +4577,363 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/request.UpdateMenuRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mood-record/analytics": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取用户情绪深度分析",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "情绪管理"
+                ],
+                "summary": "获取情绪分析",
+                "parameters": [
+                    {
+                        "description": "分析请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MoodAnalyticsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "分析成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.MoodAnalyticsItem"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mood-record/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建新的情绪记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "情绪管理"
+                ],
+                "summary": "创建情绪记录",
+                "parameters": [
+                    {
+                        "description": "情绪记录信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateMoodRecordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mood-record/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除情绪记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "情绪管理"
+                ],
+                "summary": "删除情绪记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "记录ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mood-record/list": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "分页查询情绪记录列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "情绪管理"
+                ],
+                "summary": "获取情绪记录列表",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "当前页码",
+                        "name": "current",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "每页条数",
+                        "name": "size",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "用户ID",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "情绪类型",
+                        "name": "mood_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "开始日期",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束日期",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 10,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "最小强度",
+                        "name": "min_intensity",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 10,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "最大强度",
+                        "name": "max_intensity",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.PaginatedData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mood-record/statistics": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取用户情绪统计信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "情绪管理"
+                ],
+                "summary": "获取情绪统计",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "用户ID",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 30,
+                        "description": "统计天数",
+                        "name": "days",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.MoodStatistics"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mood-record/update": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新情绪记录信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "情绪管理"
+                ],
+                "summary": "更新情绪记录",
+                "parameters": [
+                    {
+                        "description": "情绪记录信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateMoodRecordRequest"
                         }
                     }
                 ],
@@ -4530,6 +6518,37 @@ const docTemplate = `{
                 }
             }
         },
+        "request.BatchEmotionAnalysisRequest": {
+            "type": "object",
+            "required": [
+                "analysis_type",
+                "end_date",
+                "start_date",
+                "user_ids"
+            ],
+            "properties": {
+                "analysis_type": {
+                    "type": "string",
+                    "enum": [
+                        "pattern",
+                        "trend",
+                        "insight"
+                    ]
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "user_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "request.ChangePasswordRequest": {
             "type": "object",
             "required": [
@@ -4705,6 +6724,84 @@ const docTemplate = `{
                 }
             }
         },
+        "request.CreateJournalEntryRequest": {
+            "type": "object",
+            "required": [
+                "content",
+                "title"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "is_private": {
+                    "type": "boolean"
+                },
+                "mood_record_id": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.CreateMeditationContentRequest": {
+            "type": "object",
+            "required": [
+                "audio_url",
+                "category",
+                "duration",
+                "title"
+            ],
+            "properties": {
+                "audio_url": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "cover_image": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "difficulty_level": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
+                },
+                "duration": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
         "request.CreateMenuRequest": {
             "type": "object",
             "required": [
@@ -4807,6 +6904,41 @@ const docTemplate = `{
                 "sort": {
                     "description": "排序",
                     "type": "integer"
+                }
+            }
+        },
+        "request.CreateMoodRecordRequest": {
+            "type": "object",
+            "required": [
+                "intensity",
+                "mood_type"
+            ],
+            "properties": {
+                "activities": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "intensity": {
+                    "type": "integer",
+                    "maximum": 10,
+                    "minimum": 1
+                },
+                "location": {
+                    "type": "string"
+                },
+                "mood_type": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "triggers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -4989,6 +7121,30 @@ const docTemplate = `{
                 }
             }
         },
+        "request.EmotionAnalysisRequest": {
+            "type": "object",
+            "required": [
+                "analysis_type",
+                "end_date",
+                "start_date"
+            ],
+            "properties": {
+                "analysis_type": {
+                    "type": "string",
+                    "enum": [
+                        "pattern",
+                        "trend",
+                        "insight"
+                    ]
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                }
+            }
+        },
         "request.LoginRequest": {
             "type": "object",
             "required": [
@@ -5003,6 +7159,30 @@ const docTemplate = `{
                 "userName": {
                     "type": "string",
                     "example": "admin"
+                }
+            }
+        },
+        "request.MoodAnalyticsRequest": {
+            "type": "object",
+            "required": [
+                "analyze_type",
+                "end_date",
+                "start_date"
+            ],
+            "properties": {
+                "analyze_type": {
+                    "type": "string",
+                    "enum": [
+                        "daily",
+                        "weekly",
+                        "monthly"
+                    ]
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
                 }
             }
         },
@@ -5197,6 +7377,82 @@ const docTemplate = `{
                 }
             }
         },
+        "request.UpdateJournalEntryRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "is_private": {
+                    "type": "boolean"
+                },
+                "mood_record_id": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.UpdateMeditationContentRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "audio_url": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "cover_image": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "difficulty_level": {
+                    "type": "integer"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "request.UpdateMenuRequest": {
             "type": "object",
             "required": [
@@ -5286,6 +7542,43 @@ const docTemplate = `{
                 }
             }
         },
+        "request.UpdateMoodRecordRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "activities": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "intensity": {
+                    "type": "integer",
+                    "maximum": 10,
+                    "minimum": 1
+                },
+                "location": {
+                    "type": "string"
+                },
+                "mood_type": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "triggers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "request.UpdateRolePermissionsRequest": {
             "type": "object",
             "required": [
@@ -5344,6 +7637,19 @@ const docTemplate = `{
                 "roleName": {
                     "type": "string",
                     "maxLength": 50
+                }
+            }
+        },
+        "request.UpdateSentimentScoreRequest": {
+            "type": "object",
+            "required": [
+                "sentiment_score"
+            ],
+            "properties": {
+                "sentiment_score": {
+                    "type": "number",
+                    "maximum": 1,
+                    "minimum": -1
                 }
             }
         },
@@ -5615,6 +7921,96 @@ const docTemplate = `{
                 }
             }
         },
+        "response.JournalEntryDetail": {
+            "type": "object",
+            "properties": {
+                "attachment_url": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "mood_record_id": {
+                    "type": "integer"
+                },
+                "privacy_setting": {
+                    "type": "string"
+                },
+                "sentiment_score": {
+                    "type": "number"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.JournalEntryItem": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "mood_record_id": {
+                    "type": "integer"
+                },
+                "sentiment_score": {
+                    "type": "number"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.JournalStatistics": {
+            "type": "object",
+            "properties": {
+                "analysis_date": {
+                    "type": "string"
+                },
+                "average_word_count": {
+                    "type": "number"
+                },
+                "most_common_mood_type": {
+                    "type": "string"
+                },
+                "total_count": {
+                    "type": "integer"
+                },
+                "total_entries": {
+                    "type": "integer"
+                },
+                "writing_streak": {
+                    "type": "integer"
+                }
+            }
+        },
         "response.LoginResponse": {
             "type": "object",
             "properties": {
@@ -5625,6 +8021,106 @@ const docTemplate = `{
                 "token": {
                     "type": "string",
                     "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+            }
+        },
+        "response.MeditationContentDetail": {
+            "type": "object",
+            "properties": {
+                "audio_url": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "category_label": {
+                    "type": "string"
+                },
+                "cover_image": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "difficulty_level": {
+                    "type": "integer"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "view_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.MeditationContentItem": {
+            "type": "object",
+            "properties": {
+                "audio_url": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "category_label": {
+                    "type": "string"
+                },
+                "cover_image": {
+                    "type": "string"
+                },
+                "difficulty_level": {
+                    "type": "integer"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "view_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -5690,6 +8186,120 @@ const docTemplate = `{
                 },
                 "redirect": {
                     "type": "string"
+                }
+            }
+        },
+        "response.MoodAnalyticsItem": {
+            "type": "object",
+            "properties": {
+                "analyze_date": {
+                    "type": "string"
+                },
+                "analyze_type": {
+                    "type": "string"
+                },
+                "average_intensity": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mood_distribution": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                },
+                "most_common_mood": {
+                    "type": "string"
+                },
+                "most_common_mood_label": {
+                    "type": "string"
+                },
+                "total_records": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.MoodRecordItem": {
+            "type": "object",
+            "properties": {
+                "activities": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "intensity": {
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "mood_label": {
+                    "type": "string"
+                },
+                "mood_type": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "triggers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.MoodStatistics": {
+            "type": "object",
+            "properties": {
+                "average_intensity": {
+                    "type": "number"
+                },
+                "mood_distribution": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                },
+                "most_common_mood": {
+                    "type": "string"
+                },
+                "most_common_mood_label": {
+                    "type": "string"
+                },
+                "recent_trend": {
+                    "description": "最近7天趋势",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.MoodRecordItem"
+                    }
+                },
+                "total_records": {
+                    "type": "integer"
+                },
+                "weekly_comparison": {
+                    "description": "周对比",
+                    "type": "object",
+                    "additionalProperties": true
                 }
             }
         },
@@ -5837,6 +8447,91 @@ const docTemplate = `{
                 "userPhone": {
                     "type": "string",
                     "example": "13800138000"
+                }
+            }
+        },
+        "service.EmotionAnalysisResult": {
+            "type": "object",
+            "properties": {
+                "analysis_type": {
+                    "type": "string"
+                },
+                "analyzed_at": {
+                    "type": "string"
+                },
+                "data_points": {
+                    "type": "integer"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "insights": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "patterns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.EmotionPattern"
+                    }
+                },
+                "recommendations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "summary": {
+                    "type": "string"
+                },
+                "trends": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.EmotionTrend"
+                    }
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.EmotionPattern": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "frequency": {
+                    "type": "integer"
+                },
+                "percentage": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.EmotionTrend": {
+            "type": "object",
+            "properties": {
+                "change_rate": {
+                    "type": "number"
+                },
+                "confidence": {
+                    "type": "number"
+                },
+                "direction": {
+                    "description": "\"improving\", \"declining\", \"stable\"",
+                    "type": "string"
+                },
+                "period": {
+                    "type": "string"
                 }
             }
         }

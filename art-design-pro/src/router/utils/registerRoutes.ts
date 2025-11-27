@@ -190,6 +190,11 @@ function convertRouteComponent(
   if (route.path === '/chat/chat/room-detail' && component === '/chat/room-detail') {
     converted.path = '/chat/chat/room-detail/:id'
   }
+  // 处理动态路由
+  console.log(route.path, component)
+  if (route.path === '/mood/mood/meditation/player' && component === '/mood/meditation/player') {
+    converted.path = '/mood/mood/meditation/player/:id'
+  }
 
   // 判断是否为一级路由
   const isTopLevel = depth === 0

@@ -12,12 +12,14 @@ import { helpRoutes } from './help'
 import projectRoutes from './project'
 import chatRoutes from './chat'
 import videoCallRoutes from './video-call'
+import moodRoutes from './mood'
 
 /**
  * 导出所有模块化路由
  */
 export const routeModules: AppRouteRecord[] = [
   dashboardRoutes,
+  moodRoutes,
   projectRoutes,
   chatRoutes,
   ...videoCallRoutes,

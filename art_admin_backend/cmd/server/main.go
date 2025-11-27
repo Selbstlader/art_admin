@@ -8,6 +8,7 @@ import (
 
 	"art_admin_backend/internal/api"
 	"art_admin_backend/internal/api/middleware"
+	v1 "art_admin_backend/internal/api/v1"
 	"art_admin_backend/internal/pkg/config"
 	"art_admin_backend/internal/pkg/database"
 	"art_admin_backend/internal/pkg/learning"
@@ -53,10 +54,16 @@ func main() {
 
 	// 完全自动化初始化数据库（创建库→连接→迁移→初始化数据）
 	// 无需手动操作数据库，GORM会自动管理一切
-	if err := database.InitializeDatabase(&cfg.Database); err != nil {
-		logger.Fatal(fmt.Sprintf("初始化数据库失败: %v", err))
+	if err := database.InitDB(&cfg.Database); err != nil {
+		logger.Fatal(fmt.Sprintf("数据库初始化失败: %v", err))
 	}
-	defer database.CloseDB()
+	logger.Info("数据库连接成功")
+
+	// 执行数据库迁移
+	if err := database.RunMigrations(); err != nil {
+		logger.Fatal(fmt.Sprintf("数据库迁移失败: %v", err))
+	}
+	logger.Info("数据库迁移完成")
 
 	// 设置 Gin 模式
 	gin.SetMode(cfg.Server.Mode)
@@ -113,6 +120,28 @@ func main() {
 
 	// 设置聊天室 API
 	router.SetChatAPI(chatAPI)
+
+	// 初始化情绪管理相关服务
+	moodRecordService := service.NewMoodRecordService()
+	meditationRecordService := service.NewMeditationRecordService()
+	journalEntryService := service.NewJournalEntryService()
+	aiAnalysisService := service.NewAIAnalysisService()
+	achievementService := service.NewAchievementService()
+	meditationFavoriteService := service.NewMeditationFavoriteService()
+
+	// 设置v1 API的服务实例
+	v1.SetServices(
+		moodRecordService,
+		meditationRecordService,
+		journalEntryService,
+		aiAnalysisService,
+		achievementService,
+		meditationFavoriteService,
+	)
+
+	// 设置路由层的服务
+	router.SetAIAnalysisService(aiAnalysisService)
+	router.SetAchievementService(achievementService)
 
 	// 注册业务路由
 	router.RegisterRoutes(r)
