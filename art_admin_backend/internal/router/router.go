@@ -13,6 +13,7 @@ import (
 
 var learningAPI *api.LearningAPI
 var chatAPI *api.ChatAPI
+var xhsAPI *api.XHSAPI
 var aiAnalysisService *moodAnalyticsSvc.AIAnalysisService
 var achievementService *achievementSvc.AchievementService
 
@@ -34,6 +35,11 @@ func SetAIAnalysisService(service *moodAnalyticsSvc.AIAnalysisService) {
 // SetAchievementService 设置成就服务（由 main 函数调用）
 func SetAchievementService(service *achievementSvc.AchievementService) {
 	achievementService = service
+}
+
+// SetXHSAPI 设置小红书API（由 main 函数调用）
+func SetXHSAPI(api *api.XHSAPI) {
+	xhsAPI = api
 }
 
 // RegisterRoutes 注册所有路由
@@ -317,5 +323,10 @@ func RegisterRoutes(r *gin.Engine) {
 	// 聊天室模块
 	if chatAPI != nil {
 		SetupChatRoutes(r, chatAPI)
+	}
+
+	// 小红书总结模块
+	if xhsAPI != nil {
+		SetupXHSRoutes(r, xhsAPI)
 	}
 }

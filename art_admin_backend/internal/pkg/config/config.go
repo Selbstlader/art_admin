@@ -9,14 +9,16 @@ import (
 
 // Config 全局配置结构
 type Config struct {
-	Server   ServerConfig   `mapstructure:"server"`
-	Database DatabaseConfig `mapstructure:"database"`
-	JWT      JWTConfig      `mapstructure:"jwt"`
-	Log      LogConfig      `mapstructure:"log"`
-	CORS     CORSConfig     `mapstructure:"cors"`
-	Swagger  SwaggerConfig  `mapstructure:"swagger"`
-	Dify     DifyConfig     `mapstructure:"dify"`
-	DeepSeek DeepSeekConfig `mapstructure:"deepseek"`
+	Server     ServerConfig     `mapstructure:"server"`
+	Database   DatabaseConfig   `mapstructure:"database"`
+	JWT        JWTConfig        `mapstructure:"jwt"`
+	Log        LogConfig        `mapstructure:"log"`
+	CORS       CORSConfig       `mapstructure:"cors"`
+	Swagger    SwaggerConfig    `mapstructure:"swagger"`
+	Dify       DifyConfig       `mapstructure:"dify"`
+	DeepSeek   DeepSeekConfig   `mapstructure:"deepseek"`
+	VolcEngine VolcEngineConfig `mapstructure:"volcengine"`
+	BaiduOCR   BaiduOCRConfig   `mapstructure:"baiduocr"`
 }
 
 // ServerConfig 服务器配置
@@ -94,6 +96,24 @@ type DeepSeekConfig struct {
 	Timeout     int     `mapstructure:"timeout"`
 	MaxTokens   int     `mapstructure:"maxTokens"`
 	Temperature float64 `mapstructure:"temperature"`
+}
+
+// VolcEngineConfig 火山引擎AI配置 (豆包大模型)
+type VolcEngineConfig struct {
+	APIKey      string  `mapstructure:"apiKey"`
+	BaseURL     string  `mapstructure:"baseUrl"`
+	Model       string  `mapstructure:"model"` // 模型ID或接入点ID
+	Timeout     int     `mapstructure:"timeout"`
+	MaxTokens   int     `mapstructure:"maxTokens"`
+	Temperature float64 `mapstructure:"temperature"`
+}
+
+// BaiduOCRConfig 百度OCR配置
+type BaiduOCRConfig struct {
+	AppID     string `mapstructure:"appId"`
+	APIKey    string `mapstructure:"apiKey"`
+	SecretKey string `mapstructure:"secretKey"`
+	Timeout   int    `mapstructure:"timeout"`
 }
 
 var GlobalConfig *Config

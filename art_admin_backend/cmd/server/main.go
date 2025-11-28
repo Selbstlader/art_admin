@@ -145,6 +145,11 @@ func main() {
 	router.SetAIAnalysisService(aiAnalysisService)
 	router.SetAchievementService(achievementService)
 
+	// 初始化小红书总结API
+	xhsAPI := api.NewXHSAPI()
+	router.SetXHSAPI(xhsAPI)
+	logger.Info("小红书总结服务初始化完成")
+
 	// 注册业务路由
 	router.RegisterRoutes(r)
 
