@@ -39,11 +39,14 @@ const (
 // UserCheckin 用户打卡记录模型
 type UserCheckin struct {
 	ID          int64     `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID      int64     `gorm:"not null;index:idx_user_date,unique" json:"user_id"`
-	CheckinDate string    `gorm:"type:varchar(10);not null;index:idx_user_date,unique" json:"checkin_date"` // 打卡日期 YYYY-MM-DD
-	CheckinType string    `gorm:"type:varchar(50);not null" json:"checkin_type"`                            // 打卡类型
-	Note        string    `gorm:"type:text" json:"note"`                                                    // 打卡备注
+	UserID      int64     `gorm:"not null;index:idx_user_date" json:"user_id"`
+	GoalID      int64     `gorm:"not null;index:idx_goal_date" json:"goal_id"`
+	CheckinDate string    `gorm:"type:varchar(10);not null;index:idx_user_date,idx_goal_date" json:"checkin_date"` // 打卡日期 YYYY-MM-DD
+	CheckinType string    `gorm:"type:varchar(50);not null" json:"checkin_type"`                                   // 打卡类型
+	Value       int       `gorm:"default:0" json:"value"`                                                          // 完成值
+	Note        string    `gorm:"type:text" json:"note"`                                                           // 打卡备注
 	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 func (UserCheckin) TableName() string {

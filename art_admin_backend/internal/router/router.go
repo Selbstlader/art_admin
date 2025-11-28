@@ -274,7 +274,8 @@ func RegisterRoutes(r *gin.Engine) {
 			// 打卡管理模块
 			checkinGroup := authApiGroup.Group("/checkin")
 			{
-				checkinGroup.POST("", v1.Checkin)                    // 打卡
+				checkinGroup.POST("", v1.Checkin)                    // 通用打卡
+				checkinGroup.POST("/goal", v1.CheckinGoal)           // 目标打卡
 				checkinGroup.GET("/today", v1.GetTodayCheckin)       // 获取今日打卡状态
 				checkinGroup.GET("/history", v1.GetCheckinHistory)   // 获取打卡历史
 				checkinGroup.GET("/streak", v1.GetCheckinStreak)     // 获取连续打卡天数

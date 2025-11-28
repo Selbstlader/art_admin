@@ -70,6 +70,22 @@ func NewUserCheckinRepository() *UserCheckinRepository {
 	return &UserCheckinRepository{}
 }
 
+// HasCheckedToday 检查今日是否已打卡特定目标
+func (r *UserCheckinRepository) HasCheckedToday(userID, goalID int64, date string) (bool, error) {
+	db := database.GetDB()
+	var count int64
+	err := db.Model(&model.UserCheckin{}).
+		Where("user_id = ? AND goal_id = ? AND checkin_date = ?", userID, goalID, date).
+		Count(&count).Error
+	return count > 0, err
+}
+
+// CreateCheckin 创建打卡记录
+func (r *UserCheckinRepository) CreateCheckin(checkin *model.UserCheckin) error {
+	db := database.GetDB()
+	return db.Create(checkin).Error
+}
+
 // Checkin 打卡
 func (r *UserCheckinRepository) Checkin(userID int64, checkinType, note string) error {
 	db := database.GetDB()

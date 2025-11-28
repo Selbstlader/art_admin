@@ -176,6 +176,38 @@ func Checkin(c *gin.Context) {
 	response.SuccessWithMsg(c, "打卡成功", nil)
 }
 
+// CheckinGoal 目标打卡
+// @Summary 目标打卡
+// @Description 用户为目标打卡
+// @Tags 打卡管理
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body request.GoalCheckinRequest true "目标打卡信息"
+// @Success 200 {object} response.Response "打卡成功"
+// @Failure 400 {object} response.Response "参数错误"
+// @Router /api/checkin/goal [post]
+func CheckinGoal(c *gin.Context) {
+	var req request.GoalCheckinRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "参数错误: "+err.Error())
+		return
+	}
+
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		response.Unauthorized(c, "无效的用户认证")
+		return
+	}
+
+	if err := userGoalService.CheckinGoal(userID, req.GoalID, req.Value, req.Note); err != nil {
+		response.Error(c, response.CodeBadRequest, err.Error())
+		return
+	}
+
+	response.SuccessWithMsg(c, "打卡成功", nil)
+}
+
 // GetTodayCheckin 获取今日打卡状态
 // @Summary 获取今日打卡状态
 // @Description 获取用户今日打卡状态

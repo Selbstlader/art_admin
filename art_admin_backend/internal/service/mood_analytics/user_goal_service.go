@@ -122,6 +122,56 @@ func (s *UserGoalService) GetUserGoals(userID int64) ([]map[string]interface{}, 
 	return result, nil
 }
 
+// CheckinGoal 为特定目标打卡
+func (s *UserGoalService) CheckinGoal(userID, goalID int64, value int, note string) error {
+	// 验证目标是否存在且属于当前用户
+	goal, err := s.goalRepo.FindByID(goalID)
+	if err != nil {
+		return errors.New("目标不存在")
+	}
+
+	if goal.UserID != userID {
+		return errors.New("无权限操作此目标")
+	}
+
+	if !goal.IsActive {
+		return errors.New("目标已暂停，无法打卡")
+	}
+
+	// 检查今日是否已打卡过此目标
+	today := time.Now().Format("2006-01-02")
+	hasChecked, err := s.checkinRepo.HasCheckedToday(userID, goalID, today)
+	if err != nil {
+		return errors.New("检查打卡状态失败")
+	}
+	if hasChecked {
+		return errors.New("今日已打卡此目标")
+	}
+
+	// 创建打卡记录
+	checkin := &model.UserCheckin{
+		UserID:      userID,
+		GoalID:      goalID,
+		CheckinType: goal.GoalType,
+		Value:       value,
+		Note:        note,
+		CheckinDate: today,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	if err := s.checkinRepo.CreateCheckin(checkin); err != nil {
+		return errors.New("创建打卡记录失败")
+	}
+
+	// 更新目标进度
+	if err := s.progressRepo.UpdateProgress(userID, goalID, value); err != nil {
+		return errors.New("更新目标进度失败")
+	}
+
+	return nil
+}
+
 // Checkin 打卡
 func (s *UserGoalService) Checkin(userID int64, checkinType, note string) error {
 	// 验证打卡类型

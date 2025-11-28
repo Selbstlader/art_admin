@@ -208,7 +208,7 @@ func (r *MoodRecordRepository) GetCalendarData(userID int64, year int, month int
 			AVG(intensity) as avg_intensity
 		FROM mood_records 
 		WHERE user_id = ? AND created_at >= ? AND created_at < ?
-		GROUP BY DATE(created_at)
+		GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d')
 		ORDER BY date ASC
 	`, userID, startDate, endDate).Scan(&results).Error
 

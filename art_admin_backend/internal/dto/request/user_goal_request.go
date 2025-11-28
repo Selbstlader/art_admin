@@ -19,6 +19,13 @@ type CheckinRequest struct {
 	Note        string `json:"note"`
 }
 
+// GoalCheckinRequest 目标打卡请求
+type GoalCheckinRequest struct {
+	GoalID int64  `json:"goal_id" binding:"required"`     // 目标ID
+	Value  int    `json:"value" binding:"required,min=0"` // 完成值
+	Note   string `json:"note"`                           // 备注
+}
+
 // UpdateGoalProgressRequest 更新目标进度请求
 type UpdateGoalProgressRequest struct {
 	Value int `json:"value" binding:"required,min=0"`
