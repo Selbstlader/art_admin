@@ -13,6 +13,7 @@ import projectRoutes from './project'
 import chatRoutes from './chat'
 import videoCallRoutes from './video-call'
 import moodRoutes from './mood'
+import travelRoutes from './travel'
 
 /**
  * 导出所有模块化路由
@@ -22,6 +23,7 @@ export const routeModules: AppRouteRecord[] = [
   moodRoutes,
   projectRoutes,
   chatRoutes,
+  travelRoutes,
   ...videoCallRoutes,
   templateRoutes,
   widgetsRoutes,

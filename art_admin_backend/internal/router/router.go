@@ -289,6 +289,17 @@ func RegisterRoutes(r *gin.Engine) {
 				checkinGroup.GET("/stats", v1.GetCheckinStats)       // 获取打卡统计
 			}
 
+			// 文件管理模块
+			fileGroup := authApiGroup.Group("/file")
+			{
+				fileGroup.POST("/upload", v1.UploadFile)
+				fileGroup.POST("/upload-multiple", v1.UploadMultipleFiles)
+				fileGroup.GET("/list", v1.GetFileList)
+				fileGroup.GET("/:id", v1.GetFileDetail)
+				fileGroup.DELETE("/:id", v1.DeleteFile)
+				fileGroup.POST("/batch-delete", v1.BatchDeleteFiles)
+			}
+
 			// Dify AI 模块
 			difyGroup := authApiGroup.Group("/dify")
 			{
@@ -329,4 +340,7 @@ func RegisterRoutes(r *gin.Engine) {
 	if xhsAPI != nil {
 		SetupXHSRoutes(r, xhsAPI)
 	}
+
+	// 旅游规划模块
+	SetupTravelRoutes(r)
 }

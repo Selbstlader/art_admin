@@ -18,6 +18,7 @@ import (
 	"art_admin_backend/internal/router"
 	achievementSvc "art_admin_backend/internal/service/achievement"
 	chatSvc "art_admin_backend/internal/service/chat"
+	fileSvc "art_admin_backend/internal/service/file"
 	moodAnalyticsSvc "art_admin_backend/internal/service/mood_analytics"
 
 	_ "art_admin_backend/docs" // swagger docs
@@ -88,6 +89,15 @@ func main() {
 			"message": "Art Admin Backend is running",
 		})
 	})
+
+	// 静态文件服务 - 用于访问上传的文件
+	r.Static("/uploads", "./uploads")
+
+	// 初始化文件管理服务
+	fileRepo := repository.NewFileRepository(database.GetDB())
+	fileService := fileSvc.NewFileService(fileRepo, "./uploads", fmt.Sprintf("http://localhost:%d", cfg.Server.Port))
+	v1.SetFileService(fileService)
+	logger.Info("文件管理服务初始化完成")
 
 	// 初始化学习系统
 	learningContainer := learning.NewContainer(database.GetDB(), learning.Config{

@@ -314,6 +314,16 @@
       "title": "聊天室",
       "room": "聊天室列表",
       "roomDetail": "聊天室"
+    },
+    "travel": {
+      "title": "旅游规划",
+      "map": "地图规划",
+      "roadbookList": "我的路书",
+      "roadbookDetail": "路书详情",
+      "roadbookEditor": "编辑路书",
+      "explore": "路书广场",
+      "ai": "AI规划",
+      "template": "模板库"
     }
   },
   "table": {

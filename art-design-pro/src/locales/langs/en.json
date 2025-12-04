@@ -308,6 +308,16 @@
       "title": "Help Center",
       "document": "Document",
       "liteVersion": "Lite Version"
+    },
+    "travel": {
+      "title": "Travel Planner",
+      "map": "Map Planning",
+      "roadbookList": "My Roadbooks",
+      "roadbookDetail": "Roadbook Detail",
+      "roadbookEditor": "Edit Roadbook",
+      "explore": "Explore",
+      "ai": "AI Planning",
+      "template": "Templates"
     }
   },
   "table": {

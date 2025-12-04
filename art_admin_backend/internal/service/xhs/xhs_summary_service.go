@@ -113,7 +113,7 @@ func (s *SummaryService) Summarize(ctx context.Context, req *SummaryRequest) (*S
 		fmt.Printf("正在抓取小红书内容: %s\n", req.URL)
 
 		// 设置抓取超时
-		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		_, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
 
 		note, err := s.fetcher.FetchNote(req.URL)
