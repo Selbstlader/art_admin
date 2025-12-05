@@ -16,14 +16,7 @@ import type {
   CreateCommentRequest,
   PaginatedResponse
 } from '../types'
-import {
-  roadbookApi,
-  waypointApi,
-  commentApi,
-  favoriteApi,
-  likeApi,
-  tagApi
-} from '../api'
+import { roadbookApi, waypointApi, commentApi, favoriteApi, likeApi, tagApi } from '../api'
 
 export const useRoadbookStore = defineStore('roadbook', () => {
   // ==================== 状态 ====================
@@ -98,7 +91,7 @@ export const useRoadbookStore = defineStore('roadbook', () => {
     try {
       const res = await roadbookApi.getList(params)
       const data = res as unknown as PaginatedResponse<Roadbook>
-      roadbookList.value = data.list
+      roadbookList.value = data.records
       total.value = data.total
       currentPage.value = data.page
       pageSize.value = data.pageSize
@@ -118,7 +111,7 @@ export const useRoadbookStore = defineStore('roadbook', () => {
         pageSize: pageSize.value
       })
       const data = res as unknown as PaginatedResponse<Roadbook>
-      roadbookList.value.push(...data.list)
+      roadbookList.value.push(...data.records)
       total.value = data.total
       currentPage.value = data.page
     } finally {

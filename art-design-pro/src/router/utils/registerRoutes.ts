@@ -178,22 +178,33 @@ function convertRouteComponent(
     component: undefined
   }
 
-  // 处理甘特图路由的动态参数
-  if (route.path === '/project/gantt' && component === '/project/gantt') {
-    converted.path = '/project/gantt/:id'
-  }
-  // 处理动态路由
-  if (route.path === '/learning/learning/detail' && component === '/learning/detail') {
-    converted.path = '/learning/learning/detail/:id'
-  }
-  // 处理动态路由
-  if (route.path === '/chat/chat/room-detail' && component === '/chat/room-detail') {
-    converted.path = '/chat/chat/room-detail/:id'
-  }
-  // 处理动态路由
-  console.log(route.path, component)
-  if (route.path === '/mood/mood/meditation/player' && component === '/mood/meditation/player') {
-    converted.path = '/mood/mood/meditation/player/:id'
+  // 处理动态路由参数
+  // 优先使用 meta.dynamicPath（后端配置的完整动态路径）
+  // 其次使用 meta.dynamicParams（后端配置的参数名，如 'id' 或 ['id', 'type']）
+  // 最后兼容旧的硬编码方式
+  if (route.meta?.dynamicPath) {
+    // 方式1: 后端直接配置完整的动态路径
+    converted.path = route.meta.dynamicPath as string
+  } else if (route.meta?.dynamicParams) {
+    // 方式2: 后端配置参数名，前端自动拼接
+    const params = route.meta.dynamicParams
+    const paramStr = Array.isArray(params)
+      ? params.map((p: string) => `:${p}`).join('/')
+      : `:${params}`
+    converted.path = `${route.path}/${paramStr}`
+  } else {
+    // 方式3: 兼容旧的硬编码配置（逐步迁移后可删除）
+    const dynamicRouteMap: Record<string, string> = {
+      '/project/gantt': '/project/gantt/:id',
+      '/learning/learning/detail': '/learning/learning/detail/:id',
+      '/chat/chat/room-detail': '/chat/chat/room-detail/:id',
+      '/mood/mood/meditation/player': '/mood/mood/meditation/player/:id',
+      '/travel/travel/roadbook/editor': '/travel/travel/roadbook/editor/:id',
+      '/travel/travel/roadbook/detail': '/travel/travel/roadbook/detail/:id'
+    }
+    if (route.path && dynamicRouteMap[route.path]) {
+      converted.path = dynamicRouteMap[route.path]
+    }
   }
 
   // 判断是否为一级路由

@@ -151,25 +151,25 @@
 
 ## Phase 4: 社交功能
 
-- [ ] 12. 评论功能后端
-  - [ ] 12.1 实现评论Repository和Service
+- [x] 12. 评论功能后端
+  - [x] 12.1 实现评论Repository和Service
     - 实现评论CRUD操作
     - 实现评论树形结构查询
     - _Requirements: 5.1, 5.2, 5.3_
-  - [ ] 12.2 编写属性测试：评论Round-Trip
+  - [x] 12.2 编写属性测试：评论Round-Trip
     - **Property 7: 评论数据持久化 Round-Trip**
     - **Validates: Requirements 5.1**
-  - [ ] 12.3 编写属性测试：评论排序
+  - [x] 12.3 编写属性测试：评论排序
     - **Property 8: 评论列表按时间倒序排列**
     - **Validates: Requirements 5.2**
-  - [ ] 12.4 编写属性测试：评论父子关系
+  - [x] 12.4 编写属性测试：评论父子关系
     - **Property 9: 评论父子关系有效性**
     - **Validates: Requirements 5.3**
-  - [ ] 12.5 实现评论API处理器
+  - [x] 12.5 实现评论API处理器
     - 实现评论相关API接口
     - 实现评论内容验证
     - _Requirements: 5.1, 5.5_
-  - [ ] 12.6 编写属性测试：评论内容验证
+  - [x] 12.6 编写属性测试：评论内容验证
     - **Property 10: 评论内容验证**
     - **Validates: Requirements 5.5**
 

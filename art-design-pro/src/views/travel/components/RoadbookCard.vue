@@ -29,6 +29,20 @@
           <span class="travel-mode-tag">{{ travelModeText }}</span>
           <!-- 天数标签 -->
           <span v-if="dayCount > 0" class="days-tag">{{ dayCount }}天</span>
+          <!-- 操作按钮 -->
+          <div v-if="showActions" class="card-actions" @click.stop>
+            <ElDropdown trigger="click" @command="handleCommand">
+              <span class="action-trigger">
+                <ElIcon :size="18"><MoreFilled /></ElIcon>
+              </span>
+              <template #dropdown>
+                <ElDropdownMenu>
+                  <ElDropdownItem command="edit" :icon="Edit">编辑</ElDropdownItem>
+                  <ElDropdownItem command="delete" :icon="Delete" divided>删除</ElDropdownItem>
+                </ElDropdownMenu>
+              </template>
+            </ElDropdown>
+          </div>
         </div>
 
         <!-- 卡片内容 -->
@@ -90,7 +104,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Picture, View, Star, ChatDotRound } from '@element-plus/icons-vue'
+import { Picture, View, Star, ChatDotRound, MoreFilled, Edit, Delete } from '@element-plus/icons-vue'
 import { useDateFormat } from '@vueuse/core'
 import type { Roadbook } from '../types'
 import { TravelMode } from '../types'
@@ -102,14 +116,19 @@ defineOptions({
 interface Props {
   roadbook: Roadbook
   loading?: boolean
+  /** 是否显示操作按钮（编辑/删除） */
+  showActions?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  loading: false
+  loading: false,
+  showActions: false
 })
 
 const emit = defineEmits<{
   click: [roadbook: Roadbook]
+  edit: [roadbook: Roadbook]
+  delete: [roadbook: Roadbook]
 }>()
 
 // 出行方式文本映射
@@ -159,6 +178,15 @@ const formatDate = (dateStr: string): string => {
 // 点击事件
 const handleClick = () => {
   emit('click', props.roadbook)
+}
+
+// 处理下拉菜单命令
+const handleCommand = (command: string) => {
+  if (command === 'edit') {
+    emit('edit', props.roadbook)
+  } else if (command === 'delete') {
+    emit('delete', props.roadbook)
+  }
 }
 </script>
 
@@ -225,6 +253,35 @@ const handleClick = () => {
       background: var(--el-color-primary);
       border-radius: 4px;
     }
+
+    .card-actions {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+
+      .action-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.2s ease;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.8);
+        }
+      }
+    }
+  }
+
+  &:hover .card-actions {
+    opacity: 1;
   }
 
   .card-content {

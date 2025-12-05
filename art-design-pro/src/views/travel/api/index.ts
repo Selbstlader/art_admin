@@ -53,8 +53,7 @@ export const roadbookApi = {
     request.put<Roadbook>({ url: `${BASE_URL}/roadbooks/${id}`, data }),
 
   /** 删除路书 */
-  delete: (id: number) =>
-    request.del({ url: `${BASE_URL}/roadbooks/${id}` }),
+  delete: (id: number) => request.del({ url: `${BASE_URL}/roadbooks/${id}` }),
 
   /** 获取我的路书列表 */
   getMyList: (params?: RoadbookListParams) =>
@@ -78,7 +77,10 @@ export const waypointApi = {
 
   /** 更新途经点 */
   update: (roadbookId: number, waypointId: number, data: Partial<AddWaypointRequest>) =>
-    request.put<Waypoint>({ url: `${BASE_URL}/roadbooks/${roadbookId}/waypoints/${waypointId}`, data }),
+    request.put<Waypoint>({
+      url: `${BASE_URL}/roadbooks/${roadbookId}/waypoints/${waypointId}`,
+      data
+    }),
 
   /** 删除途经点 */
   delete: (roadbookId: number, waypointId: number) =>
@@ -98,7 +100,10 @@ export const commentApi = {
 
   /** 获取评论列表 */
   getList: (roadbookId: number, params?: CommentListParams) =>
-    request.get<PaginatedResponse<Comment>>({ url: `${BASE_URL}/roadbooks/${roadbookId}/comments`, params }),
+    request.get<PaginatedResponse<Comment>>({
+      url: `${BASE_URL}/roadbooks/${roadbookId}/comments`,
+      params
+    }),
 
   /** 删除评论 */
   delete: (roadbookId: number, commentId: number) =>
@@ -126,19 +131,19 @@ export const favoriteApi = {
 
   /** 检查是否已收藏 */
   check: (roadbookId: number) =>
-    request.get<{ isFavorited: boolean }>({ url: `${BASE_URL}/roadbooks/${roadbookId}/favorite/check` })
+    request.get<{ isFavorited: boolean }>({
+      url: `${BASE_URL}/roadbooks/${roadbookId}/favorite/check`
+    })
 }
 
 // ==================== 点赞相关接口 ====================
 
 export const likeApi = {
   /** 点赞路书 */
-  add: (roadbookId: number) =>
-    request.post({ url: `${BASE_URL}/roadbooks/${roadbookId}/like` }),
+  add: (roadbookId: number) => request.post({ url: `${BASE_URL}/roadbooks/${roadbookId}/like` }),
 
   /** 取消点赞 */
-  remove: (roadbookId: number) =>
-    request.del({ url: `${BASE_URL}/roadbooks/${roadbookId}/like` })
+  remove: (roadbookId: number) => request.del({ url: `${BASE_URL}/roadbooks/${roadbookId}/like` })
 }
 
 // ==================== 分享相关接口 ====================
@@ -205,12 +210,10 @@ export const exploreApi = {
 
 export const aiApi = {
   /** AI生成行程规划 */
-  plan: (data: AIPlanRequest) =>
-    request.post<AIPlanResponse>({ url: `${BASE_URL}/ai/plan`, data }),
+  plan: (data: AIPlanRequest) => request.post<AIPlanResponse>({ url: `${BASE_URL}/ai/plan`, data }),
 
   /** AI助手对话 */
-  chat: (data: AIChatRequest) =>
-    request.post<AIChatResponse>({ url: `${BASE_URL}/ai/chat`, data }),
+  chat: (data: AIChatRequest) => request.post<AIChatResponse>({ url: `${BASE_URL}/ai/chat`, data }),
 
   /** 导入AI规划为路书草稿 */
   importPlan: (data: { plan: AIPlanResponse; title: string }) =>
@@ -221,12 +224,15 @@ export const aiApi = {
 
 export const templateApi = {
   /** 获取模板列表 */
-  getList: (params?: { category?: number; destination?: string; page?: number; pageSize?: number }) =>
-    request.get<PaginatedResponse<RoadbookTemplate>>({ url: `${BASE_URL}/templates`, params }),
+  getList: (params?: {
+    category?: number
+    destination?: string
+    page?: number
+    pageSize?: number
+  }) => request.get<PaginatedResponse<RoadbookTemplate>>({ url: `${BASE_URL}/templates`, params }),
 
   /** 获取模板详情 */
-  getDetail: (id: number) =>
-    request.get<RoadbookTemplate>({ url: `${BASE_URL}/templates/${id}` }),
+  getDetail: (id: number) => request.get<RoadbookTemplate>({ url: `${BASE_URL}/templates/${id}` }),
 
   /** 使用模板创建路书 */
   use: (id: number, data?: UseTemplateRequest) =>
@@ -241,8 +247,7 @@ export const statsApi = {
     request.get<StatsResponse>({ url: `${BASE_URL}/roadbooks/${roadbookId}/stats`, params }),
 
   /** 获取个人数据中心统计 */
-  getMyStats: () =>
-    request.get<StatsResponse>({ url: `${BASE_URL}/stats/my` })
+  getMyStats: () => request.get<StatsResponse>({ url: `${BASE_URL}/stats/my` })
 }
 
 export default {

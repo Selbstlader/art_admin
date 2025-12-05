@@ -215,6 +215,8 @@ export interface CreateRoadbookRequest {
   travelMode?: TravelMode
   totalBudget?: number
   tagIds?: number[]
+  waypoints?: AddWaypointRequest[]
+  status?: RoadbookStatus
 }
 
 /** 更新路书请求 */
@@ -341,6 +343,7 @@ export interface PaginatedResponse<T> {
   total: number
   page: number
   pageSize: number
+  records: T[]
 }
 
 /** 路书详情响应 */
