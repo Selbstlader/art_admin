@@ -323,6 +323,9 @@ func RegisterRoutes(r *gin.Engine) {
 				// 建议问题
 				difyGroup.GET("/messages/:message_id/suggested", v1.GetSuggestedQuestions)
 			}
+
+			// 工作流模块
+			SetupWorkflowRoutes(authApiGroup)
 		}
 	}
 
