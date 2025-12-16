@@ -38,9 +38,32 @@ func (r *MenuRepository) Create(menu *model.Menu) error {
 }
 
 // Update 更新菜单
+// 使用 Updates 方法只更新非零值字段，避免 CreateTime 被覆盖为零值
 func (r *MenuRepository) Update(menu *model.Menu) error {
 	menu.UpdateTime = time.Now()
-	return database.DB.Save(menu).Error
+	return database.DB.Model(&model.Menu{}).Where("id = ?", menu.ID).Updates(map[string]interface{}{
+		"parent_id":       menu.ParentID,
+		"name":            menu.Name,
+		"path":            menu.Path,
+		"title":           menu.Title,
+		"component":       menu.Component,
+		"redirect":        menu.Redirect,
+		"icon":            menu.Icon,
+		"is_enable":       menu.IsEnable,
+		"sort":            menu.Sort,
+		"is_menu":         menu.IsMenu,
+		"keep_alive":      menu.KeepAlive,
+		"is_hide":         menu.IsHide,
+		"is_hide_tab":     menu.IsHideTab,
+		"link":            menu.Link,
+		"is_iframe":       menu.IsIframe,
+		"show_badge":      menu.ShowBadge,
+		"show_text_badge": menu.ShowTextBadge,
+		"fixed_tab":       menu.FixedTab,
+		"active_path":     menu.ActivePath,
+		"is_full_page":    menu.IsFullPage,
+		"update_time":     menu.UpdateTime,
+	}).Error
 }
 
 // Delete 删除菜单（软删除）
@@ -51,9 +74,9 @@ func (r *MenuRepository) Delete(id int64) error {
 		return err
 	}
 	if count > 0 {
-		return database.DB.Error  // 可以返回自定义错误
+		return database.DB.Error // 可以返回自定义错误
 	}
-	
+
 	return database.DB.Delete(&model.Menu{}, id).Error
 }
 

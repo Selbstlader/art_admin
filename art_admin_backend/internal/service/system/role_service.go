@@ -22,6 +22,14 @@ func NewRoleService() *RoleService {
 
 // GetRoleList 获取角色列表
 func (s *RoleService) GetRoleList(req *request.RoleListRequest) ([]response.RoleListItem, int64, error) {
+	// 设置分页默认值
+	if req.Current <= 0 {
+		req.Current = 1
+	}
+	if req.Size <= 0 {
+		req.Size = 10
+	}
+
 	// 构建查询条件
 	query := make(map[string]interface{})
 	if req.RoleID != nil {
