@@ -1,30 +1,18 @@
 import { AppRouteRecord } from '@/types/router'
 import { dashboardRoutes } from './dashboard'
-import { templateRoutes } from './template'
-import { widgetsRoutes } from './widgets'
-import { examplesRoutes } from './examples'
 import { systemRoutes } from './system'
-import { resultRoutes } from './result'
 import { exceptionRoutes } from './exception'
-import { safeguardRoutes } from './safeguard'
-import { helpRoutes } from './help'
 import chatRoutes from './chat'
 import { difyRoutes } from './dify'
 
 /**
  * 导出所有模块化路由
- * 基础功能 + 系统功能 + Dify AI + 聊天室
+ * 核心功能: 仪表盘 + 系统管理 + 聊天室 + Dify AI
  */
 export const routeModules: AppRouteRecord[] = [
   dashboardRoutes,
   chatRoutes,
   difyRoutes,
-  templateRoutes,
-  widgetsRoutes,
-  examplesRoutes,
   systemRoutes,
-  resultRoutes,
-  exceptionRoutes,
-  safeguardRoutes,
-  ...helpRoutes
+  exceptionRoutes
 ]

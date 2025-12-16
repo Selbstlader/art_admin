@@ -64,8 +64,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ROLE_LIST_DATA } from '@/mock/temp/formData'
-  import { fetchCreateUser, fetchUpdateUser } from '@/api/system-manage'
+  import { fetchCreateUser, fetchUpdateUser, fetchGetRoleList } from '@/api/system-manage'
   import type { FormInstance, FormRules } from 'element-plus'
 
   interface Props {
@@ -83,7 +82,27 @@
   const emit = defineEmits<Emits>()
 
   // 角色列表数据
-  const roleList = ref(ROLE_LIST_DATA)
+  const roleList = ref<{ id: number; roleName: string; roleCode: string }[]>([])
+
+  // 加载角色列表
+  const loadRoleList = async () => {
+    try {
+      const res = await fetchGetRoleList({})
+      if (res && res.records) {
+        roleList.value = res.records.map((r: any) => ({
+          id: r.roleId || r.id,
+          roleName: r.roleName,
+          roleCode: r.roleCode
+        }))
+      }
+    } catch (error) {
+      console.error('加载角色列表失败:', error)
+    }
+  }
+
+  onMounted(() => {
+    loadRoleList()
+  })
 
   // 对话框显示控制
   const dialogVisible = computed({

@@ -1,69 +1,34 @@
 <template>
-  <div class="iframe-container" v-loading="isLoading">
-    <iframe
-      ref="iframeRef"
-      :src="iframeUrl"
-      frameborder="0"
-      class="iframe-content"
-      @load="handleIframeLoad"
-    ></iframe>
+  <div class="iframe-container">
+    <iframe :src="iframeSrc" frameborder="0" class="iframe-content"></iframe>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { getIframeRoutes } from '@/router/utils/menuToRouter'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
-  defineOptions({ name: 'IframeView' })
+const route = useRoute()
 
-  const route = useRoute()
-  const isLoading = ref(true)
-  const iframeUrl = ref('')
-  const iframeRef = ref<HTMLIFrameElement | null>(null)
-
-  /**
-   * Iframe 路由类型
-   */
-  interface IframeRoute {
-    path: string
-    meta?: {
-      link?: string
-      [key: string]: any
-    }
-    [key: string]: any
+const iframeSrc = computed(() => {
+  const path = route.params.path as string
+  if (path) {
+    return decodeURIComponent(path)
   }
-
-  /**
-   * 初始化 iframe URL
-   * 从路由配置中获取对应的外部链接地址
-   */
-  onMounted(() => {
-    const iframeRoute = getIframeRoutes().find((item: IframeRoute) => item.path === route.path)
-
-    if (iframeRoute?.meta) {
-      iframeUrl.value = iframeRoute.meta.link || ''
-    }
-  })
-
-  /**
-   * 处理 iframe 加载完成事件
-   * 隐藏加载状态
-   */
-  const handleIframeLoad = (): void => {
-    isLoading.value = false
-  }
+  return ''
+})
 </script>
 
-<style scoped>
-  .iframe-container {
-    box-sizing: border-box;
-    width: 100%;
-    height: 100%;
-  }
+<style scoped lang="scss">
+.iframe-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 
   .iframe-content {
     width: 100%;
     height: 100%;
-    min-height: calc(100vh - 120px);
     border: none;
   }
+}
 </style>

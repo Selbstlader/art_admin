@@ -294,10 +294,9 @@
 
     uploading.value = true
     try {
-      const res = (await difyDatasetApi.uploadFile(
-        selectedDatasetId.value,
-        currentFile.value
-      )) as { code: number }
+      const res = (await difyDatasetApi.uploadFile(selectedDatasetId.value, currentFile.value)) as {
+        code: number
+      }
       if (res.code === 200) {
         ElMessage.success('上传成功')
         uploadVisible.value = false
