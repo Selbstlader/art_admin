@@ -55,6 +55,7 @@ func InitDB(cfg *config.DatabaseConfig) error {
 }
 
 // AutoMigrate 自动迁移数据库表结构
+// 基础功能 + 系统功能
 func AutoMigrate() error {
 	if DB == nil {
 		return fmt.Errorf("数据库未初始化")
@@ -62,7 +63,7 @@ func AutoMigrate() error {
 
 	log.Println("开始自动迁移数据库表结构...")
 
-	// 自动迁移所有模型
+	// 自动迁移所有模型 - 基础功能 + 系统功能
 	err := DB.AutoMigrate(
 		&model.User{},
 		&model.Role{},
@@ -71,20 +72,9 @@ func AutoMigrate() error {
 		&model.DictionaryType{},
 		&model.Dictionary{},
 		&model.OperationLog{},
-		// 项目管理模块
-		&model.ProjectTemplate{},
-		&model.TemplateTask{},
-		&model.TemplateTaskDependency{},
-		&model.Project{},
-		&model.ProjectMember{},
-		&model.Task{},
-		&model.TaskDependency{},
-		&model.TaskComment{},
-		&model.TaskAttachment{},
-		// 聊天室模块
-		&model.ChatRoom{},
-		&model.ChatMessage{},
-		&model.ChatRoomMember{},
+		&model.Department{},
+		&model.File{},
+		&model.AppUser{},
 	)
 
 	if err != nil {

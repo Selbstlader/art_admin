@@ -6,6 +6,7 @@ import (
 )
 
 // MigrateAll 完整的数据库迁移（包括中间表）
+// 基础功能 + 系统功能
 func MigrateAll() error {
 	if DB == nil {
 		return nil
@@ -13,7 +14,7 @@ func MigrateAll() error {
 
 	log.Println("开始完整的数据库迁移...")
 
-	// 1. 创建主表
+	// 1. 创建主表 - 基础功能 + 系统功能
 	err := DB.AutoMigrate(
 		&model.User{},
 		&model.Role{},
@@ -22,25 +23,9 @@ func MigrateAll() error {
 		&model.DictionaryType{},
 		&model.Dictionary{},
 		&model.OperationLog{},
-		// 项目管理模块
-		&model.ProjectTemplate{},
-		&model.TemplateTask{},
-		&model.TemplateTaskDependency{},
-		&model.Project{},
-		&model.ProjectMember{},
-		&model.Task{},
-		&model.TaskDependency{},
-		&model.TaskComment{},
-		&model.TaskAttachment{},
-		// 聊天室模块
-		&model.ChatRoom{},
-		&model.ChatMessage{},
-		&model.ChatRoomMember{},
-		// 情绪管理模块
-		&model.MoodRecord{},
-		&model.JournalEntry{},
-		&model.MeditationRecord{},
-		&model.MeditationContent{},
+		&model.Department{},
+		&model.File{},
+		&model.AppUser{},
 	)
 	if err != nil {
 		return err

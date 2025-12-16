@@ -6,20 +6,14 @@ import (
 	"os"
 	"os/exec"
 
-	"art_admin_backend/internal/api"
 	"art_admin_backend/internal/api/middleware"
 	v1 "art_admin_backend/internal/api/v1"
 	"art_admin_backend/internal/pkg/config"
 	"art_admin_backend/internal/pkg/database"
-	"art_admin_backend/internal/pkg/learning"
 	"art_admin_backend/internal/pkg/logger"
-	ws "art_admin_backend/internal/pkg/websocket"
 	"art_admin_backend/internal/repository"
 	"art_admin_backend/internal/router"
-	achievementSvc "art_admin_backend/internal/service/achievement"
-	chatSvc "art_admin_backend/internal/service/chat"
 	fileSvc "art_admin_backend/internal/service/file"
-	moodAnalyticsSvc "art_admin_backend/internal/service/mood_analytics"
 
 	_ "art_admin_backend/docs" // swagger docs
 
@@ -30,7 +24,7 @@ import (
 
 // @title Art Admin API
 // @version 1.0
-// @description Art Admin Backend API Documentation
+// @description Art Admin Backend API Documentation - 基础功能 + 系统功能
 // @host localhost:48080
 // @BasePath /
 // @securityDefinitions.apikey BearerAuth
@@ -56,7 +50,6 @@ func main() {
 	logger.Info("配置加载成功")
 
 	// 完全自动化初始化数据库（创建库→连接→迁移→初始化数据）
-	// 无需手动操作数据库，GORM会自动管理一切
 	if err := database.InitDB(&cfg.Database); err != nil {
 		logger.Fatal(fmt.Sprintf("数据库初始化失败: %v", err))
 	}
@@ -98,67 +91,6 @@ func main() {
 	fileService := fileSvc.NewFileService(fileRepo, "./uploads", fmt.Sprintf("http://localhost:%d", cfg.Server.Port))
 	v1.SetFileService(fileService)
 	logger.Info("文件管理服务初始化完成")
-
-	// 初始化学习系统
-	learningContainer := learning.NewContainer(database.GetDB(), learning.Config{
-		DeepSeek: learning.DeepSeekConfig{
-			APIKey:      cfg.DeepSeek.APIKey,
-			BaseURL:     cfg.DeepSeek.BaseURL,
-			Model:       cfg.DeepSeek.Model,
-			Timeout:     cfg.DeepSeek.Timeout,
-			MaxTokens:   cfg.DeepSeek.MaxTokens,
-			Temperature: cfg.DeepSeek.Temperature,
-		},
-		Dify: learning.DifyConfig{
-			DatasetAPIKey: cfg.Dify.DatasetAPIKey,
-			BaseURL:       cfg.Dify.BaseURL,
-			Timeout:       cfg.Dify.Timeout,
-			DatasetID:     cfg.Dify.DatasetID,
-		},
-	})
-
-	// 设置学习系统 API
-	router.SetLearningAPI(learningContainer.LearningAPI)
-
-	// 初始化聊天室系统
-	chatHub := ws.NewHub()
-	go chatHub.Run() // 启动 WebSocket Hub
-
-	chatRoomRepo := repository.NewChatRoomRepository(database.GetDB())
-	chatMessageRepo := repository.NewChatMessageRepository(database.GetDB())
-	chatMemberRepo := repository.NewChatRoomMemberRepository(database.GetDB())
-	chatService := chatSvc.NewChatService(chatRoomRepo, chatMessageRepo, chatMemberRepo)
-	chatAPI := api.NewChatAPI(chatService, chatHub)
-
-	// 设置聊天室 API
-	router.SetChatAPI(chatAPI)
-
-	// 初始化情绪管理相关服务
-	moodRecordService := moodAnalyticsSvc.NewMoodRecordService()
-	meditationRecordService := moodAnalyticsSvc.NewMeditationRecordService()
-	journalEntryService := moodAnalyticsSvc.NewJournalEntryService()
-	aiAnalysisService := moodAnalyticsSvc.NewAIAnalysisService()
-	achievementService := achievementSvc.NewAchievementService()
-	meditationFavoriteService := moodAnalyticsSvc.NewMeditationFavoriteService()
-
-	// 设置v1 API的服务实例
-	v1.SetServices(
-		moodRecordService,
-		meditationRecordService,
-		journalEntryService,
-		aiAnalysisService,
-		achievementService,
-		meditationFavoriteService,
-	)
-
-	// 设置路由层的服务
-	router.SetAIAnalysisService(aiAnalysisService)
-	router.SetAchievementService(achievementService)
-
-	// 初始化小红书总结API
-	xhsAPI := api.NewXHSAPI()
-	router.SetXHSAPI(xhsAPI)
-	logger.Info("小红书总结服务初始化完成")
 
 	// 注册业务路由
 	router.RegisterRoutes(r)

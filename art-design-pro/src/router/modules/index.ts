@@ -4,34 +4,21 @@ import { templateRoutes } from './template'
 import { widgetsRoutes } from './widgets'
 import { examplesRoutes } from './examples'
 import { systemRoutes } from './system'
-import { articleRoutes } from './article'
 import { resultRoutes } from './result'
 import { exceptionRoutes } from './exception'
 import { safeguardRoutes } from './safeguard'
 import { helpRoutes } from './help'
-import projectRoutes from './project'
-import chatRoutes from './chat'
-import videoCallRoutes from './video-call'
-import moodRoutes from './mood'
-import travelRoutes from './travel'
-import workflowRoutes from './workflow'
 
 /**
  * 导出所有模块化路由
+ * 基础功能 + 系统功能
  */
 export const routeModules: AppRouteRecord[] = [
   dashboardRoutes,
-  moodRoutes,
-  projectRoutes,
-  chatRoutes,
-  travelRoutes,
-  workflowRoutes,
-  ...videoCallRoutes,
   templateRoutes,
   widgetsRoutes,
   examplesRoutes,
   systemRoutes,
-  articleRoutes,
   resultRoutes,
   exceptionRoutes,
   safeguardRoutes,

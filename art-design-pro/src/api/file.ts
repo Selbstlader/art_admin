@@ -98,7 +98,7 @@ export function getFileDetail(id: number) {
  * @param id 文件ID
  */
 export function deleteFile(id: number) {
-  return request.delete({
+  return request.del({
     url: `/api/file/${id}`
   })
 }
