@@ -6,13 +6,16 @@ import (
 	"os"
 	"os/exec"
 
+	"art_admin_backend/internal/api"
 	"art_admin_backend/internal/api/middleware"
 	v1 "art_admin_backend/internal/api/v1"
 	"art_admin_backend/internal/pkg/config"
 	"art_admin_backend/internal/pkg/database"
 	"art_admin_backend/internal/pkg/logger"
+	ws "art_admin_backend/internal/pkg/websocket"
 	"art_admin_backend/internal/repository"
 	"art_admin_backend/internal/router"
+	chatSvc "art_admin_backend/internal/service/chat"
 	fileSvc "art_admin_backend/internal/service/file"
 
 	_ "art_admin_backend/docs" // swagger docs
@@ -91,6 +94,20 @@ func main() {
 	fileService := fileSvc.NewFileService(fileRepo, "./uploads", fmt.Sprintf("http://localhost:%d", cfg.Server.Port))
 	v1.SetFileService(fileService)
 	logger.Info("文件管理服务初始化完成")
+
+	// 初始化聊天室系统
+	chatHub := ws.NewHub()
+	go chatHub.Run() // 启动 WebSocket Hub
+
+	chatRoomRepo := repository.NewChatRoomRepository(database.GetDB())
+	chatMessageRepo := repository.NewChatMessageRepository(database.GetDB())
+	chatMemberRepo := repository.NewChatRoomMemberRepository(database.GetDB())
+	chatService := chatSvc.NewChatService(chatRoomRepo, chatMessageRepo, chatMemberRepo)
+	chatAPI := api.NewChatAPI(chatService, chatHub)
+
+	// 设置聊天室 API
+	router.SetChatAPI(chatAPI)
+	logger.Info("聊天室服务初始化完成")
 
 	// 注册业务路由
 	router.RegisterRoutes(r)

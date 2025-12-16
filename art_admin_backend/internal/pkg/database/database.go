@@ -55,7 +55,7 @@ func InitDB(cfg *config.DatabaseConfig) error {
 }
 
 // AutoMigrate 自动迁移数据库表结构
-// 基础功能 + 系统功能
+// 基础功能 + 系统功能 + Dify AI + 聊天室
 func AutoMigrate() error {
 	if DB == nil {
 		return fmt.Errorf("数据库未初始化")
@@ -63,7 +63,7 @@ func AutoMigrate() error {
 
 	log.Println("开始自动迁移数据库表结构...")
 
-	// 自动迁移所有模型 - 基础功能 + 系统功能
+	// 自动迁移所有模型 - 基础功能 + 系统功能 + 聊天室
 	err := DB.AutoMigrate(
 		&model.User{},
 		&model.Role{},
@@ -75,6 +75,10 @@ func AutoMigrate() error {
 		&model.Department{},
 		&model.File{},
 		&model.AppUser{},
+		// 聊天室模块
+		&model.ChatRoom{},
+		&model.ChatMessage{},
+		&model.ChatRoomMember{},
 	)
 
 	if err != nil {

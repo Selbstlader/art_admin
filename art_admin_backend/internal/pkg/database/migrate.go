@@ -6,7 +6,7 @@ import (
 )
 
 // MigrateAll 完整的数据库迁移（包括中间表）
-// 基础功能 + 系统功能
+// 基础功能 + 系统功能 + Dify AI + 聊天室
 func MigrateAll() error {
 	if DB == nil {
 		return nil
@@ -14,7 +14,7 @@ func MigrateAll() error {
 
 	log.Println("开始完整的数据库迁移...")
 
-	// 1. 创建主表 - 基础功能 + 系统功能
+	// 1. 创建主表 - 基础功能 + 系统功能 + 聊天室
 	err := DB.AutoMigrate(
 		&model.User{},
 		&model.Role{},
@@ -26,6 +26,10 @@ func MigrateAll() error {
 		&model.Department{},
 		&model.File{},
 		&model.AppUser{},
+		// 聊天室模块
+		&model.ChatRoom{},
+		&model.ChatMessage{},
+		&model.ChatRoomMember{},
 	)
 	if err != nil {
 		return err

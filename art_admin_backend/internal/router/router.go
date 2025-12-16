@@ -1,14 +1,22 @@
 package router
 
 import (
+	"art_admin_backend/internal/api"
 	"art_admin_backend/internal/api/middleware"
 	v1 "art_admin_backend/internal/api/v1"
 
 	"github.com/gin-gonic/gin"
 )
 
+var chatAPI *api.ChatAPI
+
+// SetChatAPI 设置聊天室 API（由 main 函数调用）
+func SetChatAPI(api *api.ChatAPI) {
+	chatAPI = api
+}
+
 // RegisterRoutes 注册所有路由
-// 基础功能 + 系统功能
+// 基础功能 + 系统功能 + Dify AI + 聊天室
 func RegisterRoutes(r *gin.Engine) {
 	// 统一使用 /api 前缀
 	apiGroup := r.Group("/api")
@@ -94,6 +102,35 @@ func RegisterRoutes(r *gin.Engine) {
 				fileGroup.DELETE("/:id", v1.DeleteFile)
 				fileGroup.POST("/batch-delete", v1.BatchDeleteFiles)
 			}
+
+			// Dify AI 模块
+			difyGroup := authApiGroup.Group("/dify")
+			{
+				// 知识库管理
+				difyGroup.GET("/dataset/list", v1.GetDatasetList)
+				difyGroup.GET("/dataset/:id", v1.GetDatasetDetail)
+				difyGroup.POST("/dataset/upload", v1.UploadFileToDataset)
+				difyGroup.DELETE("/dataset/:id", v1.DeleteDataset)
+
+				// AI对话
+				difyGroup.POST("/chat", v1.ChatWithAI)
+				difyGroup.POST("/chat/stream", v1.ChatWithAIStreaming)
+				difyGroup.POST("/chat/stop/:task_id", v1.StopChatMessage)
+
+				// 会话管理
+				difyGroup.GET("/conversations", v1.GetConversations)
+				difyGroup.GET("/messages", v1.GetConversationMessages)
+				difyGroup.DELETE("/conversations/:conversation_id", v1.DeleteConversation)
+				difyGroup.POST("/conversations/:conversation_id/name", v1.RenameConversation)
+
+				// 建议问题
+				difyGroup.GET("/messages/:message_id/suggested", v1.GetSuggestedQuestions)
+			}
 		}
+	}
+
+	// 聊天室模块
+	if chatAPI != nil {
+		SetupChatRoutes(r, chatAPI)
 	}
 }

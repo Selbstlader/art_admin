@@ -8,13 +8,17 @@ import { resultRoutes } from './result'
 import { exceptionRoutes } from './exception'
 import { safeguardRoutes } from './safeguard'
 import { helpRoutes } from './help'
+import chatRoutes from './chat'
+import { difyRoutes } from './dify'
 
 /**
  * 导出所有模块化路由
- * 基础功能 + 系统功能
+ * 基础功能 + 系统功能 + Dify AI + 聊天室
  */
 export const routeModules: AppRouteRecord[] = [
   dashboardRoutes,
+  chatRoutes,
+  difyRoutes,
   templateRoutes,
   widgetsRoutes,
   examplesRoutes,
