@@ -300,6 +300,23 @@ func RegisterRoutes(r *gin.Engine) {
 				fileGroup.POST("/batch-delete", v1.BatchDeleteFiles)
 			}
 
+			// AI标签管理模块
+			aiTagGroup := authApiGroup.Group("/ai-tags")
+			{
+				aiTagGroup.GET("", v1.GetAITagList)
+				aiTagGroup.GET("/:id", v1.GetAITagByID)
+				aiTagGroup.POST("", v1.CreateAITag)
+				aiTagGroup.PUT("/:id", v1.UpdateAITag)
+				aiTagGroup.DELETE("/:id", v1.DeleteAITag)
+				aiTagGroup.POST("/:id/test", v1.TestAITag)
+			}
+
+			// AI生成模块 - 通用AI内容生成接口
+			aiGenerateGroup := authApiGroup.Group("/ai-generate")
+			{
+				aiGenerateGroup.POST("/prompt", v1.GeneratePrompt)
+			}
+
 			// Dify AI 模块
 			difyGroup := authApiGroup.Group("/dify")
 			{

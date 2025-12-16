@@ -451,7 +451,7 @@ export const formTemplateApi = {
    * 获取表单模板列表
    */
   getList: (params: FormTemplateListParams) => {
-    return request.get<{ list: FormTemplateResponse[]; total: number }>({
+    return request.get<{ records: FormTemplateResponse[]; total: number }>({
       url: '/api/workflow/form-template/list',
       params
     })

@@ -80,12 +80,8 @@
                     {{ getActionText(record.action) }}
                   </ElTag>
                 </div>
-                <div class="trail-node" v-if="record.nodeName">
-                  节点: {{ record.nodeName }}
-                </div>
-                <div class="trail-comment" v-if="record.comment">
-                  意见: {{ record.comment }}
-                </div>
+                <div class="trail-node" v-if="record.nodeName"> 节点: {{ record.nodeName }} </div>
+                <div class="trail-comment" v-if="record.comment"> 意见: {{ record.comment }} </div>
               </div>
             </ElCard>
           </ElTimelineItem>
@@ -112,7 +108,10 @@
           <ElTableColumn prop="createdAt" label="创建时间" width="180" />
           <ElTableColumn prop="dueAt" label="截止时间" width="180">
             <template #default="{ row }">
-              <span v-if="row.dueAt" :style="{ color: isOverdue(row.dueAt) ? '#f56c6c' : 'inherit' }">
+              <span
+                v-if="row.dueAt"
+                :style="{ color: isOverdue(row.dueAt) ? '#f56c6c' : 'inherit' }"
+              >
                 {{ row.dueAt }}
               </span>
               <span v-else>-</span>
@@ -217,355 +216,369 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router'
-import { processInstApi, type ProcessInstDetailResponse, type ApprovalRecord } from '@/api/workflow'
-import { fetchGetUserList } from '@/api/system-manage'
-import { ElMessage } from 'element-plus'
-import { Check, Close, Switch, Right, Document, List, Bell } from '@element-plus/icons-vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import {
+    processInstApi,
+    type ProcessInstDetailResponse,
+    type ApprovalRecord
+  } from '@/api/workflow'
+  import { fetchGetUserList } from '@/api/system-manage'
+  import { ElMessage } from 'element-plus'
+  import { Check, Close, Switch, Right, Document, List, Bell } from '@element-plus/icons-vue'
 
-defineOptions({ name: 'WorkbenchDetail' })
+  defineOptions({ name: 'WorkbenchDetail' })
 
-const route = useRoute()
-const router = useRouter()
+  const route = useRoute()
+  const router = useRouter()
 
-// 流程实例ID
-const instanceId = computed(() => Number(route.params.id))
-// 任务ID（从待办进入时会带上）
-const taskId = computed(() => route.query.taskId ? Number(route.query.taskId) : null)
+  // 流程实例ID
+  const instanceId = computed(() => Number(route.params.id))
+  // 任务ID（从待办进入时会带上）
+  const taskId = computed(() => (route.query.taskId ? Number(route.query.taskId) : null))
 
-// 状态
-const loading = ref(false)
-const detail = ref<ProcessInstDetailResponse | null>(null)
+  // 状态
+  const loading = ref(false)
+  const detail = ref<ProcessInstDetailResponse | null>(null)
 
-// 状态配置
-const statusConfig: Record<string, { type: 'warning' | 'success' | 'info' | 'danger'; text: string }> = {
-  running: { type: 'warning', text: '进行中' },
-  completed: { type: 'success', text: '已完成' },
-  rejected: { type: 'danger', text: '已拒绝' },
-  withdrawn: { type: 'info', text: '已撤回' }
-}
-
-const taskStatusConfig: Record<string, { type: 'warning' | 'success' | 'info' | 'danger'; text: string }> = {
-  pending: { type: 'warning', text: '待处理' },
-  approved: { type: 'success', text: '已通过' },
-  rejected: { type: 'danger', text: '已拒绝' },
-  delegated: { type: 'info', text: '已委托' },
-  transferred: { type: 'info', text: '已转办' }
-}
-
-// 当前节点名称
-const currentNodeName = computed(() => {
-  if (!detail.value?.currentTasks?.length) return null
-  return detail.value.currentTasks[0]?.nodeName
-})
-
-// 是否可以审批（有待办任务且taskId匹配）
-const canApprove = computed(() => {
-  if (!taskId.value || !detail.value?.currentTasks?.length) return false
-  return detail.value.currentTasks.some(t => t.id === taskId.value && t.status === 'pending')
-})
-
-// 审批对话框
-const showApproveDialog = ref(false)
-const approveAction = ref<'approve' | 'reject'>('approve')
-const approveDialogTitle = computed(() => approveAction.value === 'approve' ? '审批通过' : '审批拒绝')
-const approveForm = ref({
-  comment: ''
-})
-
-// 委托对话框
-const showDelegateDialog = ref(false)
-const delegateForm = ref({
-  toUserId: undefined as number | undefined,
-  reason: ''
-})
-
-// 转办对话框
-const showTransferDialog = ref(false)
-const transferForm = ref({
-  toUserId: undefined as number | undefined,
-  reason: ''
-})
-
-// 用户搜索
-const userSearchLoading = ref(false)
-const userOptions = ref<any[]>([])
-
-// 加载详情
-const loadDetail = async () => {
-  if (!instanceId.value) return
-  
-  loading.value = true
-  try {
-    detail.value = await processInstApi.getDetail(instanceId.value)
-  } catch (error: any) {
-    console.error('加载详情失败:', error)
-    ElMessage.error(error.message || '加载详情失败')
-  } finally {
-    loading.value = false
+  // 状态配置
+  const statusConfig: Record<
+    string,
+    { type: 'warning' | 'success' | 'info' | 'danger'; text: string }
+  > = {
+    running: { type: 'warning', text: '进行中' },
+    completed: { type: 'success', text: '已完成' },
+    rejected: { type: 'danger', text: '已拒绝' },
+    withdrawn: { type: 'info', text: '已撤回' }
   }
-}
 
-// 格式化表单值
-const formatFormValue = (value: any): string => {
-  if (value === null || value === undefined) return '-'
-  if (typeof value === 'object') return JSON.stringify(value)
-  return String(value)
-}
+  const taskStatusConfig: Record<
+    string,
+    { type: 'warning' | 'success' | 'info' | 'danger'; text: string }
+  > = {
+    pending: { type: 'warning', text: '待处理' },
+    approved: { type: 'success', text: '已通过' },
+    rejected: { type: 'danger', text: '已拒绝' },
+    delegated: { type: 'info', text: '已委托' },
+    transferred: { type: 'info', text: '已转办' }
+  }
 
-// 获取时间线类型
-const getTimelineType = (action: string): 'primary' | 'success' | 'warning' | 'danger' | 'info' => {
-  const typeMap: Record<string, 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
-    approve: 'success',
-    reject: 'danger',
-    delegate: 'warning',
-    transfer: 'warning',
-    withdraw: 'info',
-    start: 'primary'
-  }
-  return typeMap[action] || 'info'
-}
+  // 当前节点名称
+  const currentNodeName = computed(() => {
+    if (!detail.value?.currentTasks?.length) return null
+    return detail.value.currentTasks[0]?.nodeName
+  })
 
-// 获取操作标签类型
-const getActionTagType = (action: string): 'success' | 'danger' | 'warning' | 'info' => {
-  const typeMap: Record<string, 'success' | 'danger' | 'warning' | 'info'> = {
-    approve: 'success',
-    reject: 'danger',
-    delegate: 'warning',
-    transfer: 'warning',
-    withdraw: 'info',
-    start: 'info'
-  }
-  return typeMap[action] || 'info'
-}
+  // 是否可以审批（有待办任务且taskId匹配）
+  const canApprove = computed(() => {
+    if (!taskId.value || !detail.value?.currentTasks?.length) return false
+    return detail.value.currentTasks.some((t) => t.id === taskId.value && t.status === 'pending')
+  })
 
-// 获取操作文本
-const getActionText = (action: string): string => {
-  const textMap: Record<string, string> = {
-    approve: '通过',
-    reject: '拒绝',
-    delegate: '委托',
-    transfer: '转办',
-    withdraw: '撤回',
-    start: '发起'
-  }
-  return textMap[action] || action
-}
+  // 审批对话框
+  const showApproveDialog = ref(false)
+  const approveAction = ref<'approve' | 'reject'>('approve')
+  const approveDialogTitle = computed(() =>
+    approveAction.value === 'approve' ? '审批通过' : '审批拒绝'
+  )
+  const approveForm = ref({
+    comment: ''
+  })
 
-// 是否超时
-const isOverdue = (dueAt: string): boolean => {
-  return new Date(dueAt) < new Date()
-}
+  // 委托对话框
+  const showDelegateDialog = ref(false)
+  const delegateForm = ref({
+    toUserId: undefined as number | undefined,
+    reason: ''
+  })
 
-// 搜索用户
-const searchUsers = async (query: string) => {
-  if (!query) {
-    userOptions.value = []
-    return
-  }
-  
-  userSearchLoading.value = true
-  try {
-    const res = await fetchGetUserList({
-      page: 1,
-      pageSize: 20,
-      userName: query
-    })
-    userOptions.value = res.list || []
-  } catch (error) {
-    console.error('搜索用户失败:', error)
-    userOptions.value = []
-  } finally {
-    userSearchLoading.value = false
-  }
-}
+  // 转办对话框
+  const showTransferDialog = ref(false)
+  const transferForm = ref({
+    toUserId: undefined as number | undefined,
+    reason: ''
+  })
 
-// 审批通过
-const handleApprove = () => {
-  approveAction.value = 'approve'
-  approveForm.value.comment = ''
-  showApproveDialog.value = true
-}
+  // 用户搜索
+  const userSearchLoading = ref(false)
+  const userOptions = ref<any[]>([])
 
-// 审批拒绝
-const handleReject = () => {
-  approveAction.value = 'reject'
-  approveForm.value.comment = ''
-  showApproveDialog.value = true
-}
+  // 加载详情
+  const loadDetail = async () => {
+    if (!instanceId.value) return
 
-// 提交审批
-const submitApprove = async () => {
-  if (!taskId.value) {
-    ElMessage.error('任务ID不存在')
-    return
+    loading.value = true
+    try {
+      detail.value = await processInstApi.getDetail(instanceId.value)
+    } catch (error: any) {
+      console.error('加载详情失败:', error)
+      ElMessage.error(error.message || '加载详情失败')
+    } finally {
+      loading.value = false
+    }
   }
-  
-  try {
-    await processInstApi.completeTask({
-      taskId: taskId.value,
-      action: approveAction.value,
-      comment: approveForm.value.comment
-    })
-    ElMessage.success(approveAction.value === 'approve' ? '审批通过成功' : '审批拒绝成功')
-    showApproveDialog.value = false
-    // 返回待办列表
-    router.push('/workflow/workbench/todo')
-  } catch (error: any) {
-    console.error('审批失败:', error)
-    ElMessage.error(error.message || '审批失败')
-  }
-}
 
-// 提交委托
-const submitDelegate = async () => {
-  if (!taskId.value) {
-    ElMessage.error('任务ID不存在')
-    return
+  // 格式化表单值
+  const formatFormValue = (value: any): string => {
+    if (value === null || value === undefined) return '-'
+    if (typeof value === 'object') return JSON.stringify(value)
+    return String(value)
   }
-  if (!delegateForm.value.toUserId) {
-    ElMessage.warning('请选择委托人')
-    return
-  }
-  
-  try {
-    await processInstApi.delegateTask({
-      taskId: taskId.value,
-      toUserId: delegateForm.value.toUserId,
-      reason: delegateForm.value.reason
-    })
-    ElMessage.success('委托成功')
-    showDelegateDialog.value = false
-    // 返回待办列表
-    router.push('/workflow/workbench/todo')
-  } catch (error: any) {
-    console.error('委托失败:', error)
-    ElMessage.error(error.message || '委托失败')
-  }
-}
 
-// 提交转办
-const submitTransfer = async () => {
-  if (!taskId.value) {
-    ElMessage.error('任务ID不存在')
-    return
+  // 获取时间线类型
+  const getTimelineType = (
+    action: string
+  ): 'primary' | 'success' | 'warning' | 'danger' | 'info' => {
+    const typeMap: Record<string, 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
+      approve: 'success',
+      reject: 'danger',
+      delegate: 'warning',
+      transfer: 'warning',
+      withdraw: 'info',
+      start: 'primary'
+    }
+    return typeMap[action] || 'info'
   }
-  if (!transferForm.value.toUserId) {
-    ElMessage.warning('请选择转办人')
-    return
-  }
-  
-  try {
-    await processInstApi.transferTask({
-      taskId: taskId.value,
-      toUserId: transferForm.value.toUserId,
-      reason: transferForm.value.reason
-    })
-    ElMessage.success('转办成功')
-    showTransferDialog.value = false
-    // 返回待办列表
-    router.push('/workflow/workbench/todo')
-  } catch (error: any) {
-    console.error('转办失败:', error)
-    ElMessage.error(error.message || '转办失败')
-  }
-}
 
-// 初始化
-onMounted(() => {
-  loadDetail()
-})
+  // 获取操作标签类型
+  const getActionTagType = (action: string): 'success' | 'danger' | 'warning' | 'info' => {
+    const typeMap: Record<string, 'success' | 'danger' | 'warning' | 'info'> = {
+      approve: 'success',
+      reject: 'danger',
+      delegate: 'warning',
+      transfer: 'warning',
+      withdraw: 'info',
+      start: 'info'
+    }
+    return typeMap[action] || 'info'
+  }
+
+  // 获取操作文本
+  const getActionText = (action: string): string => {
+    const textMap: Record<string, string> = {
+      approve: '通过',
+      reject: '拒绝',
+      delegate: '委托',
+      transfer: '转办',
+      withdraw: '撤回',
+      start: '发起'
+    }
+    return textMap[action] || action
+  }
+
+  // 是否超时
+  const isOverdue = (dueAt: string): boolean => {
+    return new Date(dueAt) < new Date()
+  }
+
+  // 搜索用户
+  const searchUsers = async (query: string) => {
+    if (!query) {
+      userOptions.value = []
+      return
+    }
+
+    userSearchLoading.value = true
+    try {
+      const res = await fetchGetUserList({
+        page: 1,
+        pageSize: 20,
+        userName: query
+      })
+      userOptions.value = res.list || []
+    } catch (error) {
+      console.error('搜索用户失败:', error)
+      userOptions.value = []
+    } finally {
+      userSearchLoading.value = false
+    }
+  }
+
+  // 审批通过
+  const handleApprove = () => {
+    approveAction.value = 'approve'
+    approveForm.value.comment = ''
+    showApproveDialog.value = true
+  }
+
+  // 审批拒绝
+  const handleReject = () => {
+    approveAction.value = 'reject'
+    approveForm.value.comment = ''
+    showApproveDialog.value = true
+  }
+
+  // 提交审批
+  const submitApprove = async () => {
+    if (!taskId.value) {
+      ElMessage.error('任务ID不存在')
+      return
+    }
+
+    try {
+      await processInstApi.completeTask({
+        taskId: taskId.value,
+        action: approveAction.value,
+        comment: approveForm.value.comment
+      })
+      ElMessage.success(approveAction.value === 'approve' ? '审批通过成功' : '审批拒绝成功')
+      showApproveDialog.value = false
+      // 返回待办列表
+      router.push('/workflow/workbench/todo')
+    } catch (error: any) {
+      console.error('审批失败:', error)
+      ElMessage.error(error.message || '审批失败')
+    }
+  }
+
+  // 提交委托
+  const submitDelegate = async () => {
+    if (!taskId.value) {
+      ElMessage.error('任务ID不存在')
+      return
+    }
+    if (!delegateForm.value.toUserId) {
+      ElMessage.warning('请选择委托人')
+      return
+    }
+
+    try {
+      await processInstApi.delegateTask({
+        taskId: taskId.value,
+        toUserId: delegateForm.value.toUserId,
+        reason: delegateForm.value.reason
+      })
+      ElMessage.success('委托成功')
+      showDelegateDialog.value = false
+      // 返回待办列表
+      router.push('/workflow/workbench/todo')
+    } catch (error: any) {
+      console.error('委托失败:', error)
+      ElMessage.error(error.message || '委托失败')
+    }
+  }
+
+  // 提交转办
+  const submitTransfer = async () => {
+    if (!taskId.value) {
+      ElMessage.error('任务ID不存在')
+      return
+    }
+    if (!transferForm.value.toUserId) {
+      ElMessage.warning('请选择转办人')
+      return
+    }
+
+    try {
+      await processInstApi.transferTask({
+        taskId: taskId.value,
+        toUserId: transferForm.value.toUserId,
+        reason: transferForm.value.reason
+      })
+      ElMessage.success('转办成功')
+      showTransferDialog.value = false
+      // 返回待办列表
+      router.push('/workflow/workbench/todo')
+    } catch (error: any) {
+      console.error('转办失败:', error)
+      ElMessage.error(error.message || '转办失败')
+    }
+  }
+
+  // 初始化
+  onMounted(() => {
+    loadDetail()
+  })
 </script>
 
 <style lang="scss" scoped>
-.workbench-detail-page {
-  padding: 16px;
-}
+  .workbench-detail-page {
+    padding: 16px;
+  }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  
-  .title-section {
+  .card-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
-    
-    h3 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-    }
-  }
-  
-  .action-section {
-    display: flex;
-    gap: 8px;
-  }
-}
 
-.info-section {
-  margin-bottom: 24px;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 24px 0 16px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-  
-  .el-icon {
-    color: var(--el-color-primary);
-  }
-}
-
-.form-section {
-  margin-bottom: 24px;
-}
-
-.trail-section {
-  margin-bottom: 24px;
-  
-  .trail-card {
-    :deep(.el-card__body) {
-      padding: 12px 16px;
-    }
-  }
-  
-  .trail-content {
-    .trail-header {
+    .title-section {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-      
-      .operator {
-        font-weight: 500;
+      gap: 12px;
+
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
       }
     }
-    
-    .trail-node {
-      font-size: 13px;
-      color: var(--el-text-color-secondary);
-      margin-bottom: 4px;
-    }
-    
-    .trail-comment {
-      font-size: 13px;
-      color: var(--el-text-color-regular);
-      background: var(--el-fill-color-light);
-      padding: 8px 12px;
-      border-radius: 4px;
-      margin-top: 8px;
+
+    .action-section {
+      display: flex;
+      gap: 8px;
     }
   }
-}
 
-.tasks-section {
-  margin-bottom: 24px;
-}
+  .info-section {
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 24px 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+
+    .el-icon {
+      color: var(--el-color-primary);
+    }
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+  }
+
+  .trail-section {
+    margin-bottom: 24px;
+
+    .trail-card {
+      :deep(.el-card__body) {
+        padding: 12px 16px;
+      }
+    }
+
+    .trail-content {
+      .trail-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+
+        .operator {
+          font-weight: 500;
+        }
+      }
+
+      .trail-node {
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+        margin-bottom: 4px;
+      }
+
+      .trail-comment {
+        font-size: 13px;
+        color: var(--el-text-color-regular);
+        background: var(--el-fill-color-light);
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-top: 8px;
+      }
+    }
+  }
+
+  .tasks-section {
+    margin-bottom: 24px;
+  }
 </style>

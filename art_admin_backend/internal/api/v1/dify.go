@@ -4,6 +4,7 @@ import (
 	"art_admin_backend/internal/dto/request"
 	difyResponse "art_admin_backend/internal/dto/response"
 	"art_admin_backend/internal/pkg/response"
+	aiTagSvc "art_admin_backend/internal/service/ai_tag"
 	difySvc "art_admin_backend/internal/service/dify"
 	"encoding/json"
 	"fmt"
@@ -23,6 +24,12 @@ func getDifyService() *difySvc.DifyService {
 		difyService = difySvc.NewDifyService()
 	}
 	return difyService
+}
+
+// getAITagServiceForDify returns the AI tag service for Dify chat integration
+// Uses the existing aiTagService from ai_tag_api.go
+func getAITagServiceForDify() *aiTagSvc.AITagService {
+	return aiTagService
 }
 
 // GetDatasetList 获取知识库列表
@@ -141,7 +148,7 @@ func UploadFileToDataset(c *gin.Context) {
 
 // ChatWithAI AI对话(非流式)
 // @Summary AI对话
-// @Description 与Dify AI进行对话(非流式)
+// @Description 与Dify AI进行对话(非流式)，支持通过tag_id加载AI标签配置
 // @Tags Dify
 // @Accept json
 // @Produce json
@@ -161,7 +168,27 @@ func ChatWithAI(c *gin.Context) {
 	// 设置为非流式模式
 	req.ResponseMode = "blocking"
 
-	result, err := getDifyService().Chat(&req)
+	var result *difyResponse.DifyChatResponse
+	var err error
+
+	// Check if tag_id is provided
+	// Requirements: 5.1, 5.2, 5.3 - Load tag config when tag_id is provided
+	if req.TagID > 0 {
+		tagConfig, tagErr := getAITagServiceForDify().GetTagConfig(req.TagID)
+		if tagErr != nil {
+			response.BadRequest(c, "加载AI标签配置失败: "+tagErr.Error())
+			return
+		}
+
+		// Use tag configuration for chat
+		// Requirements: 5.1 - Use tag's knowledge base ID
+		// Requirements: 5.2 - Prepend system prompt
+		// Requirements: 5.3 - Use custom API key if configured
+		result, err = getDifyService().ChatWithConfig(&req, tagConfig.ChatAPIKey, tagConfig.SystemPrompt, tagConfig.KnowledgeBaseID)
+	} else {
+		result, err = getDifyService().Chat(&req)
+	}
+
 	if err != nil {
 		response.ServerError(c, "AI对话失败: "+err.Error())
 		return
@@ -172,7 +199,7 @@ func ChatWithAI(c *gin.Context) {
 
 // ChatWithAIStreaming AI对话(流式)
 // @Summary AI对话(流式)
-// @Description 与Dify AI进行流式对话
+// @Description 与Dify AI进行流式对话，支持通过tag_id加载AI标签配置
 // @Tags Dify
 // @Accept json
 // @Produce text/event-stream
@@ -192,6 +219,18 @@ func ChatWithAIStreaming(c *gin.Context) {
 	// 设置为流式模式
 	req.ResponseMode = "streaming"
 
+	// Load tag config if tag_id is provided
+	// Requirements: 5.1, 5.2, 5.3 - Load tag config when tag_id is provided
+	var tagConfig *aiTagSvc.AITagConfig
+	if req.TagID > 0 {
+		var tagErr error
+		tagConfig, tagErr = getAITagServiceForDify().GetTagConfig(req.TagID)
+		if tagErr != nil {
+			response.BadRequest(c, "加载AI标签配置失败: "+tagErr.Error())
+			return
+		}
+	}
+
 	// 设置响应头
 	c.Header("Content-Type", "text/event-stream")
 	c.Header("Cache-Control", "no-cache")
@@ -203,20 +242,31 @@ func ChatWithAIStreaming(c *gin.Context) {
 
 	// 启动流式对话
 	go func() {
-		err := getDifyService().ChatStreaming(&req, func(event *difyResponse.DifyChatStreamEvent) error {
+		var err error
+		callback := func(event *difyResponse.DifyChatStreamEvent) error {
 			// 将事件发送给客户端
 			eventData := fmt.Sprintf("data: %s\n\n", mustMarshalJSON(event))
 
 			// 写入响应
-			if _, err := io.WriteString(c.Writer, eventData); err != nil {
-				return err
+			if _, writeErr := io.WriteString(c.Writer, eventData); writeErr != nil {
+				return writeErr
 			}
 
 			// 刷新缓冲区
 			c.Writer.Flush()
 
 			return nil
-		})
+		}
+
+		// Use tag configuration if available
+		// Requirements: 5.1 - Use tag's knowledge base ID
+		// Requirements: 5.2 - Prepend system prompt
+		// Requirements: 5.3 - Use custom API key if configured
+		if tagConfig != nil {
+			err = getDifyService().ChatStreamingWithConfig(&req, tagConfig.ChatAPIKey, tagConfig.SystemPrompt, tagConfig.KnowledgeBaseID, callback)
+		} else {
+			err = getDifyService().ChatStreaming(&req, callback)
+		}
 
 		if err != nil {
 			errChan <- err

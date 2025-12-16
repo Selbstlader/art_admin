@@ -139,4 +139,5 @@ export interface DifyChatRequest {
   inputs?: Record<string, any>
   files?: any[]
   auto_generate_name?: boolean
+  tag_id?: number // AI标签ID，用于加载标签配置（系统提示词、知识库等）
 }

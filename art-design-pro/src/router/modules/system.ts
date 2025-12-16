@@ -77,6 +77,28 @@ export const systemRoutes: AppRouteRecord = {
       }
     },
     {
+      path: 'ai-tag',
+      name: 'AITag',
+      component: '/system/ai-tag',
+      meta: {
+        title: 'menus.system.aiTag',
+        icon: '&#xe6b8;',
+        keepAlive: true,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
+    },
+    {
+      path: 'ai-tag/chat/:id',
+      name: 'AITagChat',
+      component: '/system/ai-tag/chat',
+      meta: {
+        title: 'AI 对话',
+        isHide: true,
+        keepAlive: false,
+        roles: ['R_SUPER', 'R_ADMIN']
+      }
+    },
+    {
       path: 'nested',
       name: 'Nested',
       component: '',

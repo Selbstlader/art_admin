@@ -1,0 +1,26 @@
+/*** Vitest Configuration for Property-Based Testing ***/
+import { defineConfig } from 'vitest/config'
+import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
+
+export default defineConfig({
+  plugins: [vue()],
+  test: {
+    environment: 'happy-dom',
+    globals: true,
+    include: ['src/**/*.{test,spec}.{js,ts}', 'tests/**/*.{test,spec}.{js,ts}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html']
+    }
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@views': resolve(__dirname, 'src/views'),
+      '@utils': resolve(__dirname, 'src/utils'),
+      '@stores': resolve(__dirname, 'src/store'),
+      '@styles': resolve(__dirname, 'src/assets/styles')
+    }
+  }
+})

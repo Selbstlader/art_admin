@@ -21,6 +21,7 @@ type DifyChatRequest struct {
 	Inputs           map[string]interface{} `json:"inputs,omitempty"`             // 输入变量
 	Files            []DifyFileInfo         `json:"files,omitempty"`              // 文件列表
 	AutoGenerateName bool                   `json:"auto_generate_name,omitempty"` // 是否自动生成标题
+	TagID            int64                  `json:"tag_id,omitempty"`             // AI标签ID（可选，用于加载标签配置）
 }
 
 // DifyFileInfo 文件信息

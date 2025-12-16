@@ -4,7 +4,7 @@
 
 -- 工作流主菜单 (ID: 1000)
 INSERT INTO sys_menu (id, parent_id, name, path, title, component, icon, is_enable, sort, is_menu, keep_alive, is_hide)
-VALUES (1000, 0, 'Workflow', '/workflow', '工作流', '/index/index', '&#xe6a1;', 1, 50, 1, 1, 0)
+VALUES (1000, 0, 'Workflow', '/workflow', '工作流', '/index/index', 'icon-workflow', 1, 50, 1, 1, 0)
 ON DUPLICATE KEY UPDATE title = VALUES(title);
 
 -- 审批工作台 (ID: 1001, parent: 1000)

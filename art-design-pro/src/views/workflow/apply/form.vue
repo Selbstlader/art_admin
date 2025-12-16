@@ -70,9 +70,7 @@
           />
         </ElFormItem>
 
-        <ElDivider v-if="formSchema && formSchema.fields.length > 0">
-          表单字段
-        </ElDivider>
+        <ElDivider v-if="formSchema && formSchema.fields.length > 0"> 表单字段 </ElDivider>
 
         <!-- 动态表单字段 -->
         <template v-if="formSchema && formSchema.fields.length > 0">
@@ -154,9 +152,7 @@
                 点击上传
               </ElButton>
               <template #tip>
-                <div class="el-upload__tip">
-                  支持上传多个文件，单个文件不超过10MB
-                </div>
+                <div class="el-upload__tip"> 支持上传多个文件，单个文件不超过10MB </div>
               </template>
             </ElUpload>
 
@@ -181,336 +177,339 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, type FormInstance, type FormRules, type UploadProps } from 'element-plus'
-import { ArrowLeft, Check, Refresh, Document, EditPen, Upload } from '@element-plus/icons-vue'
-import {
-  processDefApi,
-  processInstApi,
-  formTemplateApi,
-  type ProcessDefDetailResponse,
-  type FormSchema,
-  type FormField
-} from '@/api/workflow'
-import { useUserStore } from '@/store/modules/user'
+  import { ref, reactive, computed, onMounted } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { ElMessage, type FormInstance, type FormRules, type UploadProps } from 'element-plus'
+  import { ArrowLeft, Check, Refresh, Document, EditPen, Upload } from '@element-plus/icons-vue'
+  import {
+    processDefApi,
+    processInstApi,
+    formTemplateApi,
+    type ProcessDefDetailResponse,
+    type FormSchema,
+    type FormField
+  } from '@/api/workflow'
+  import { useUserStore } from '@/store/modules/user'
 
-defineOptions({ name: 'WorkflowApplyForm' })
+  defineOptions({ name: 'WorkflowApplyForm' })
 
-const route = useRoute()
-const router = useRouter()
-const userStore = useUserStore()
+  const route = useRoute()
+  const router = useRouter()
+  const userStore = useUserStore()
 
-// 流程定义ID
-const processDefId = computed(() => Number(route.params.id))
+  // 流程定义ID
+  const processDefId = computed(() => Number(route.params.id))
 
-// 状态
-const loading = ref(false)
-const submitting = ref(false)
+  // 状态
+  const loading = ref(false)
+  const submitting = ref(false)
 
-// 流程详情
-const processDetail = ref<ProcessDefDetailResponse | null>(null)
+  // 流程详情
+  const processDetail = ref<ProcessDefDetailResponse | null>(null)
 
-// 表单模板
-const formSchema = ref<FormSchema | null>(null)
+  // 表单模板
+  const formSchema = ref<FormSchema | null>(null)
 
-// 表单引用
-const formRef = ref<FormInstance>()
+  // 表单引用
+  const formRef = ref<FormInstance>()
 
-// 表单数据
-const formData = reactive<{
-  title: string
-  data: Record<string, any>
-}>({
-  title: '',
-  data: {}
-})
-
-// 上传请求头
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${userStore.token}`
-}))
-
-// 生成表单验证规则
-const formRules = computed<FormRules>(() => {
-  const rules: FormRules = {
-    title: [
-      { required: true, message: '请输入申请标题', trigger: 'blur' },
-      { min: 2, max: 100, message: '标题长度在 2 到 100 个字符', trigger: 'blur' }
-    ]
-  }
-
-  if (formSchema.value?.fields) {
-    formSchema.value.fields.forEach((field: FormField) => {
-      const fieldRules: any[] = []
-
-      // 必填验证
-      if (field.required) {
-        fieldRules.push({
-          required: true,
-          message: `请${field.type === 'select' ? '选择' : '输入'}${field.label}`,
-          trigger: field.type === 'select' ? 'change' : 'blur'
-        })
-      }
-
-      // 文本长度验证
-      if (field.validation?.minLength || field.validation?.maxLength) {
-        fieldRules.push({
-          min: field.validation.minLength,
-          max: field.validation.maxLength,
-          message: `${field.label}长度应在 ${field.validation.minLength || 0} 到 ${field.validation.maxLength || '∞'} 个字符`,
-          trigger: 'blur'
-        })
-      }
-
-      // 数字范围验证
-      if (field.type === 'number' && (field.validation?.min !== undefined || field.validation?.max !== undefined)) {
-        fieldRules.push({
-          type: 'number',
-          min: field.validation?.min,
-          max: field.validation?.max,
-          message: `${field.label}应在 ${field.validation?.min ?? '-∞'} 到 ${field.validation?.max ?? '∞'} 之间`,
-          trigger: 'blur'
-        })
-      }
-
-      // 正则验证
-      if (field.validation?.pattern) {
-        fieldRules.push({
-          pattern: new RegExp(field.validation.pattern),
-          message: `${field.label}格式不正确`,
-          trigger: 'blur'
-        })
-      }
-
-      if (fieldRules.length > 0) {
-        rules[`data.${field.key}`] = fieldRules
-      }
-    })
-  }
-
-  return rules
-})
-
-// 加载流程详情和表单模板
-const loadProcessDetail = async () => {
-  if (!processDefId.value) {
-    ElMessage.error('流程ID不存在')
-    return
-  }
-
-  loading.value = true
-  try {
-    // 加载流程定义详情
-    const detail = await processDefApi.getDetail(processDefId.value)
-    processDetail.value = detail
-
-    // 检查流程是否已发布
-    if (detail.status !== 'published') {
-      ElMessage.error('该流程尚未发布，无法发起申请')
-      router.push('/workflow/apply')
-      return
-    }
-
-    // 如果有关联表单模板，加载表单结构
-    if (detail.formTemplateId) {
-      const templateDetail = await formTemplateApi.getDetail(detail.formTemplateId)
-      if (templateDetail.schema) {
-        formSchema.value = templateDetail.schema
-        // 初始化表单数据默认值
-        initFormData(templateDetail.schema)
-      }
-    }
-
-    // 设置默认标题
-    formData.title = `${detail.name} - ${new Date().toLocaleDateString()}`
-  } catch (error: any) {
-    console.error('加载流程详情失败:', error)
-    ElMessage.error(error.message || '加载流程详情失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-// 初始化表单数据
-const initFormData = (schema: FormSchema) => {
-  schema.fields.forEach((field: FormField) => {
-    if (field.defaultValue !== undefined) {
-      formData.data[field.key] = field.defaultValue
-    } else if (field.type === 'number') {
-      formData.data[field.key] = undefined
-    } else if (field.type === 'file') {
-      formData.data[field.key] = []
-    } else {
-      formData.data[field.key] = ''
-    }
+  // 表单数据
+  const formData = reactive<{
+    title: string
+    data: Record<string, any>
+  }>({
+    title: '',
+    data: {}
   })
-}
 
-// 返回
-const handleBack = () => {
-  router.push('/workflow/apply')
-}
+  // 上传请求头
+  const uploadHeaders = computed(() => ({
+    Authorization: `Bearer ${userStore.token}`
+  }))
 
-// 重置表单
-const handleReset = () => {
-  formRef.value?.resetFields()
-  if (formSchema.value) {
-    initFormData(formSchema.value)
-  }
-  if (processDetail.value) {
-    formData.title = `${processDetail.value.name} - ${new Date().toLocaleDateString()}`
-  }
-}
+  // 生成表单验证规则
+  const formRules = computed<FormRules>(() => {
+    const rules: FormRules = {
+      title: [
+        { required: true, message: '请输入申请标题', trigger: 'blur' },
+        { min: 2, max: 100, message: '标题长度在 2 到 100 个字符', trigger: 'blur' }
+      ]
+    }
 
-// 文件上传超出限制
-const handleExceed: UploadProps['onExceed'] = () => {
-  ElMessage.warning('最多只能上传5个文件')
-}
-
-// 提交申请
-const handleSubmit = async () => {
-  if (!formRef.value) return
-
-  try {
-    await formRef.value.validate()
-  } catch {
-    ElMessage.warning('请完善表单信息')
-    return
-  }
-
-  if (!processDefId.value) {
-    ElMessage.error('流程ID不存在')
-    return
-  }
-
-  submitting.value = true
-  try {
-    // 处理文件上传数据
-    const submitData: Record<string, any> = {}
     if (formSchema.value?.fields) {
       formSchema.value.fields.forEach((field: FormField) => {
-        const value = formData.data[field.key]
-        if (field.type === 'file' && Array.isArray(value)) {
-          // 提取文件URL
-          submitData[field.key] = value.map((f: any) => f.response?.url || f.url).filter(Boolean)
-        } else {
-          submitData[field.key] = value
+        const fieldRules: any[] = []
+
+        // 必填验证
+        if (field.required) {
+          fieldRules.push({
+            required: true,
+            message: `请${field.type === 'select' ? '选择' : '输入'}${field.label}`,
+            trigger: field.type === 'select' ? 'change' : 'blur'
+          })
+        }
+
+        // 文本长度验证
+        if (field.validation?.minLength || field.validation?.maxLength) {
+          fieldRules.push({
+            min: field.validation.minLength,
+            max: field.validation.maxLength,
+            message: `${field.label}长度应在 ${field.validation.minLength || 0} 到 ${field.validation.maxLength || '∞'} 个字符`,
+            trigger: 'blur'
+          })
+        }
+
+        // 数字范围验证
+        if (
+          field.type === 'number' &&
+          (field.validation?.min !== undefined || field.validation?.max !== undefined)
+        ) {
+          fieldRules.push({
+            type: 'number',
+            min: field.validation?.min,
+            max: field.validation?.max,
+            message: `${field.label}应在 ${field.validation?.min ?? '-∞'} 到 ${field.validation?.max ?? '∞'} 之间`,
+            trigger: 'blur'
+          })
+        }
+
+        // 正则验证
+        if (field.validation?.pattern) {
+          fieldRules.push({
+            pattern: new RegExp(field.validation.pattern),
+            message: `${field.label}格式不正确`,
+            trigger: 'blur'
+          })
+        }
+
+        if (fieldRules.length > 0) {
+          rules[`data.${field.key}`] = fieldRules
         }
       })
     }
 
-    await processInstApi.start({
-      processDefId: processDefId.value,
-      title: formData.title,
-      formData: Object.keys(submitData).length > 0 ? submitData : undefined
-    })
+    return rules
+  })
 
-    ElMessage.success('申请提交成功')
-    // 跳转到我发起的列表
-    router.push('/workflow/workbench/initiated')
-  } catch (error: any) {
-    console.error('提交申请失败:', error)
-    ElMessage.error(error.message || '提交申请失败')
-  } finally {
-    submitting.value = false
+  // 加载流程详情和表单模板
+  const loadProcessDetail = async () => {
+    if (!processDefId.value) {
+      ElMessage.error('流程ID不存在')
+      return
+    }
+
+    loading.value = true
+    try {
+      // 加载流程定义详情
+      const detail = await processDefApi.getDetail(processDefId.value)
+      processDetail.value = detail
+
+      // 检查流程是否已发布
+      if (detail.status !== 'published') {
+        ElMessage.error('该流程尚未发布，无法发起申请')
+        router.push('/workflow/apply')
+        return
+      }
+
+      // 如果有关联表单模板，加载表单结构
+      if (detail.formTemplateId) {
+        const templateDetail = await formTemplateApi.getDetail(detail.formTemplateId)
+        if (templateDetail.schema) {
+          formSchema.value = templateDetail.schema
+          // 初始化表单数据默认值
+          initFormData(templateDetail.schema)
+        }
+      }
+
+      // 设置默认标题
+      formData.title = `${detail.name} - ${new Date().toLocaleDateString()}`
+    } catch (error: any) {
+      console.error('加载流程详情失败:', error)
+      ElMessage.error(error.message || '加载流程详情失败')
+    } finally {
+      loading.value = false
+    }
   }
-}
 
-// 初始化
-onMounted(() => {
-  loadProcessDetail()
-})
+  // 初始化表单数据
+  const initFormData = (schema: FormSchema) => {
+    schema.fields.forEach((field: FormField) => {
+      if (field.defaultValue !== undefined) {
+        formData.data[field.key] = field.defaultValue
+      } else if (field.type === 'number') {
+        formData.data[field.key] = undefined
+      } else if (field.type === 'file') {
+        formData.data[field.key] = []
+      } else {
+        formData.data[field.key] = ''
+      }
+    })
+  }
+
+  // 返回
+  const handleBack = () => {
+    router.push('/workflow/apply')
+  }
+
+  // 重置表单
+  const handleReset = () => {
+    formRef.value?.resetFields()
+    if (formSchema.value) {
+      initFormData(formSchema.value)
+    }
+    if (processDetail.value) {
+      formData.title = `${processDetail.value.name} - ${new Date().toLocaleDateString()}`
+    }
+  }
+
+  // 文件上传超出限制
+  const handleExceed: UploadProps['onExceed'] = () => {
+    ElMessage.warning('最多只能上传5个文件')
+  }
+
+  // 提交申请
+  const handleSubmit = async () => {
+    if (!formRef.value) return
+
+    try {
+      await formRef.value.validate()
+    } catch {
+      ElMessage.warning('请完善表单信息')
+      return
+    }
+
+    if (!processDefId.value) {
+      ElMessage.error('流程ID不存在')
+      return
+    }
+
+    submitting.value = true
+    try {
+      // 处理文件上传数据
+      const submitData: Record<string, any> = {}
+      if (formSchema.value?.fields) {
+        formSchema.value.fields.forEach((field: FormField) => {
+          const value = formData.data[field.key]
+          if (field.type === 'file' && Array.isArray(value)) {
+            // 提取文件URL
+            submitData[field.key] = value.map((f: any) => f.response?.url || f.url).filter(Boolean)
+          } else {
+            submitData[field.key] = value
+          }
+        })
+      }
+
+      await processInstApi.start({
+        processDefId: processDefId.value,
+        title: formData.title,
+        formData: Object.keys(submitData).length > 0 ? submitData : undefined
+      })
+
+      ElMessage.success('申请提交成功')
+      // 跳转到我发起的列表
+      router.push('/workflow/workbench/initiated')
+    } catch (error: any) {
+      console.error('提交申请失败:', error)
+      ElMessage.error(error.message || '提交申请失败')
+    } finally {
+      submitting.value = false
+    }
+  }
+
+  // 初始化
+  onMounted(() => {
+    loadProcessDetail()
+  })
 </script>
 
 <style lang="scss" scoped>
-.apply-form-page {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  padding-bottom: 32px;
-
-  .header-card {
-    :deep(.el-card__body) {
-      padding: 12px 20px;
-    }
-  }
-
-  .page-header {
+  .apply-form-page {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    padding-bottom: 32px;
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-
-      .page-title {
-        font-size: 16px;
-        font-weight: 500;
-        color: var(--el-text-color-primary);
+    .header-card {
+      :deep(.el-card__body) {
+        padding: 12px 20px;
       }
     }
 
-    .header-right {
+    .page-header {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .page-title {
+          font-size: 16px;
+          font-weight: 500;
+          color: var(--el-text-color-primary);
+        }
+      }
+
+      .header-right {
+        display: flex;
+        gap: 8px;
+      }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
       gap: 8px;
+      font-size: 15px;
+      font-weight: 500;
+
+      .el-icon {
+        color: var(--el-color-primary);
+      }
+
+      .required-tip {
+        margin-left: auto;
+        font-size: 12px;
+        font-weight: normal;
+        color: var(--el-color-danger);
+      }
+    }
+
+    .info-card {
+      :deep(.el-card__header) {
+        padding: 12px 20px;
+        background: var(--el-fill-color-lighter);
+      }
+    }
+
+    .form-card {
+      :deep(.el-card__header) {
+        padding: 12px 20px;
+        background: var(--el-fill-color-lighter);
+      }
+
+      :deep(.el-card__body) {
+        padding: 24px;
+      }
+    }
+
+    .apply-form {
+      max-width: 800px;
+
+      :deep(.el-form-item) {
+        margin-bottom: 20px;
+      }
+
+      :deep(.el-divider) {
+        margin: 24px 0;
+      }
+
+      :deep(.el-upload__tip) {
+        color: var(--el-text-color-secondary);
+      }
     }
   }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 15px;
-    font-weight: 500;
-
-    .el-icon {
-      color: var(--el-color-primary);
-    }
-
-    .required-tip {
-      margin-left: auto;
-      font-size: 12px;
-      font-weight: normal;
-      color: var(--el-color-danger);
-    }
-  }
-
-  .info-card {
-    :deep(.el-card__header) {
-      padding: 12px 20px;
-      background: var(--el-fill-color-lighter);
-    }
-  }
-
-  .form-card {
-    :deep(.el-card__header) {
-      padding: 12px 20px;
-      background: var(--el-fill-color-lighter);
-    }
-
-    :deep(.el-card__body) {
-      padding: 24px;
-    }
-  }
-
-  .apply-form {
-    max-width: 800px;
-
-    :deep(.el-form-item) {
-      margin-bottom: 20px;
-    }
-
-    :deep(.el-divider) {
-      margin: 24px 0;
-    }
-
-    :deep(.el-upload__tip) {
-      color: var(--el-text-color-secondary);
-    }
-  }
-}
 </style>

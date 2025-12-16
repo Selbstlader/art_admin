@@ -38,6 +38,7 @@ export const difyChatApi = {
     inputs?: Record<string, any>
     files?: any[]
     auto_generate_name?: boolean
+    tag_id?: number
   }) => {
     return request.post({ url: '/api/dify/chat', params })
   },
@@ -50,6 +51,7 @@ export const difyChatApi = {
     inputs?: Record<string, any>
     files?: any[]
     auto_generate_name?: boolean
+    tag_id?: number
   }) => {
     // 流式接口需要特殊处理,返回 EventSource 对象
     // 从 pinia store 获取 token

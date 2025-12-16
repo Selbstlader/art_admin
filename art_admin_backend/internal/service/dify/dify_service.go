@@ -12,6 +12,8 @@ import (
 type DifyService struct {
 	datasetClient *dify.Client
 	chatClient    *dify.Client
+	baseURL       string
+	timeout       int
 }
 
 func NewDifyService() *DifyService {
@@ -27,7 +29,23 @@ func NewDifyService() *DifyService {
 	return &DifyService{
 		datasetClient: dify.NewClient(datasetApiKey, baseURL, timeout),
 		chatClient:    dify.NewClient(chatApiKey, baseURL, timeout),
+		baseURL:       baseURL,
+		timeout:       timeout,
 	}
+}
+
+// CreateClientWithAPIKey creates a new Dify client with a custom API key
+// Requirements: 5.3 - Support custom API key for chat
+func (s *DifyService) CreateClientWithAPIKey(apiKey string) *dify.Client {
+	if apiKey == "" {
+		return s.chatClient
+	}
+	return dify.NewClient(apiKey, s.baseURL, s.timeout)
+}
+
+// GetDefaultChatAPIKey returns the default chat API key from config
+func (s *DifyService) GetDefaultChatAPIKey() string {
+	return viper.GetString("dify.chatApiKey")
 }
 
 // GetDatasetList 获取知识库列表
@@ -98,6 +116,21 @@ func (s *DifyService) ChatStreaming(req *request.DifyChatRequest, callback func(
 	return s.chatClient.ChatStreaming(data, callback)
 }
 
+// ChatStreamingWithConfig 流式对话（支持自定义配置）
+// Requirements: 5.1 - Use tag's knowledge base ID for context retrieval
+// Requirements: 5.2 - Prepend tag's system prompt to conversation
+// Requirements: 5.3 - Use custom API key if configured
+func (s *DifyService) ChatStreamingWithConfig(req *request.DifyChatRequest, apiKey string, systemPrompt string, knowledgeBaseID string, callback func(event *response.DifyChatStreamEvent) error) error {
+	// Build request data
+	data := s.buildChatRequestData(req, systemPrompt, knowledgeBaseID)
+	data["response_mode"] = "streaming"
+
+	// Use custom API key or default
+	client := s.CreateClientWithAPIKey(apiKey)
+
+	return client.ChatStreaming(data, callback)
+}
+
 // Chat 非流式对话
 func (s *DifyService) Chat(req *request.DifyChatRequest) (*response.DifyChatResponse, error) {
 	// 构建请求数据
@@ -124,6 +157,69 @@ func (s *DifyService) Chat(req *request.DifyChatRequest) (*response.DifyChatResp
 	}
 
 	return s.chatClient.Chat(data)
+}
+
+// ChatWithConfig 非流式对话（支持自定义配置）
+// Requirements: 5.1 - Use tag's knowledge base ID for context retrieval
+// Requirements: 5.2 - Prepend tag's system prompt to conversation
+// Requirements: 5.3 - Use custom API key if configured
+func (s *DifyService) ChatWithConfig(req *request.DifyChatRequest, apiKey string, systemPrompt string, knowledgeBaseID string) (*response.DifyChatResponse, error) {
+	// Build request data
+	data := s.buildChatRequestData(req, systemPrompt, knowledgeBaseID)
+	data["response_mode"] = "blocking"
+
+	// Use custom API key or default
+	client := s.CreateClientWithAPIKey(apiKey)
+
+	return client.Chat(data)
+}
+
+// buildChatRequestData builds the request data map for chat API calls
+// Requirements: 5.1 - Include knowledge_base_id in request context
+// Requirements: 5.2 - Include system_prompt in inputs
+func (s *DifyService) buildChatRequestData(req *request.DifyChatRequest, systemPrompt string, knowledgeBaseID string) map[string]interface{} {
+	data := map[string]interface{}{
+		"query": req.Query,
+		"user":  req.User,
+	}
+
+	if req.ConversationID != "" {
+		data["conversation_id"] = req.ConversationID
+	}
+
+	// Build inputs with system prompt and knowledge base ID
+	inputs := make(map[string]interface{})
+	if req.Inputs != nil {
+		for k, v := range req.Inputs {
+			inputs[k] = v
+		}
+	}
+
+	// Add system prompt to inputs if provided
+	// Requirements: 5.2 - Prepend system prompt to conversation
+	if systemPrompt != "" {
+		inputs["system_prompt"] = systemPrompt
+	}
+
+	// Add knowledge base ID to inputs if provided
+	// Requirements: 5.1 - Use knowledge base ID for context retrieval
+	if knowledgeBaseID != "" {
+		inputs["knowledge_base_id"] = knowledgeBaseID
+	}
+
+	if len(inputs) > 0 {
+		data["inputs"] = inputs
+	}
+
+	if len(req.Files) > 0 {
+		data["files"] = req.Files
+	}
+
+	if req.AutoGenerateName {
+		data["auto_generate_name"] = true
+	}
+
+	return data
 }
 
 // StopChatMessage 停止消息生成
