@@ -6,6 +6,10 @@
     align-center
   >
     <ElForm ref="formRef" :model="formData" :rules="rules" label-width="80px">
+      <!-- 头像上传 -->
+      <ElFormItem label="头像" prop="avatar">
+        <ImageUpload v-model="formData.avatar" :limit="1" tip="支持 jpg、png 格式" />
+      </ElFormItem>
       <ElFormItem label="用户名" prop="userName">
         <ElInput
           v-model="formData.userName"
@@ -65,6 +69,7 @@
 
 <script setup lang="ts">
   import { fetchCreateUser, fetchUpdateUser, fetchGetRoleList } from '@/api/system-manage'
+  import ImageUpload from '@/components/core/upload/ImageUpload.vue'
   import type { FormInstance, FormRules } from 'element-plus'
 
   interface Props {
@@ -123,6 +128,7 @@
     email: '',
     userPhone: '',
     userGender: 'male',
+    avatar: '', // 头像URL
     status: '1',
     roleIds: [] as string[] // 前端使用roleCode数组
   })
@@ -172,6 +178,7 @@
       email: isEdit && row ? row.userEmail || '' : '',
       userPhone: isEdit && row ? row.userPhone || '' : '',
       userGender: isEdit && row ? row.userGender || 'male' : 'male',
+      avatar: isEdit && row ? row.avatar || '' : '', // 初始化头像
       status: isEdit && row ? row.status || '1' : '1',
       roleIds:
         isEdit && row
@@ -224,6 +231,7 @@
               email: formData.email,
               userPhone: formData.userPhone,
               userGender: formData.userGender,
+              avatar: formData.avatar, // 头像URL
               status: formData.status,
               roleIds: formData.roleIds.map((roleCode: string) => {
                 // 将roleCode转换为roleId（这里需要根据实际情况调整）
@@ -241,6 +249,7 @@
               email: formData.email,
               userPhone: formData.userPhone,
               userGender: formData.userGender,
+              avatar: formData.avatar, // 头像URL
               status: formData.status,
               roleIds: formData.roleIds.map((roleCode: string) => {
                 // 将roleCode转换为roleId

@@ -1,8 +1,3 @@
-<!-- 用户管理 -->
-<!-- art-full-height 自动计算出页面剩余高度 -->
-<!-- art-table-card 一个符合系统样式的 class，同时自动撑满剩余高度 -->
-<!-- 更多 useTable 使用示例请移步至 功能示例 下面的 高级表格示例或者查看官方文档 -->
-<!-- useTable 文档：https://www.artd.pro/docs/zh/guide/hooks/use-table.html -->
 <template>
   <div class="user-page art-full-height">
     <!-- 搜索栏 -->
@@ -47,7 +42,7 @@
   import { fetchGetUserList, fetchDeleteUser, fetchResetPassword } from '@/api/system-manage'
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
-  import { ElTag, ElMessageBox, ElImage, ElMessage } from 'element-plus'
+  import { ElTag, ElMessageBox, ElMessage, ElImage } from 'element-plus'
 
   defineOptions({ name: 'User' })
 
@@ -124,13 +119,24 @@
           width: 280,
           formatter: (row) => {
             return h('div', { class: 'user', style: 'display: flex; align-items: center' }, [
-              // h(ElImage, {
-              //   class: 'avatar',
-              //   src: row.avatar,
-              //   previewSrcList: [row.avatar],
-              //   // 图片预览是否插入至 body 元素上，用于解决表格内部图片预览样式异常
-              //   previewTeleported: true
-              // }),
+              row.avatar
+                ? h(ElImage, {
+                    class: 'avatar',
+                    src: row.avatar,
+                    previewSrcList: [row.avatar],
+                    // 图片预览是否插入至 body 元素上，用于解决表格内部图片预览样式异常
+                    previewTeleported: true,
+                    fit: 'cover'
+                  })
+                : h(
+                    'div',
+                    {
+                      class: 'avatar-placeholder',
+                      style:
+                        'width: 40px; height: 40px; border-radius: 6px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 14px;'
+                    },
+                    row.userName?.charAt(0)?.toUpperCase() || 'U'
+                  ),
               h('div', {}, [
                 h('p', { class: 'user-name' }, row.userName),
                 h('p', { class: 'email' }, row.userEmail)
