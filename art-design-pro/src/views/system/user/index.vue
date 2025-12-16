@@ -64,7 +64,6 @@
   // 搜索表单
   const searchForm = ref({
     userName: undefined,
-    userGender: undefined,
     userPhone: undefined,
     userEmail: undefined,
     status: '1'
@@ -125,13 +124,13 @@
           width: 280,
           formatter: (row) => {
             return h('div', { class: 'user', style: 'display: flex; align-items: center' }, [
-              h(ElImage, {
-                class: 'avatar',
-                src: row.avatar,
-                previewSrcList: [row.avatar],
-                // 图片预览是否插入至 body 元素上，用于解决表格内部图片预览样式异常
-                previewTeleported: true
-              }),
+              // h(ElImage, {
+              //   class: 'avatar',
+              //   src: row.avatar,
+              //   previewSrcList: [row.avatar],
+              //   // 图片预览是否插入至 body 元素上，用于解决表格内部图片预览样式异常
+              //   previewTeleported: true
+              // }),
               h('div', {}, [
                 h('p', { class: 'user-name' }, row.userName),
                 h('p', { class: 'email' }, row.userEmail)
@@ -139,13 +138,13 @@
             ])
           }
         },
-        {
-          prop: 'userGender',
-          label: '性别',
-          sortable: true,
-          // checked: false, // 隐藏列
-          formatter: (row) => row.userGender
-        },
+        // {
+        //   prop: 'userGender',
+        //   label: '性别',
+        //   sortable: true,
+        //   // checked: false, // 隐藏列
+        //   formatter: (row) => row.userGender
+        // },
         { prop: 'userPhone', label: '手机号' },
         {
           prop: 'status',
