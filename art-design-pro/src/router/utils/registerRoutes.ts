@@ -168,7 +168,8 @@ interface ConvertedRoute extends Omit<RouteRecordRaw, 'children'> {
 function convertRouteComponent(
   route: AppRouteRecord,
   iframeRoutes: AppRouteRecord[],
-  depth = 0
+  depth = 0,
+  parentPath = ''
 ): ConvertedRoute {
   const { component, children, ...routeConfig } = route
 
@@ -176,6 +177,21 @@ function convertRouteComponent(
   const converted: ConvertedRoute = {
     ...routeConfig,
     component: undefined
+  }
+
+  // 子路由需要将绝对路径转换为相对路径
+  // Vue Router 嵌套路由会自动拼接父路由 path，所以子路由应使用相对路径
+  if (depth > 0 && route.path && route.path.startsWith('/')) {
+    // 如果子路由 path 以父路由 path 开头，则提取相对路径部分
+    if (parentPath && route.path.startsWith(parentPath + '/')) {
+      converted.path = route.path.slice(parentPath.length + 1)
+    } else if (parentPath && route.path.startsWith(parentPath)) {
+      converted.path = route.path.slice(parentPath.length) || ''
+    } else {
+      // 如果不是以父路径开头，取最后一段作为相对路径
+      const segments = route.path.split('/').filter(Boolean)
+      converted.path = segments[segments.length - 1] || ''
+    }
   }
 
   // 处理动态路由参数
@@ -191,16 +207,24 @@ function convertRouteComponent(
     const paramStr = Array.isArray(params)
       ? params.map((p: string) => `:${p}`).join('/')
       : `:${params}`
-    converted.path = `${route.path}/${paramStr}`
+    converted.path = `${converted.path || route.path}/${paramStr}`
   } else {
     // 方式3: 兼容旧的硬编码配置（逐步迁移后可删除）
+    // 注意：key 为后端返回的 path，value 为带动态参数的完整路径
     const dynamicRouteMap: Record<string, string> = {
       '/project/gantt': '/project/gantt/:id',
       '/learning/learning/detail': '/learning/learning/detail/:id',
       '/chat/chat/room-detail': '/chat/chat/room-detail/:id',
       '/mood/mood/meditation/player': '/mood/mood/meditation/player/:id',
       '/travel/travel/roadbook/editor': '/travel/travel/roadbook/editor/:id',
-      '/travel/travel/roadbook/detail': '/travel/travel/roadbook/detail/:id'
+      '/travel/travel/roadbook/detail': '/travel/travel/roadbook/detail/:id',
+      // 设计师助手模块 - 动态路由配置
+      '/designer/designer-assistant/project/ProjectDetail':
+        '/designer/designer-assistant/project/ProjectDetail/:id',
+      '/designer/designer-assistant/project/ProjectCreate':
+        '/designer/designer-assistant/project/ProjectCreate/:id',
+      '/designer/designer-assistant/version-compare/VersionDiff':
+        '/designer/designer-assistant/version-compare/VersionDiff/:id'
     }
     if (route.path && dynamicRouteMap[route.path]) {
       converted.path = dynamicRouteMap[route.path]
@@ -232,7 +256,7 @@ function convertRouteComponent(
   // 递归处理子路由
   if (children?.length) {
     converted.children = children.map((child) =>
-      convertRouteComponent(child, iframeRoutes, depth + 1)
+      convertRouteComponent(child, iframeRoutes, depth + 1, route.path || '')
     )
   }
 

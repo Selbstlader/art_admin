@@ -37,6 +37,31 @@
         :user-data="currentUserData"
         @submit="handleDialogSubmit"
       />
+
+      <!-- 配额管理弹窗 -->
+      <ElDialog v-model="quotaDialogVisible" title="效果图配额管理" width="450px">
+        <div v-if="currentQuotaUser" class="quota-dialog-content">
+          <p class="user-info">用户：{{ currentQuotaUser.userName }}</p>
+          <ElForm :model="quotaForm" label-width="120px" v-loading="quotaLoading">
+            <ElFormItem label="每日生成限制">
+              <ElInputNumber
+                v-model="quotaForm.dailyLimit"
+                :min="0"
+                :max="100"
+                placeholder="每日可生成次数"
+              />
+              <span class="form-tip">次/天</span>
+            </ElFormItem>
+          </ElForm>
+          <div class="quota-actions">
+            <ElButton type="warning" @click="resetTodayUsage">重置今日使用次数</ElButton>
+          </div>
+        </div>
+        <template #footer>
+          <ElButton @click="quotaDialogVisible = false">取消</ElButton>
+          <ElButton type="primary" @click="saveQuota">保存</ElButton>
+        </template>
+      </ElDialog>
     </ElCard>
   </div>
 </template>
@@ -47,11 +72,24 @@
   import {
     fetchGetAppUserList,
     fetchDeleteAppUser,
-    fetchResetAppUserPassword
+    fetchResetAppUserPassword,
+    fetchGetUserRenderQuota,
+    fetchUpdateUserRenderQuota,
+    fetchResetUserRenderQuota,
+    type UserRenderQuotaInfo
   } from '@/api/system-manage'
   import AppUserSearch from './modules/app-user-search.vue'
   import AppUserDialog from './modules/app-user-dialog.vue'
-  import { ElTag, ElMessageBox, ElMessage } from 'element-plus'
+  import {
+    ElTag,
+    ElMessageBox,
+    ElMessage,
+    ElDialog,
+    ElForm,
+    ElFormItem,
+    ElInputNumber,
+    ElButton
+  } from 'element-plus'
 
   defineOptions({ name: 'AppUser' })
 
@@ -64,6 +102,14 @@
 
   // 选中行
   const selectedRows = ref<AppUserListItem[]>([])
+
+  // 配额管理相关 / Quota management related
+  const quotaDialogVisible = ref(false)
+  const quotaLoading = ref(false)
+  const currentQuotaUser = ref<AppUserListItem | null>(null)
+  const quotaForm = ref({
+    dailyLimit: 3
+  })
 
   // 搜索表单
   const searchForm = ref({
@@ -179,13 +225,18 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 200,
+          width: 280,
           fixed: 'right', // 固定列
           formatter: (row) =>
             h('div', { class: 'flex gap-1' }, [
               h(ArtButtonTable, {
                 type: 'edit',
                 onClick: () => showDialog('edit', row)
+              }),
+              h(ArtButtonTable, {
+                type: 'more',
+                text: '配额',
+                onClick: () => showQuotaDialog(row)
               }),
               h(ArtButtonTable, {
                 type: 'more',
@@ -304,6 +355,73 @@
     selectedRows.value = selection
     console.log('选中行数据:', selectedRows.value)
   }
+
+  /**
+   * 显示配额管理弹窗
+   */
+  const showQuotaDialog = async (row: AppUserListItem): Promise<void> => {
+    currentQuotaUser.value = row
+    quotaLoading.value = true
+    quotaDialogVisible.value = true
+
+    try {
+      const res = await fetchGetUserRenderQuota(row.id)
+      if (res.data) {
+        quotaForm.value.dailyLimit = res.data.dailyLimit || 3
+      }
+    } catch (error) {
+      console.error('获取配额信息失败:', error)
+      quotaForm.value.dailyLimit = 3
+    } finally {
+      quotaLoading.value = false
+    }
+  }
+
+  /**
+   * 保存配额设置
+   */
+  const saveQuota = async (): Promise<void> => {
+    if (!currentQuotaUser.value) return
+
+    try {
+      await fetchUpdateUserRenderQuota({
+        userId: currentQuotaUser.value.id,
+        dailyLimit: quotaForm.value.dailyLimit
+      })
+      ElMessage.success('配额设置保存成功')
+      quotaDialogVisible.value = false
+    } catch (error) {
+      console.error('保存配额失败:', error)
+      ElMessage.error('保存失败，请重试')
+    }
+  }
+
+  /**
+   * 重置今日使用次数
+   */
+  const resetTodayUsage = async (): Promise<void> => {
+    if (!currentQuotaUser.value) return
+
+    try {
+      await ElMessageBox.confirm(
+        `确定要重置用户"${currentQuotaUser.value.userName}"的今日使用次数吗？`,
+        '重置确认',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+
+      await fetchResetUserRenderQuota(currentQuotaUser.value.id)
+      ElMessage.success('今日使用次数已重置')
+    } catch (error) {
+      if (error !== 'cancel') {
+        console.error('重置失败:', error)
+        ElMessage.error('重置失败，请重试')
+      }
+    }
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -311,6 +429,25 @@
     :deep(.flex) {
       display: flex;
       gap: 8px;
+    }
+  }
+
+  .quota-dialog-content {
+    .user-info {
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: var(--el-text-color-secondary);
+    }
+
+    .form-tip {
+      margin-left: 8px;
+      color: var(--el-text-color-secondary);
+    }
+
+    .quota-actions {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--el-border-color-light);
     }
   }
 </style>

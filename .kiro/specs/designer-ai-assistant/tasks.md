@@ -1,0 +1,259 @@
+# Implementation Plan - 工装设计师AI辅助系统
+
+- [x] 1. 项目基础架构搭建
+  - [x] 1.1 创建后端数据模型和数据库迁移
+    - 创建 DesignerProject、ProjectDocument、CadFile、Material、CostEstimate、DesignCompareResult 模型
+    - 执行数据库迁移脚本
+    - _Requirements: 4.1, 4.2, 6.5, 8.1_
+  - [x] 1.2 编写数据模型属性测试
+    - **Property 10: Material CRUD Data Integrity**
+    - **Validates: Requirements 6.5**
+  - [x] 1.3 创建前端路由和页面结构
+    - 配置 designer-assistant 模块路由
+    - 创建基础页面组件骨架
+    - _Requirements: 4.2, 11.1, 11.2_
+
+- [x] 2. 项目管理模块
+  - [x] 2.1 实现后端项目CRUD API
+    - 创建项目服务层和控制器
+    - 实现项目列表、详情、创建、更新、删除接口
+    - _Requirements: 4.1, 4.2, 4.3, 4.4_
+  - [x] 2.2 编写项目级联删除属性测试
+    - **Property 6: Project Cascade Delete**
+    - **Validates: Requirements 4.4**
+  - [x] 2.3 编写项目搜索属性测试
+    - **Property 7: Project Search Result Relevance**
+    - **Validates: Requirements 4.3**
+  - [x] 2.4 实现前端项目管理页面
+    - 创建 ProjectList.vue、ProjectDetail.vue、ProjectCreate.vue 组件
+    - 实现项目列表展示、搜索、分页功能
+    - _Requirements: 4.2, 4.3_
+
+- [x] 3. Checkpoint - 确保所有测试通过
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 4. 文档分析模块
+  - [x] 4.1 实现后端文档上传和解析服务
+    - 创建文档上传接口，支持PDF/Word/图片格式
+    - 集成火山AI进行文档内容提取
+    - _Requirements: 1.1, 1.2, 1.5_
+  - [x] 4.2 实现文档摘要和关键字提取
+    - 调用火山AI生成结构化摘要
+    - 提取项目关键信息（名称、面积、预算、风格、功能分区）
+    - _Requirements: 1.2, 1.3, 1.4_
+  - [x] 4.3 编写文档摘要长度属性测试
+    - **Property 1: Document Summary Length Constraint**
+    - **Validates: Requirements 1.3**
+  - [x] 4.4 编写文档分析结果结构属性测试
+    - **Property 2: Document Analysis Result Structure**
+    - **Validates: Requirements 1.2**
+  - [x] 4.5 实现前端文档上传和分析展示
+    - 创建 DocumentUpload.vue、DocumentAnalysis.vue、KeywordExtraction.vue 组件
+    - 实现文件拖拽上传、分析进度展示、结果展示
+    - _Requirements: 1.1, 1.2, 1.3_
+
+- [x] 5. 设计图比对模块
+  - [x] 5.1 实现后端设计图上传和视觉分析
+    - 创建设计图上传接口
+    - 集成火山AI视觉理解能力进行图像分析
+    - _Requirements: 2.1, 2.5_
+  - [x] 5.2 实现设计与需求比对逻辑
+    - 将设计图分析结果与项目需求进行比对
+    - 生成匹配项、偏差项、建议项报告
+    - _Requirements: 2.2, 2.3_
+  - [x] 5.3 编写比对报告结构属性测试
+    - **Property 3: Compare Report Structure Completeness**
+    - **Validates: Requirements 2.2**
+  - [x] 5.4 编写偏差项结构属性测试
+    - **Property 4: Deviation Item Structure**
+    - **Validates: Requirements 2.3**
+  - [x] 5.5 实现前端比对上传和结果展示
+    - 创建 CompareUpload.vue、CompareResult.vue 组件
+    - 实现比对结果可视化展示
+    - _Requirements: 2.2, 2.4_
+
+- [x] 6. Checkpoint - 确保所有测试通过
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 7. CAD图纸预览模块
+  - [x] 7.1 实现后端CAD文件上传和解析
+    - 创建CAD文件上传接口
+    - 集成ODA File Converter处理DWG转DXF
+    - 使用dxf-parser解析DXF文件
+    - _Requirements: 8.1, 8.6_
+  - [x] 7.2 编写CAD图层数据属性测试
+    - **Property 12: CAD Layer Data Completeness**
+    - **Validates: Requirements 8.3**
+  - [x] 7.3 编写CAD 3D检测属性测试
+    - **Property 13: CAD 3D Detection Accuracy**
+    - **Validates: Requirements 8.4**
+  - [x] 7.4 实现前端Three.js CAD渲染器
+    - 创建 CadViewer.vue 组件
+    - 实现2D平面图渲染、缩放、平移、旋转交互
+    - _Requirements: 8.2, 8.3_
+  - [x] 7.5 实现图层控制和元素属性查看
+    - 创建 LayerControl.vue 组件
+    - 实现图层显示/隐藏切换
+    - 实现元素点击属性展示
+    - _Requirements: 8.3, 8.5_
+
+- [x] 8. 材料库模块
+  - [x] 8.1 实现后端材料库CRUD API
+    - 创建材料服务层和控制器
+    - 实现材料列表、详情、搜索、筛选接口
+    - _Requirements: 6.2, 6.4, 6.5_
+  - [x] 8.2 编写材料筛选结果属性测试
+    - **Property 9: Material Filter Result Consistency**
+    - **Validates: Requirements 6.4**
+  - [x] 8.3 实现材料智能推荐
+    - 根据项目类型、风格、预算推荐材料
+    - 集成火山AI进行推荐优化
+    - _Requirements: 6.1_
+  - [x] 8.4 实现材料用量和成本计算
+    - 根据面积和材料规格计算用量
+    - 计算材料总成本
+    - _Requirements: 6.3_
+  - [x] 8.5 编写材料成本计算属性测试
+    - **Property 8: Material Cost Calculation Accuracy**
+    - **Validates: Requirements 6.3**
+  - [x] 8.6 实现前端材料库页面
+    - 创建 MaterialList.vue、MaterialRecommend.vue、MaterialSelect.vue 组件
+    - 实现材料搜索、筛选、选择功能
+    - _Requirements: 6.2, 6.4_
+
+- [x] 9. Checkpoint - 确保所有测试通过
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [-] 10. 成本预算模块
+  - [x] 10.1 实现后端成本估算服务
+    - 创建成本估算服务层
+    - 实现材料费、人工费、设备费、管理费分项计算
+    - _Requirements: 10.1, 10.2, 10.3_
+  - [x] 10.2 编写成本报告求和属性测试
+    - **Property 14: Cost Report Sum Consistency**
+    - **Validates: Requirements 10.3**
+  - [x] 10.3 实现预算警告功能
+    - 当总成本超过预算上限时触发警告
+    - _Requirements: 10.4_
+  - [x] 10.4 编写预算警告触发属性测试
+    - **Property 15: Budget Warning Trigger**
+    - **Validates: Requirements 10.4**
+  - [x] 10.5 实现成本报告导出
+    - 支持导出为Excel和PDF格式
+    - _Requirements: 10.5_
+  - [x] 10.6 实现前端成本配置和报告页面
+    - 创建 CostConfig.vue、CostReport.vue 组件
+    - 实现材料选择、参数配置、实时成本更新
+    - _Requirements: 10.1, 10.2, 10.3_
+
+- [x] 11. AI对话模块
+  - [x] 11.1 实现后端AI对话服务
+    - 复用现有Dify服务，扩展设计师专用对话
+    - 支持项目上下文注入
+    - _Requirements: 5.1, 5.2_
+  - [x] 11.2 实现对话历史和导出
+    - 保存对话历史记录
+    - 支持导出为文档格式
+    - _Requirements: 5.4_
+  - [x] 11.3 实现前端设计师对话界面
+    - 创建 DesignerChat.vue 组件
+    - 复用现有对话组件，添加设计师专用功能
+    - _Requirements: 5.1, 5.3_
+
+- [x] 12. Checkpoint - 确保所有测试通过
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 13. 智能设计建议模块
+  - [x] 13.1 实现后端设计建议生成服务
+    - 基于项目需求调用火山AI生成建议
+    - 返回建议内容、适用场景、成本影响
+    - _Requirements: 3.1, 3.2_
+  - [x] 13.2 编写设计建议数量和结构属性测试
+    - **Property 5: Design Suggestion Count and Structure**
+    - **Validates: Requirements 3.2**
+  - [x] 13.3 实现建议偏好记录
+    - 记录用户对建议的采纳/忽略操作
+    - _Requirements: 3.4_
+  - [x] 13.4 实现前端设计建议展示
+    - 在项目详情页添加设计建议区域
+    - 支持建议展开详情和标记操作
+    - _Requirements: 3.2, 3.3, 3.4_
+
+- [x] 14. 设计方案版本对比模块
+  - [x] 14.1 实现后端版本管理服务
+    - 创建版本关联逻辑
+    - 实现版本差异分析
+    - _Requirements: 7.1, 7.2_
+  - [x] 14.2 编写版本关联属性测试
+    - **Property 11: Version Association Correctness**
+    - **Validates: Requirements 7.1**
+  - [x] 14.3 实现前端版本对比展示
+    - 创建版本列表和对比视图
+    - 支持左右分屏展示差异
+    - _Requirements: 7.2, 7.3, 7.4_
+
+- [x] 15. 设计规范合规检查模块
+  - [x] 15.1 实现后端规范库和检查服务
+    - 创建规范条款数据模型
+    - 实现规范匹配和检查逻辑
+    - _Requirements: 11.1, 11.2, 11.3_
+  - [x] 15.2 编写合规报告结构属性测试
+    - **Property 16: Compliance Report Structure**
+    - **Validates: Requirements 11.2**
+  - [x] 15.3 实现前端合规检查页面
+    - 创建 ComplianceCheck.vue、ComplianceReport.vue 组件
+    - 展示检查结果和规范详情
+    - _Requirements: 11.2, 11.3, 11.4_
+
+- [x] 16. Checkpoint - 确保所有测试通过
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 17. 多角色权限管理
+  - [ ] 17.1 实现后端角色权限控制
+    - 扩展现有用户系统，添加设计师、项目经理、客户角色
+    - 实现基于角色的数据过滤
+    - _Requirements: 12.1, 12.2, 12.4_
+  - [ ] 17.2 编写角色访问控制属性测试
+    - **Property 17: Role-Based Project Access**
+    - **Validates: Requirements 12.2**
+  - [ ] 17.3 实现项目分享链接功能
+    - 生成带权限控制的分享链接
+    - _Requirements: 12.3_
+  - [ ] 17.4 实现前端角色视图切换
+    - 根据用户角色展示不同菜单和功能
+    - _Requirements: 12.1, 12.2_
+
+- [x] 18. 火山AI服务集成优化
+  - [x] 18.1 实现AI服务重试机制
+    - 失败时最多重试3次，间隔递增
+    - _Requirements: 13.2_
+  - [x] 18.2 编写AI重试机制属性测试
+    - **Property 18: AI Retry Mechanism**
+    - **Validates: Requirements 13.2**
+  - [x] 18.3 实现Token消耗监控
+    - 记录每次AI调用的token消耗和响应时间
+    - _Requirements: 13.4_
+  - [x] 18.4 编写Token日志记录属性测试
+    - **Property 19: Token Usage Logging**
+    - **Validates: Requirements 13.4**
+  - [x] 18.5 实现大文档分段处理
+    - 超过token限制时自动分段处理并合并结果
+    - _Requirements: 13.3_
+
+- [x] 19. 施工图自动标注模块
+  - [x] 19.1 实现后端施工图元素识别
+    - 集成火山AI视觉能力识别尺寸线、材料区域、设备位置
+    - _Requirements: 9.1_
+  - [x] 19.2 实现标注生成和编辑
+    - 生成尺寸标注、材料标注、工艺说明
+    - 支持标注的增删改
+    - _Requirements: 9.2, 9.3_
+  - [x] 19.3 实现标注导出
+    - 支持导出为PDF或图片格式
+    - _Requirements: 9.4_
+  - [x] 19.4 实现前端标注编辑界面
+    - 在CAD预览器基础上添加标注编辑功能
+    - _Requirements: 9.3, 9.5_
+
+- [x] 20. Final Checkpoint - 确保所有测试通过
+  - Ensure all tests pass, ask the user if questions arise.

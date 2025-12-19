@@ -46,8 +46,10 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		// 将用户ID存入上下文
+		// 将用户ID存入上下文（同时设置两种格式以兼容不同handler）
+		// Store user ID in context (set both formats for compatibility)
 		c.Set("userId", claims.UserID)
+		c.Set("userID", uint(claims.UserID))
 
 		// 获取用户名并存入上下文
 		if username, err := getUsernameByID(claims.UserID); err == nil {

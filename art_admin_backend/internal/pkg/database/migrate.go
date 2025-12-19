@@ -6,7 +6,7 @@ import (
 )
 
 // MigrateAll 完整的数据库迁移（包括中间表）
-// 基础功能 + 系统功能 + Dify AI + 聊天室
+// 基础功能 + 系统功能 + Dify AI + 聊天室 + 设计师助手
 func MigrateAll() error {
 	if DB == nil {
 		return nil
@@ -30,6 +30,21 @@ func MigrateAll() error {
 		&model.ChatRoom{},
 		&model.ChatMessage{},
 		&model.ChatRoomMember{},
+		// 设计师助手模块 / Designer Assistant Module
+		&model.DesignerProject{},
+		&model.ProjectDocument{},
+		&model.CadFile{},
+		&model.Material{},
+		&model.CostEstimate{},
+		&model.DesignCompareResult{},
+		&model.ProjectMaterial{}, // 项目材料清单 / Project material list
+		// 设计师AI对话模块 / Designer AI Chat Module
+		&model.DesignerChatMessage{},
+		&model.AIUsageLog{},
+		// 智能设计建议模块 / Design Suggestion Module
+		&model.DesignSuggestion{},
+		&model.SuggestionPreference{},
+		&model.SuggestionTask{}, // 建议生成任务 / Suggestion generation task
 	)
 	if err != nil {
 		return err

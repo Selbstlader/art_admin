@@ -1,0 +1,93 @@
+{
+  "cadFileId": 0,
+  "fileName": "",
+  "fileFormat": "",
+  "layers": [
+    {
+      "name": "0",
+      "color": 7,
+      "lineType": "",
+      "visible": true,
+      "frozen": false,
+      "locked": false,
+      "entityCount": 3
+    },
+    {
+      "name": "墙体",
+      "color": 7,
+      "lineType": "",
+      "visible": true,
+      "frozen": false,
+      "locked": false,
+      "entityCount": 1
+    }
+  ],
+  "layerCount": 2,
+  "has3d": false,
+  "boundingBox": {
+    "minX": 0,
+    "minY": 0,
+    "minZ": 0,
+    "maxX": 100,
+    "maxY": 100,
+    "maxZ": 0
+  },
+  "entities": [
+    {
+      "type": "LINE",
+      "layer": "0",
+      "color": 7,
+      "lineType": "",
+      "properties": {
+        "x0": 0,
+        "x1": 100,
+        "y0": 0,
+        "y1": 0,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "0",
+      "color": 7,
+      "lineType": "",
+      "properties": {
+        "x0": 100,
+        "x1": 0,
+        "y0": 100,
+        "y1": 100,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "墙体",
+      "color": 1,
+      "lineType": "",
+      "properties": {
+        "x0": 20,
+        "x1": 20,
+        "y0": 0,
+        "y1": 80,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "CIRCLE",
+      "layer": "0",
+      "color": 7,
+      "lineType": "",
+      "properties": {
+        "radius": 30,
+        "x0": 50,
+        "y0": 50,
+        "z0": 0
+      }
+    }
+  ],
+  "entityCount": 4,
+  "parsedData": ""
+}

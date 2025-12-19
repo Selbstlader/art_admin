@@ -68,7 +68,9 @@
         <div class="btn-box notice-btn" v-if="shouldShowNotification" @click="visibleNotice">
           <div class="btn notice-button">
             <i class="iconfont-sys notice-btn">&#xe6c2;</i>
-            <span class="count notice-btn"></span>
+            <span class="count notice-btn" v-if="notificationUnreadCount > 0">{{
+              notificationUnreadCount > 99 ? '99+' : notificationUnreadCount
+            }}</span>
           </div>
         </div>
         <!-- 聊天 -->
@@ -198,6 +200,7 @@
   import { themeAnimation } from '@/utils/theme/animation'
   import { useCommon } from '@/composables/useCommon'
   import { useHeaderBar } from '@/composables/useHeaderBar'
+  import { useNotificationStore } from '@/store/modules/notification'
 
   defineOptions({ name: 'ArtHeaderBar' })
 
@@ -238,6 +241,10 @@
   const notice = ref(null)
   const userMenuPopover = ref()
 
+  // 通知store / Notification store
+  const notificationStore = useNotificationStore()
+  const notificationUnreadCount = computed(() => notificationStore.unreadCount)
+
   // 菜单类型判断
   const isLeftMenu = computed(() => menuType.value === MenuTypeEnum.LEFT)
   const isDualMenu = computed(() => menuType.value === MenuTypeEnum.DUAL_MENU)
@@ -249,6 +256,12 @@
   onMounted(() => {
     initLanguage()
     document.addEventListener('click', bodyCloseNotice)
+    // 加载未读通知数量 / Load unread notification count
+    notificationStore.fetchUnreadCount()
+    // 每30秒刷新一次未读数量 / Refresh unread count every 30 seconds
+    setInterval(() => {
+      notificationStore.fetchUnreadCount()
+    }, 30000)
   })
 
   onUnmounted(() => {

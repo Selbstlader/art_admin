@@ -57,13 +57,25 @@ func OperationLog() gin.HandlerFunc {
 
 		// 读取请求参数
 		var requestParam string
+		contentType := c.Request.Header.Get("Content-Type")
+
 		if c.Request.Method == "POST" || c.Request.Method == "PUT" {
-			bodyBytes, _ := io.ReadAll(c.Request.Body)
-			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-			requestParam = string(bodyBytes)
-			// 限制参数长度
-			if len(requestParam) > 2000 {
-				requestParam = requestParam[:2000] + "..."
+			// 检查是否为文件上传请求（multipart/form-data）
+			if strings.Contains(contentType, "multipart/form-data") {
+				// 文件上传请求，不记录二进制内容，只记录基本信息
+				requestParam = "[文件上传请求] " + c.Request.URL.RawQuery
+			} else {
+				bodyBytes, _ := io.ReadAll(c.Request.Body)
+				c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+				requestParam = string(bodyBytes)
+				// 检查是否包含不可打印字符（二进制数据）
+				if containsBinaryData(requestParam) {
+					requestParam = "[二进制数据请求]"
+				}
+				// 限制参数长度
+				if len(requestParam) > 2000 {
+					requestParam = requestParam[:2000] + "..."
+				}
 			}
 		} else if c.Request.Method == "GET" {
 			requestParam = c.Request.URL.RawQuery
@@ -184,4 +196,22 @@ func getBusinessType(method string) string {
 		return businessType
 	}
 	return "其他"
+}
+
+// containsBinaryData 检查字符串是否包含二进制数据（不可打印字符）
+// Check if string contains binary data (non-printable characters)
+func containsBinaryData(s string) bool {
+	// 检查前100个字符是否包含不可打印字符
+	checkLen := len(s)
+	if checkLen > 100 {
+		checkLen = 100
+	}
+	for i := 0; i < checkLen; i++ {
+		b := s[i]
+		// 允许的字符：可打印ASCII字符、换行、回车、制表符、UTF-8多字节字符
+		if b < 32 && b != '\n' && b != '\r' && b != '\t' {
+			return true
+		}
+	}
+	return false
 }

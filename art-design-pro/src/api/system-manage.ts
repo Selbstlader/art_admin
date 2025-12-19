@@ -336,3 +336,37 @@ export function fetchResetAppUserPassword(data: Api.SystemManage.ResetAppUserPas
     data
   })
 }
+
+// ========== 用户效果图配额管理 ==========
+
+// 用户配额信息类型
+export interface UserRenderQuotaInfo {
+  userId: number
+  dailyLimit: number
+  usedToday: number
+  remainingUse: number
+}
+
+// 获取用户效果图配额
+export function fetchGetUserRenderQuota(userId: number) {
+  return request.get<UserRenderQuotaInfo>({
+    url: '/api/system/user/render-quota',
+    params: { userId }
+  })
+}
+
+// 更新用户效果图配额
+export function fetchUpdateUserRenderQuota(data: { userId: number; dailyLimit: number }) {
+  return request.put({
+    url: '/api/system/user/render-quota',
+    data
+  })
+}
+
+// 重置用户今日使用次数
+export function fetchResetUserRenderQuota(userId: number) {
+  return request.post({
+    url: '/api/system/user/render-quota/reset',
+    params: { userId }
+  })
+}

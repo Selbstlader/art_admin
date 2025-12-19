@@ -78,9 +78,26 @@ volcengine:
   maxTokens: 4096 # 最大生成 token 数
   temperature: 0.7 # 温度参数 0-2
 
+# 火山引擎图片生成配置 (Doubao-Seedream-4.5) - 用于CAD效果图生成
+volcengineImage:
+  apiKey: d48c3303-5d63-42d9-80f8-692eb079594c # 火山引擎 API Key (与volcengine相同)
+  baseUrl: https://ark.cn-beijing.volces.com/api/v3/images/generations # 图片生成API
+  model: ep-20251219093709-dtnjx # Doubao-Seedream-4.5 接入点ID
+  timeout: 180 # 图片生成超时时间(秒)，较长
+  size: "2K" # 图片尺寸: 512x512, 1024x1024, 2K等
+
 # 百度OCR配置 - 用于小红书图片文字识别
 baiduocr:
   appId: "7279235" # 百度OCR应用ID
   apiKey: Imey9DSfXdGNK8sSnD762M0z # 百度OCR API Key
   secretKey: GfbtmkH2nJqzbf1OFix3856R3xgUbhZe # 百度OCR Secret Key
   timeout: 30 # 请求超时时间(秒)
+
+# DWG转换器配置 - 用于DWG转DXF
+dwgconverter:
+  # 转换器类型: oda, libredwg, 留空则不支持DWG格式
+  type: ""
+  # ODA File Converter路径 (macOS: /Applications/ODAFileConverter.app/Contents/MacOS/ODAFileConverter)
+  odaPath: ""
+  # LibreDWG dwg2dxf命令路径 (通常为 /usr/local/bin/dwg2dxf)
+  libredwgPath: ""

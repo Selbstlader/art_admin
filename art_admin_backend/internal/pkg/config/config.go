@@ -9,16 +9,19 @@ import (
 
 // Config 全局配置结构
 type Config struct {
-	Server     ServerConfig     `mapstructure:"server"`
-	Database   DatabaseConfig   `mapstructure:"database"`
-	JWT        JWTConfig        `mapstructure:"jwt"`
-	Log        LogConfig        `mapstructure:"log"`
-	CORS       CORSConfig       `mapstructure:"cors"`
-	Swagger    SwaggerConfig    `mapstructure:"swagger"`
-	Dify       DifyConfig       `mapstructure:"dify"`
-	DeepSeek   DeepSeekConfig   `mapstructure:"deepseek"`
-	VolcEngine VolcEngineConfig `mapstructure:"volcengine"`
-	BaiduOCR   BaiduOCRConfig   `mapstructure:"baiduocr"`
+	Server          ServerConfig          `mapstructure:"server"`
+	Database        DatabaseConfig        `mapstructure:"database"`
+	JWT             JWTConfig             `mapstructure:"jwt"`
+	Log             LogConfig             `mapstructure:"log"`
+	CORS            CORSConfig            `mapstructure:"cors"`
+	Swagger         SwaggerConfig         `mapstructure:"swagger"`
+	Dify            DifyConfig            `mapstructure:"dify"`
+	DeepSeek        DeepSeekConfig        `mapstructure:"deepseek"`
+	VolcEngine      VolcEngineConfig      `mapstructure:"volcengine"`
+	VolcEngineImage VolcEngineImageConfig `mapstructure:"volcengineImage"` // 图片生成配置
+	BaiduOCR        BaiduOCRConfig        `mapstructure:"baiduocr"`
+	ODAConverter    ODAConverterConfig    `mapstructure:"odaconverter"` // 兼容旧配置
+	DWGConverter    DWGConverterConfig    `mapstructure:"dwgconverter"`
 }
 
 // ServerConfig 服务器配置
@@ -114,6 +117,30 @@ type BaiduOCRConfig struct {
 	APIKey    string `mapstructure:"apiKey"`
 	SecretKey string `mapstructure:"secretKey"`
 	Timeout   int    `mapstructure:"timeout"`
+}
+
+// VolcEngineImageConfig 火山引擎图片生成配置 (Doubao-Seedream)
+// VolcEngine image generation config for CAD rendering
+type VolcEngineImageConfig struct {
+	APIKey  string `mapstructure:"apiKey"`
+	BaseURL string `mapstructure:"baseUrl"`
+	Model   string `mapstructure:"model"`   // Doubao-Seedream接入点ID
+	Timeout int    `mapstructure:"timeout"` // 图片生成超时时间
+	Size    string `mapstructure:"size"`    // 图片尺寸
+}
+
+// DWGConverterConfig DWG转换器配置
+// DWG converter configuration for DWG to DXF conversion
+type DWGConverterConfig struct {
+	Type         string `mapstructure:"type"`         // 转换器类型: oda, libredwg / Converter type
+	ODAPath      string `mapstructure:"odaPath"`      // ODA File Converter路径 / ODA path
+	LibreDWGPath string `mapstructure:"libredwgPath"` // LibreDWG dwg2dxf路径 / LibreDWG path
+}
+
+// ODAConverterConfig 保留兼容旧配置
+// Keep for backward compatibility
+type ODAConverterConfig struct {
+	Path string `mapstructure:"path"`
 }
 
 var GlobalConfig *Config

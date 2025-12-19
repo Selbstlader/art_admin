@@ -11,7 +11,7 @@
   >
     <div class="header">
       <span class="text">{{ $t('notice.title') }}</span>
-      <span class="btn">{{ $t('notice.btnRead') }}</span>
+      <span class="btn" @click="markAllRead">{{ $t('notice.btnRead') }}</span>
     </div>
 
     <ul class="bar">
@@ -91,14 +91,15 @@
   import { computed, ref, watch, type Ref, type ComputedRef } from 'vue'
   import { useI18n } from 'vue-i18n'
   import AppConfig from '@/config'
+  import { useNotificationStore } from '@/store/modules/notification'
 
   // 导入头像图片
-  import avatar1 from '@/assets/img/avatar/avatar1.webp'
-  import avatar2 from '@/assets/img/avatar/avatar2.webp'
-  import avatar3 from '@/assets/img/avatar/avatar3.webp'
-  import avatar4 from '@/assets/img/avatar/avatar4.webp'
-  import avatar5 from '@/assets/img/avatar/avatar5.webp'
-  import avatar6 from '@/assets/img/avatar/avatar6.webp'
+  // import avatar1 from '@/assets/img/avatar/avatar1.webp'
+  // import avatar2 from '@/assets/img/avatar/avatar2.webp'
+  // import avatar3 from '@/assets/img/avatar/avatar3.webp'
+  // import avatar4 from '@/assets/img/avatar/avatar4.webp'
+  // import avatar5 from '@/assets/img/avatar/avatar5.webp'
+  // import avatar6 from '@/assets/img/avatar/avatar6.webp'
 
   defineOptions({ name: 'ArtNotification' })
 
@@ -156,73 +157,20 @@
   const barActiveIndex = ref(0)
 
   const useNotificationData = () => {
-    // 通知数据
-    const noticeList = ref<NoticeItem[]>([
-      {
-        title: '新增国际化',
-        time: '2024-6-13 0:10',
-        type: 'notice'
-      },
-      {
-        title: '冷月呆呆给你发了一条消息',
-        time: '2024-4-21 8:05',
-        type: 'message'
-      },
-      {
-        title: '小肥猪关注了你',
-        time: '2020-3-17 21:12',
-        type: 'collection'
-      },
-      {
-        title: '新增使用文档',
-        time: '2024-02-14 0:20',
-        type: 'notice'
-      },
-      {
-        title: '小肥猪给你发了一封邮件',
-        time: '2024-1-20 0:15',
-        type: 'email'
-      },
-      {
-        title: '菜单mock本地真实数据',
-        time: '2024-1-17 22:06',
-        type: 'notice'
-      }
-    ])
+    // 引入通知 store
+    const notificationStore = useNotificationStore()
+
+    // 通知数据 - 从 store 获取
+    const noticeList = computed<NoticeItem[]>(() => {
+      return notificationStore.notifications.map((n) => ({
+        title: n.title,
+        time: n.time,
+        type: n.type
+      }))
+    })
 
     // 消息数据
-    const msgList = ref<MessageItem[]>([
-      {
-        title: '池不胖 关注了你',
-        time: '2021-2-26 23:50',
-        avatar: avatar1
-      },
-      {
-        title: '唐不苦 关注了你',
-        time: '2021-2-21 8:05',
-        avatar: avatar2
-      },
-      {
-        title: '中小鱼 关注了你',
-        time: '2020-1-17 21:12',
-        avatar: avatar3
-      },
-      {
-        title: '何小荷 关注了你',
-        time: '2021-01-14 0:20',
-        avatar: avatar4
-      },
-      {
-        title: '誶誶淰 关注了你',
-        time: '2020-12-20 0:15',
-        avatar: avatar5
-      },
-      {
-        title: '冷月呆呆 关注了你',
-        time: '2020-12-17 22:06',
-        avatar: avatar6
-      }
-    ])
+    const msgList = ref<MessageItem[]>([])
 
     // 待办数据
     const pendingList = ref<PendingItem[]>([])
@@ -243,11 +191,23 @@
       }
     ])
 
+    // 加载通知数据 / Load notification data
+    const loadNotifications = () => {
+      notificationStore.fetchNotifications()
+    }
+
+    // 标记全部已读 / Mark all as read
+    const markAllRead = () => {
+      notificationStore.markAllAsRead()
+    }
+
     return {
       noticeList,
       msgList,
       pendingList,
-      barList
+      barList,
+      loadNotifications,
+      markAllRead
     }
   }
 
@@ -324,7 +284,7 @@
 
   // 标签页管理
   const useTabManagement = (
-    noticeList: Ref<NoticeItem[]>,
+    noticeList: Ref<NoticeItem[]> | ComputedRef<NoticeItem[]>,
     msgList: Ref<MessageItem[]>,
     pendingList: Ref<PendingItem[]>,
     businessHandlers: {
@@ -389,7 +349,7 @@
   }
 
   // 组合所有逻辑
-  const { noticeList, msgList, pendingList, barList } = useNotificationData()
+  const { noticeList, msgList, pendingList, barList, loadNotifications, markAllRead } = useNotificationData()
   const { getNoticeStyle } = useNotificationStyles()
   const { showNotice } = useNotificationAnimation()
   const { handleNoticeAll, handleMsgAll, handlePendingAll } = useBusinessLogic()
@@ -405,6 +365,10 @@
     () => props.value,
     (newValue) => {
       showNotice(newValue)
+      // 打开通知面板时加载数据 / Load data when opening notification panel
+      if (newValue) {
+        loadNotifications()
+      }
     }
   )
 </script>

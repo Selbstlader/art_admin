@@ -12,10 +12,15 @@ import (
 	"art_admin_backend/internal/pkg/config"
 	"art_admin_backend/internal/pkg/database"
 	"art_admin_backend/internal/pkg/logger"
+	"art_admin_backend/internal/pkg/volcengine"
 	ws "art_admin_backend/internal/pkg/websocket"
 	"art_admin_backend/internal/repository"
 	"art_admin_backend/internal/router"
+	cadSvc "art_admin_backend/internal/service/cad"
 	chatSvc "art_admin_backend/internal/service/chat"
+	designCompareSvc "art_admin_backend/internal/service/design_compare"
+	designerProjectSvc "art_admin_backend/internal/service/designer_project"
+	documentSvc "art_admin_backend/internal/service/document"
 	fileSvc "art_admin_backend/internal/service/file"
 
 	_ "art_admin_backend/docs" // swagger docs
@@ -94,6 +99,99 @@ func main() {
 	fileService := fileSvc.NewFileService(fileRepo, "./uploads", fmt.Sprintf("http://localhost:%d", cfg.Server.Port))
 	v1.SetFileService(fileService)
 	logger.Info("文件管理服务初始化完成")
+
+	// 初始化设计师项目管理服务 / Initialize designer project service
+	designerProjectRepo := repository.NewDesignerProjectRepository(database.GetDB())
+	designerProjectService := designerProjectSvc.NewDesignerProjectService(designerProjectRepo)
+	v1.SetDesignerProjectService(designerProjectService)
+	logger.Info("设计师项目管理服务初始化完成")
+
+	// 初始化火山AI客户端 / Initialize VolcEngine AI client
+	volcClient := volcengine.NewClient(
+		cfg.VolcEngine.APIKey,
+		cfg.VolcEngine.BaseURL,
+		cfg.VolcEngine.Model,
+		cfg.VolcEngine.Timeout,
+		cfg.VolcEngine.MaxTokens,
+		cfg.VolcEngine.Temperature,
+	)
+	logger.Info("火山AI客户端初始化完成")
+
+	// 初始化文档分析服务 / Initialize document analysis service
+	documentRepo := repository.NewDocumentRepository(database.GetDB())
+	documentService := documentSvc.NewDocumentService(
+		documentRepo,
+		designerProjectRepo,
+		volcClient,
+		"./uploads",
+		fmt.Sprintf("http://localhost:%d", cfg.Server.Port),
+	)
+	v1.SetDocumentService(documentService)
+	logger.Info("文档分析服务初始化完成")
+
+	// 初始化设计比对服务 / Initialize design compare service
+	designCompareRepo := repository.NewDesignCompareRepository(database.GetDB())
+	designCompareService := designCompareSvc.NewDesignCompareService(
+		designCompareRepo,
+		designerProjectRepo,
+		documentRepo,
+		volcClient,
+		"./uploads",
+		fmt.Sprintf("http://localhost:%d", cfg.Server.Port),
+	)
+	v1.SetDesignCompareService(designCompareService)
+	logger.Info("设计比对服务初始化完成")
+
+	// 初始化CAD文件服务 / Initialize CAD file service
+	cadFileRepo := repository.NewCadFileRepository(database.GetDB())
+	// 优先使用新配置，兼容旧配置 / Prefer new config, fallback to old config
+	converterType := cfg.DWGConverter.Type
+	odaPath := cfg.DWGConverter.ODAPath
+	libredwgPath := cfg.DWGConverter.LibreDWGPath
+	if odaPath == "" && cfg.ODAConverter.Path != "" {
+		odaPath = cfg.ODAConverter.Path
+		converterType = "oda"
+	}
+	cadFileService := cadSvc.NewCadService(
+		cadFileRepo,
+		"./uploads",
+		fmt.Sprintf("http://localhost:%d", cfg.Server.Port),
+		converterType,
+		odaPath,
+		libredwgPath,
+	)
+	v1.SetCadService(cadFileService)
+	logger.Info("CAD文件服务初始化完成")
+
+	// 初始化CAD渲染服务 / Initialize CAD render service
+	// 使用Doubao-1.5-vision-pro生成设计方案，Doubao-Seedream-4.5生成效果图
+	// Use Doubao-1.5-vision-pro for design proposal, Doubao-Seedream-4.5 for image generation
+	renderService := cadSvc.NewRenderService(
+		cadFileRepo,
+		designerProjectRepo,
+		documentRepo, // 添加文档仓库以支持参考文档 / Add document repo for reference documents
+		volcClient,   // 火山引擎AI客户端(文本) / VolcEngine AI client for text
+		"./uploads",
+		cfg.VolcEngineImage.APIKey,  // 图片生成API Key
+		cfg.VolcEngineImage.BaseURL, // 图片生成API URL
+		cfg.VolcEngineImage.Model,   // Doubao-Seedream-4.5接入点ID
+		cfg.VolcEngineImage.Size,    // 图片尺寸
+		cfg.VolcEngineImage.Timeout, // 超时时间
+	)
+	v1.SetRenderService(renderService)
+	logger.Info("CAD渲染服务初始化完成")
+
+	// 初始化通知服务 / Initialize notification service
+	notificationRepo := repository.NewNotificationRepository(database.GetDB())
+	v1.SetNotificationRepository(notificationRepo)
+	logger.Info("通知服务初始化完成")
+
+	// 初始化效果图记录服务 / Initialize render record service
+	renderRecordRepo := repository.NewRenderRecordRepository(database.GetDB())
+	userQuotaRepo := repository.NewUserRenderQuotaRepository(database.GetDB())
+	renderRecordService := cadSvc.NewRenderRecordService(renderRecordRepo, userQuotaRepo, renderService, notificationRepo)
+	v1.SetRenderRecordService(renderRecordService)
+	logger.Info("效果图记录服务初始化完成")
 
 	// 初始化聊天室系统
 	chatHub := ws.NewHub()

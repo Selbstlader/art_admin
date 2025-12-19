@@ -1,0 +1,424 @@
+{
+  "cadFileId": 0,
+  "fileName": "",
+  "fileFormat": "",
+  "layers": [
+    {
+      "name": "0",
+      "color": 7,
+      "lineType": "",
+      "visible": true,
+      "frozen": false,
+      "locked": false,
+      "entityCount": 0
+    },
+    {
+      "name": "墙体",
+      "color": 7,
+      "lineType": "",
+      "visible": true,
+      "frozen": false,
+      "locked": false,
+      "entityCount": 4
+    },
+    {
+      "name": "门窗",
+      "color": 7,
+      "lineType": "",
+      "visible": true,
+      "frozen": false,
+      "locked": false,
+      "entityCount": 5
+    },
+    {
+      "name": "家具",
+      "color": 7,
+      "lineType": "",
+      "visible": true,
+      "frozen": false,
+      "locked": false,
+      "entityCount": 17
+    },
+    {
+      "name": "标注",
+      "color": 7,
+      "lineType": "",
+      "visible": true,
+      "frozen": false,
+      "locked": false,
+      "entityCount": 0
+    }
+  ],
+  "layerCount": 5,
+  "has3d": false,
+  "boundingBox": {
+    "minX": 0,
+    "minY": 0,
+    "minZ": 0,
+    "maxX": 1000,
+    "maxY": 800,
+    "maxZ": 0
+  },
+  "entities": [
+    {
+      "type": "LINE",
+      "layer": "墙体",
+      "color": 1,
+      "lineType": "",
+      "properties": {
+        "x0": 0,
+        "x1": 1000,
+        "y0": 0,
+        "y1": 0,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "墙体",
+      "color": 1,
+      "lineType": "",
+      "properties": {
+        "x0": 1000,
+        "x1": 0,
+        "y0": 800,
+        "y1": 800,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "墙体",
+      "color": 1,
+      "lineType": "",
+      "properties": {
+        "x0": 400,
+        "x1": 400,
+        "y0": 0,
+        "y1": 500,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "墙体",
+      "color": 1,
+      "lineType": "",
+      "properties": {
+        "x0": 700,
+        "x1": 1000,
+        "y0": 500,
+        "y1": 500,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "门窗",
+      "color": 3,
+      "lineType": "",
+      "properties": {
+        "x0": 300,
+        "x1": 400,
+        "y0": 500,
+        "y1": 500,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "门窗",
+      "color": 3,
+      "lineType": "",
+      "properties": {
+        "x0": 200,
+        "x1": 350,
+        "y0": 0,
+        "y1": 0,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "门窗",
+      "color": 3,
+      "lineType": "",
+      "properties": {
+        "x0": 350,
+        "x1": 350,
+        "y0": 0,
+        "y1": 20,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "门窗",
+      "color": 3,
+      "lineType": "",
+      "properties": {
+        "x0": 980,
+        "x1": 1000,
+        "y0": 200,
+        "y1": 200,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 50,
+        "x1": 250,
+        "y0": 550,
+        "y1": 550,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 250,
+        "x1": 50,
+        "y0": 750,
+        "y1": 750,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 450,
+        "x1": 550,
+        "y0": 550,
+        "y1": 550,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 550,
+        "x1": 450,
+        "y0": 750,
+        "y1": 750,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 700,
+        "x1": 950,
+        "y0": 600,
+        "y1": 600,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 950,
+        "x1": 700,
+        "y0": 750,
+        "y1": 750,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 50,
+        "x1": 350,
+        "y0": 50,
+        "y1": 50,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 350,
+        "x1": 50,
+        "y0": 200,
+        "y1": 200,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 500,
+        "x1": 900,
+        "y0": 50,
+        "y1": 50,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 900,
+        "x1": 500,
+        "y0": 150,
+        "y1": 150,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 500,
+        "x1": 650,
+        "y0": 200,
+        "y1": 200,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 650,
+        "x1": 500,
+        "y0": 350,
+        "y1": 350,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 750,
+        "x1": 900,
+        "y0": 200,
+        "y1": 200,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "LINE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "x0": 900,
+        "x1": 750,
+        "y0": 350,
+        "y1": 350,
+        "z0": 0,
+        "z1": 0
+      }
+    },
+    {
+      "type": "CIRCLE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "radius": 40,
+        "x0": 500,
+        "y0": 650,
+        "z0": 0
+      }
+    },
+    {
+      "type": "CIRCLE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "radius": 30,
+        "x0": 575,
+        "y0": 275,
+        "z0": 0
+      }
+    },
+    {
+      "type": "CIRCLE",
+      "layer": "家具",
+      "color": 5,
+      "lineType": "",
+      "properties": {
+        "radius": 30,
+        "x0": 825,
+        "y0": 275,
+        "z0": 0
+      }
+    },
+    {
+      "type": "ARC",
+      "layer": "门窗",
+      "color": 3,
+      "lineType": "",
+      "properties": {
+        "endAngle": 360,
+        "radius": 100,
+        "startAngle": 270,
+        "x0": 300,
+        "y0": 500,
+        "z0": 0
+      }
+    }
+  ],
+  "entityCount": 26,
+  "parsedData": ""
+}
