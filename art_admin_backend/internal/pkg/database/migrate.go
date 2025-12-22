@@ -45,6 +45,8 @@ func MigrateAll() error {
 		&model.DesignSuggestion{},
 		&model.SuggestionPreference{},
 		&model.SuggestionTask{}, // 建议生成任务 / Suggestion generation task
+		// 施工图标注模块 / Construction Annotation Module
+		&model.ConstructionAnnotation{},
 	)
 	if err != nil {
 		return err

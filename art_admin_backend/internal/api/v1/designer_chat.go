@@ -3,6 +3,7 @@ package v1
 import (
 	"art_admin_backend/internal/pkg/response"
 	"art_admin_backend/internal/service/designer_chat"
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -66,6 +67,83 @@ func DesignerChat(c *gin.Context) {
 	}
 
 	response.Success(c, result)
+}
+
+// DesignerChatStream 设计师AI流式对话
+// @Summary 设计师AI流式对话
+// @Description 与设计师AI助手进行流式对话，支持SSE实时输出
+// @Tags Designer-Chat
+// @Accept json
+// @Produce text/event-stream
+// @Security BearerAuth
+// @Param request body DesignerChatRequest true "对话请求"
+// @Success 200 {string} string "SSE流式响应"
+// @Failure 400 {object} response.Response "参数错误"
+// @Failure 401 {object} response.Response "未授权"
+// @Router /api/designer/chat/stream [post]
+func DesignerChatStream(c *gin.Context) {
+	var req DesignerChatRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"code": 400, "msg": "参数错误: " + err.Error()})
+		return
+	}
+
+	// 获取当前用户ID / Get current user ID
+	userID := getUserIDFromContext(c)
+	if userID == 0 {
+		c.JSON(401, gin.H{"code": 401, "msg": "请先登录"})
+		return
+	}
+
+	// 设置SSE响应头 / Set SSE response headers
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Header("Transfer-Encoding", "chunked")
+	c.Header("X-Accel-Buffering", "no")
+
+	chatReq := &designer_chat.ChatRequest{
+		Query:     req.Query,
+		ProjectID: req.ProjectID,
+		SessionID: req.SessionID,
+	}
+
+	// 流式输出回调 / Stream output callback
+	flusher, ok := c.Writer.(interface{ Flush() })
+	if !ok {
+		c.JSON(500, gin.H{"code": 500, "msg": "不支持流式输出"})
+		return
+	}
+
+	result, err := getDesignerChatService().ChatStream(chatReq, userID, func(content string, done bool) error {
+		if done {
+			// 发送完成事件 / Send done event
+			c.Writer.Write([]byte("data: [DONE]\n\n"))
+			flusher.Flush()
+			return nil
+		}
+		if content != "" {
+			// 发送内容块 / Send content chunk
+			data := fmt.Sprintf("data: %s\n\n", content)
+			c.Writer.Write([]byte(data))
+			flusher.Flush()
+		}
+		return nil
+	})
+
+	if err != nil {
+		// 发送错误事件 / Send error event
+		errData := fmt.Sprintf("data: {\"error\": \"%s\"}\n\n", err.Error())
+		c.Writer.Write([]byte(errData))
+		flusher.Flush()
+		return
+	}
+
+	// 发送最终结果 / Send final result
+	finalData := fmt.Sprintf("data: {\"sessionId\": \"%s\", \"messageId\": %d, \"tokensUsed\": %d}\n\n",
+		result.SessionID, result.MessageID, result.TokensUsed)
+	c.Writer.Write([]byte(finalData))
+	flusher.Flush()
 }
 
 // GetDesignerChatHistory 获取对话历史

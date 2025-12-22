@@ -1,165 +1,33 @@
 <template>
-  <div class="cad-generation-page">
-    <!-- 页面标题 / Page Header -->
-    <div class="page-header">
-      <div class="left">
+  <div class="cad-generation-page art-full-height">
+    <!-- 搜索栏 / Search Bar -->
+    <ArtSearchBar v-model="filterForm" :items="searchItems" @search="handleSearch" @reset="handleReset">
+      <template #left>
         <ElButton link @click="handleBack" v-if="projectId">
-          <ElIcon>
-            <ArrowLeft />
-          </ElIcon>
+          <ElIcon><ArrowLeft /></ElIcon>
           返回项目
         </ElButton>
-        <h2>AI生成CAD</h2>
-      </div>
-      <ElButton type="primary" @click="handleCreate">
-        <ElIcon>
-          <Plus />
-        </ElIcon>
-        新建生成任务
-      </ElButton>
-    </div>
-
-    <!-- 筛选条件 / Filter -->
-    <ElCard class="filter-card" shadow="never">
-      <ElForm :inline="true" :model="filterForm">
-        <ElFormItem label="项目" v-if="!projectId">
-          <ElSelect v-model="filterForm.projectId" placeholder="选择项目" clearable>
-            <ElOption v-for="p in projects" :key="p.id" :label="p.name" :value="p.id" />
-          </ElSelect>
-        </ElFormItem>
-        <ElFormItem label="生成类型">
-          <ElInput
-            v-model="filterForm.generationType"
-            placeholder="输入类型筛选"
-            clearable
-            style="width: 180px"
-          />
-        </ElFormItem>
-        <ElFormItem label="状态">
-          <ElSelect v-model="filterForm.status" placeholder="选择状态" clearable>
-            <ElOption label="待处理" value="pending" />
-            <ElOption label="处理中" value="processing" />
-            <ElOption label="已完成" value="completed" />
-            <ElOption label="失败" value="failed" />
-          </ElSelect>
-        </ElFormItem>
-        <ElFormItem>
-          <ElButton type="primary" @click="handleSearch">
-            <ElIcon>
-              <Search />
-            </ElIcon>
-            搜索
-          </ElButton>
-          <ElButton @click="handleReset">重置</ElButton>
-        </ElFormItem>
-      </ElForm>
-    </ElCard>
+      </template>
+    </ArtSearchBar>
 
     <!-- 任务列表 / Task List -->
-    <ElCard shadow="never">
-      <ElTable :data="taskList" v-loading="loading" stripe>
-        <ElTableColumn prop="id" label="ID" width="80" />
-        <ElTableColumn label="项目" min-width="150" v-if="!projectId">
-          <template #default="{ row }">
-            {{ row.projectName || '-' }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="生成类型" width="120">
-          <template #default="{ row }">
-            <ElTag>{{ row.generationLabel }}</ElTag>
-          </template>
-        </ElTableColumn>
+    <ElCard class="art-table-card" shadow="never">
+      <ArtTableHeader :loading="loading" @refresh="loadTasks">
+        <template #left>
+          <ElSpace wrap>
+            <ElButton type="primary" @click="handleCreate" v-ripple>新建生成任务</ElButton>
+          </ElSpace>
+        </template>
+      </ArtTableHeader>
 
-        <ElTableColumn label="状态" width="120">
-          <template #default="{ row }">
-            <div class="status-cell">
-              <ElTag :type="getStatusType(row.status)">{{ row.statusLabel }}</ElTag>
-              <!-- <ElProgress
-                v-if="row.status === 'processing'"
-                :percentage="row.progress"
-                :stroke-width="4"
-                style="width: 60px; margin-left: 8px"
-              /> -->
-            </div>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="详情">
-          <template #default="{ row }">
-            {{ row.prompt }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="文件" width="150">
-          <template #default="{ row }">
-            <template v-if="row.status === 'completed' && row.resultFilePath">
-              <ElLink
-                type="primary"
-                :href="getFullImageUrl(row.resultFilePath)"
-                target="_blank"
-                :underline="false"
-              >
-                <ElIcon>
-                  <Document />
-                </ElIcon>
-                下载DXF
-              </ElLink>
-            </template>
-            <span v-else class="text-secondary">-</span>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="耗时" width="100">
-          <template #default="{ row }">
-            {{ row.processingTime ? `${row.processingTime}s` : '-' }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="创建时间" width="170">
-          <template #default="{ row }">
-            {{ formatDate(row.createdAt) }}
-          </template>
-        </ElTableColumn>
-
-        <ElTableColumn label="操作" width="200" fixed="right">
-          <template #default="{ row }">
-            <ElButton
-              v-if="row.status === 'completed' && !row.resultFileId"
-              type="primary"
-              size="small"
-              @click="handleConfirm(row)"
-            >
-              确认保存
-            </ElButton>
-            <ElButton
-              v-if="row.status === 'completed' && row.resultFileId"
-              type="success"
-              size="small"
-              @click="handlePreview(row)"
-            >
-              查看CAD
-            </ElButton>
-            <ElButton
-              v-if="row.status === 'failed'"
-              type="warning"
-              size="small"
-              @click="handleRetry(row)"
-            >
-              重试
-            </ElButton>
-            <ElButton type="danger" size="small" @click="handleDelete(row)">删除</ElButton>
-          </template>
-        </ElTableColumn>
-      </ElTable>
-
-      <!-- 分页 / Pagination -->
-      <div class="pagination-wrapper">
-        <ElPagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="loadTasks"
-          @current-change="loadTasks"
-        />
-      </div>
+      <ArtTable
+        :loading="loading"
+        :data="taskList"
+        :columns="columns"
+        :pagination="pagination"
+        @pagination:size-change="loadTasks"
+        @pagination:current-change="loadTasks"
+      />
     </ElCard>
 
     <!-- 新建任务对话框 / Create Task Dialog -->
@@ -274,10 +142,11 @@
    * CAD Generation List Component
    * AI生成CAD任务列表组件
    ***/
-  import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
+  import { ref, reactive, computed, onMounted, onUnmounted, watch, h } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
-  import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+  import { ElMessage, ElMessageBox, ElTag, ElLink, ElIcon, ElButton, type FormInstance, type FormRules } from 'element-plus'
   import { ArrowLeft, Plus, Search, Document } from '@element-plus/icons-vue'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import dayjs from 'dayjs'
   import {
     getCadGenerationList,
@@ -294,6 +163,7 @@
     type DocumentListResponse,
     type DocumentResponse
   } from '@/api/designer-document'
+  import type { ColumnOption } from '@/types/component'
 
   /*** Type definitions for API responses ***/
   interface BaseResponse<T> {
@@ -311,11 +181,7 @@
   const baseUrl = import.meta.env.VITE_BASE_URL || ''
   const getFullImageUrl = (url: string | undefined): string => {
     if (!url) return ''
-    // 如果已经是完整URL则直接返回 / Return directly if already full URL
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url
-    }
-    // 拼接基础URL / Concatenate base URL
+    if (url.startsWith('http://') || url.startsWith('https://')) return url
     return `${baseUrl}${url}`
   }
 
@@ -339,16 +205,146 @@
     route.query.projectId ? Number(route.query.projectId) : undefined
   )
 
-  const filterForm = reactive({
+  const filterForm = ref({
     projectId: projectId.value,
     generationType: '',
     status: ''
+  })
+
+  // 搜索配置 / Search config
+  const searchItems = computed(() => {
+    const items: any[] = []
+    if (!projectId.value) {
+      items.push({
+        label: '项目',
+        key: 'projectId',
+        type: 'select',
+        props: {
+          placeholder: '选择项目',
+          options: projects.value.map((p) => ({ label: p.name, value: p.id }))
+        }
+      })
+    }
+    items.push(
+      {
+        label: '生成类型',
+        key: 'generationType',
+        type: 'input',
+        placeholder: '输入类型筛选',
+        clearable: true
+      },
+      {
+        label: '状态',
+        key: 'status',
+        type: 'select',
+        props: {
+          placeholder: '选择状态',
+          options: [
+            { label: '待处理', value: 'pending' },
+            { label: '处理中', value: 'processing' },
+            { label: '已完成', value: 'completed' },
+            { label: '失败', value: 'failed' }
+          ]
+        }
+      }
+    )
+    return items
   })
 
   const pagination = reactive({
     current: 1,
     size: 10,
     total: 0
+  })
+
+  // 状态配置 / Status config
+  const STATUS_CONFIG = {
+    pending: { type: 'info' as const, text: '待处理' },
+    processing: { type: 'warning' as const, text: '处理中' },
+    completed: { type: 'success' as const, text: '已完成' },
+    failed: { type: 'danger' as const, text: '失败' }
+  } as const
+
+  // 格式化日期 / Format date
+  const formatDate = (date: string) => {
+    return date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-'
+  }
+
+  // 表格列配置 / Table columns config
+  const columns = computed<ColumnOption[]>(() => {
+    const cols: ColumnOption[] = [
+      { prop: 'id', label: 'ID', width: 80 }
+    ]
+    if (!projectId.value) {
+      cols.push({
+        prop: 'projectName',
+        label: '项目',
+        minWidth: 150,
+        formatter: (row: CadGenerationResponse) => row.projectName || '-'
+      })
+    }
+    cols.push(
+      {
+        prop: 'generationType',
+        label: '生成类型',
+        width: 120,
+        formatter: (row: CadGenerationResponse) => h(ElTag, {}, () => row.generationLabel)
+      },
+      {
+        prop: 'status',
+        label: '状态',
+        width: 120,
+        formatter: (row: CadGenerationResponse) => {
+          const config = STATUS_CONFIG[row.status as keyof typeof STATUS_CONFIG] || { type: 'info' as const, text: row.status }
+          return h(ElTag, { type: config.type }, () => row.statusLabel || config.text)
+        }
+      },
+      { prop: 'prompt', label: '详情', minWidth: 200 },
+      {
+        prop: 'resultFilePath',
+        label: '文件',
+        width: 150,
+        formatter: (row: CadGenerationResponse) =>
+          row.status === 'completed' && row.resultFilePath
+            ? h(ElLink, { type: 'primary', href: getFullImageUrl(row.resultFilePath), target: '_blank', underline: false }, () => [
+                h(ElIcon, {}, () => h(Document)),
+                '下载DXF'
+              ])
+            : h('span', { class: 'text-secondary' }, '-')
+      },
+      {
+        prop: 'processingTime',
+        label: '耗时',
+        width: 100,
+        formatter: (row: CadGenerationResponse) => (row.processingTime ? `${row.processingTime}s` : '-')
+      },
+      {
+        prop: 'createdAt',
+        label: '创建时间',
+        width: 170,
+        formatter: (row: CadGenerationResponse) => formatDate(row.createdAt)
+      },
+      {
+        prop: 'operation',
+        label: '操作',
+        width: 200,
+        fixed: 'right',
+        formatter: (row: CadGenerationResponse) =>
+          h('div', { class: 'flex gap-1' }, [
+            row.status === 'completed' && !row.resultFileId
+              ? h(ArtButtonTable, { type: 'more', text: '确认保存', onClick: () => handleConfirm(row) })
+              : null,
+            row.status === 'completed' && row.resultFileId
+              ? h(ArtButtonTable, { type: 'view', text: '查看CAD', onClick: () => handlePreview(row) })
+              : null,
+            row.status === 'failed'
+              ? h(ArtButtonTable, { type: 'more', text: '重试', onClick: () => handleRetry(row) })
+              : null,
+            h(ArtButtonTable, { type: 'delete', onClick: () => handleDelete(row) })
+          ])
+      }
+    )
+    return cols
   })
 
   const createForm = reactive({
@@ -379,9 +375,9 @@
     loading.value = true
     try {
       const res = (await getCadGenerationList({
-        projectId: filterForm.projectId,
-        generationType: filterForm.generationType || undefined,
-        status: filterForm.status || undefined,
+        projectId: filterForm.value.projectId,
+        generationType: filterForm.value.generationType || undefined,
+        status: filterForm.value.status || undefined,
         current: pagination.current,
         size: pagination.size
       })) as unknown as BaseResponse<CadGenerationListResponse>
@@ -487,6 +483,23 @@
     }
   }
 
+  // 搜索 / Search
+  const handleSearch = () => {
+    pagination.current = 1
+    loadTasks()
+  }
+
+  // 重置 / Reset
+  const handleReset = () => {
+    filterForm.value = {
+      projectId: projectId.value,
+      generationType: '',
+      status: ''
+    }
+    pagination.current = 1
+    loadTasks()
+  }
+
   // 获取状态类型 / Get status type
   type TagType = 'success' | 'warning' | 'info' | 'danger' | 'primary'
   const getStatusType = (status: string): TagType => {
@@ -497,26 +510,6 @@
       failed: 'danger'
     }
     return map[status] || 'info'
-  }
-
-  // 格式化日期 / Format date
-  const formatDate = (date: string) => {
-    return date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-'
-  }
-
-  // 搜索 / Search
-  const handleSearch = () => {
-    pagination.current = 1
-    loadTasks()
-  }
-
-  // 重置 / Reset
-  const handleReset = () => {
-    filterForm.projectId = projectId.value
-    filterForm.generationType = ''
-    filterForm.status = ''
-    pagination.current = 1
-    loadTasks()
   }
 
   // 返回项目 / Back to project
@@ -657,7 +650,7 @@
     (newVal) => {
       if (newVal) {
         projectId.value = Number(newVal)
-        filterForm.projectId = projectId.value
+        filterForm.value.projectId = projectId.value
         loadTasks()
       }
     }
@@ -667,6 +660,7 @@
   let pollingTimer: ReturnType<typeof setInterval> | null = null
 
   // 开始轮询处理中的任务 / Start polling for processing tasks
+  // 修复：将轮询间隔从3秒增加到5秒，减少服务器压力
   const startPolling = () => {
     if (pollingTimer) return
 
@@ -678,7 +672,7 @@
       } else {
         stopPolling()
       }
-    }, 3000) // 每3秒轮询一次 / Poll every 3 seconds
+    }, 5000) // 每5秒轮询一次 / Poll every 5 seconds
   }
 
   // 停止轮询 / Stop polling
@@ -717,44 +711,8 @@
 
 <style scoped lang="scss">
   .cad-generation-page {
-    padding: 16px;
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-
-      .left {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-
-        h2 {
-          margin: 0;
-          font-size: 20px;
-          font-weight: 500;
-        }
-      }
-    }
-
-    .filter-card {
-      margin-bottom: 16px;
-    }
-
-    .status-cell {
-      display: flex;
-      align-items: center;
-    }
-
     .text-secondary {
       color: var(--el-text-color-secondary);
-    }
-
-    .pagination-wrapper {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 16px;
     }
   }
 </style>

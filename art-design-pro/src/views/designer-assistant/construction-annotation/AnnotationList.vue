@@ -19,7 +19,12 @@
     <ElCard class="filter-card" shadow="never">
       <ElForm :inline="true" :model="filterForm">
         <ElFormItem label="项目" v-if="!projectId">
-          <ElSelect v-model="filterForm.projectId" placeholder="选择项目" clearable @change="handleProjectChange">
+          <ElSelect
+            v-model="filterForm.projectId"
+            placeholder="选择项目"
+            clearable
+            @change="handleProjectChange"
+          >
             <ElOption
               v-for="project in projects"
               :key="project.id"
@@ -67,9 +72,7 @@
         </ElTableColumn>
         <ElTableColumn label="设计版本" width="120">
           <template #default="{ row }">
-            <ElTag v-if="row.version" type="primary">
-              V{{ row.version.versionNumber }}
-            </ElTag>
+            <ElTag v-if="row.version" type="primary"> V{{ row.version.versionNumber }} </ElTag>
             <span v-else class="text-secondary">-</span>
           </template>
         </ElTableColumn>
@@ -161,22 +164,36 @@
               :value="file.id"
             />
           </ElSelect>
+          <div class="form-tip" v-if="versionCadFiles.length === 0 && createForm.versionId">
+            暂无CAD文件，请先在项目中上传CAD文件
+          </div>
         </ElFormItem>
         <ElFormItem label="施工图" prop="imagePath">
-          <ElUpload
-            class="upload-demo"
-            action="/api/file/upload"
-            :on-success="handleUploadSuccess"
-            :before-upload="beforeUpload"
-            accept=".jpg,.jpeg,.png,.bmp"
-          >
-            <ElButton type="primary">上传图片</ElButton>
-            <template #tip>
-              <div class="el-upload__tip">支持 JPG、PNG、BMP 格式，建议上传CAD导出的施工图</div>
-            </template>
-          </ElUpload>
-          <div v-if="createForm.imagePath" class="uploaded-image">
-            <ElImage :src="createForm.imagePath" fit="contain" style="max-width: 200px; max-height: 150px" />
+          <div class="image-source-section">
+            <div v-if="createForm.imagePath" class="uploaded-image">
+              <ElImage
+                :src="createForm.imagePath"
+                fit="contain"
+                style="max-width: 300px; max-height: 200px"
+              />
+              <div class="image-actions">
+                <ElButton size="small" @click="createForm.imagePath = ''">清除</ElButton>
+              </div>
+            </div>
+            <div v-else class="upload-section">
+              <ElUpload
+                class="upload-demo"
+                :http-request="customUpload"
+                :before-upload="beforeUpload"
+                accept=".jpg,.jpeg,.png,.bmp"
+                :show-file-list="false"
+              >
+                <ElButton type="primary">上传施工图</ElButton>
+              </ElUpload>
+              <div class="el-upload__tip">
+                请上传从CAD软件导出的施工图图片（JPG、PNG、BMP格式）
+              </div>
+            </div>
           </div>
         </ElFormItem>
       </ElForm>
@@ -207,10 +224,19 @@
   } from '@/api/designer-construction-annotation'
   import { getDesignerProjects } from '@/api/designer-project'
   import { getDesignVersionList, type DesignVersionResponse } from '@/api/designer-version'
+  import { getCadFileList, type CadFileResponse } from '@/api/designer-cad'
+  import { uploadFile } from '@/api/file'
 
   /*** Router ***/
   const router = useRouter()
   const route = useRoute()
+
+  /*** Type definitions for API responses ***/
+  interface BaseResponse<T = unknown> {
+    code: number
+    msg?: string
+    data: T
+  }
 
   /*** State ***/
   const loading = ref(false)
@@ -259,15 +285,18 @@
   const loadAnnotations = async () => {
     loading.value = true
     try {
-      const res = await getAnnotationsList({
+      const res = (await getAnnotationsList({
         projectId: filterForm.projectId,
         versionId: filterForm.versionId,
         status: filterForm.status || undefined,
         page: pagination.page,
         pageSize: pagination.pageSize
-      }) as unknown as Http.BaseResponse<{ list: ConstructionAnnotationResponse[]; total: number }>
-      if (res.code === 200 && res.data) {
-        annotationList.value = res.data.list || []
+      })) as unknown as BaseResponse<{
+        records: ConstructionAnnotationResponse[]
+        total: number
+      }>
+      if (res && res.data) {
+        annotationList.value = res.data.records || []
         pagination.total = res.data.total || 0
       }
     } catch {
@@ -280,7 +309,10 @@
   // 加载项目列表 / Load project list
   const loadProjects = async () => {
     try {
-      const res = await getDesignerProjects({ current: 1, size: 100 }) as unknown as Http.BaseResponse<{ records: { id: number; name: string }[] }>
+      const res = (await getDesignerProjects({
+        current: 1,
+        size: 100
+      })) as unknown as BaseResponse<{ records: { id: number; name: string }[] }>
       if (res.code === 200 && res.data) {
         projects.value = res.data.records || []
       }
@@ -292,13 +324,19 @@
   // 加载项目版本 / Load project versions
   const loadProjectVersions = async (pId: number) => {
     try {
-      const res = await getDesignVersionList({ projectId: pId, current: 1, size: 100 }) as unknown as Http.BaseResponse<{ records: DesignVersionResponse[] }>
+      const res = (await getDesignVersionList({
+        projectId: pId,
+        current: 1,
+        size: 100
+      })) as unknown as BaseResponse<{ records: DesignVersionResponse[] }>
       if (res.code === 200 && res.data) {
-        return res.data.records?.map(v => ({
-          id: v.id,
-          versionNumber: v.versionNumber,
-          versionName: v.versionName
-        })) || []
+        return (
+          res.data.records?.map((v) => ({
+            id: v.id,
+            versionNumber: v.versionNumber,
+            versionName: v.versionName
+          })) || []
+        )
       }
     } catch {
       console.error('加载版本列表失败')
@@ -331,16 +369,36 @@
   // 版本变更时加载CAD文件 / Load CAD files when version changes
   const handleVersionChange = async (versionId: number) => {
     createForm.cadFileId = undefined
+    createForm.imagePath = ''
     if (!versionId) {
       versionCadFiles.value = []
       return
     }
-    // TODO: 调用API获取版本关联的CAD文件
-    // 模拟数据 / Mock data
-    versionCadFiles.value = [
-      { id: 1, fileName: '平面布局图.dxf' },
-      { id: 2, fileName: '立面图.dwg' }
-    ]
+    // 获取项目的CAD文件列表 / Get project CAD file list
+    const pId = createForm.projectId || projectId.value
+    if (!pId) {
+      versionCadFiles.value = []
+      return
+    }
+    try {
+      const res = (await getCadFileList({
+        projectId: pId,
+        current: 1,
+        size: 100,
+        parseStatus: 'completed' // 只获取已解析的CAD文件 / Only get parsed CAD files
+      })) as unknown as BaseResponse<{ records: CadFileResponse[] }>
+      if (res.code === 200 && res.data?.records) {
+        versionCadFiles.value = res.data.records.map((f) => ({
+          id: f.id,
+          fileName: f.fileName
+        }))
+      } else {
+        versionCadFiles.value = []
+      }
+    } catch {
+      console.error('加载CAD文件列表失败')
+      versionCadFiles.value = []
+    }
   }
 
   // 获取状态类型 / Get status type
@@ -401,7 +459,7 @@
   // 返回项目 / Back to project
   const handleBack = () => {
     if (projectId.value) {
-      router.push(`/designer/designer-assistant/project/ProjectDetail/${projectId.value}`)
+      router.push(`/designer/project/${projectId.value}`)
     }
   }
 
@@ -434,12 +492,17 @@
     return true
   }
 
-  // 上传成功 / Upload success
-  const handleUploadSuccess = (response: any) => {
-    if (response.code === 200 && response.data?.url) {
-      createForm.imagePath = response.data.url
-      ElMessage.success('上传成功')
-    } else {
+  // 自定义上传方法 / Custom upload method
+  const customUpload = async (options: { file: File }) => {
+    try {
+      const res = await uploadFile(options.file, 'image')
+      if (res && res.url) {
+        createForm.imagePath = res.url
+        ElMessage.success('上传成功')
+      } else {
+        ElMessage.error('上传失败')
+      }
+    } catch {
       ElMessage.error('上传失败')
     }
   }
@@ -453,12 +516,12 @@
 
       creating.value = true
       try {
-        const res = await analyzeConstructionDrawing({
+        const res = (await analyzeConstructionDrawing({
           projectId: createForm.projectId!,
           versionId: createForm.versionId,
           cadFileId: createForm.cadFileId!,
           imagePath: createForm.imagePath
-        }) as unknown as Http.BaseResponse<ConstructionAnnotationResponse>
+        })) as unknown as BaseResponse<ConstructionAnnotationResponse>
         if (res.code === 200) {
           ElMessage.success('创建成功，正在分析中')
           createDialogVisible.value = false
@@ -477,9 +540,9 @@
   // 编辑标注 / Edit annotation
   const handleEdit = (row: ConstructionAnnotationResponse) => {
     router.push({
-      path: '/designer/designer-assistant/construction-annotation/EditPage',
+      path: '/designer/designer-assistant/construction-annotation/AnnotationEditor',
       query: {
-        id: row.id,
+        annotationId: row.id,
         projectId: row.projectId,
         versionId: row.versionId,
         cadFileId: row.cadFileId
@@ -490,9 +553,9 @@
   // 导出标注 / Export annotation
   const handleExport = (row: ConstructionAnnotationResponse) => {
     router.push({
-      path: '/designer/designer-assistant/construction-annotation/EditPage',
+      path: '/designer/designer-assistant/construction-annotation/AnnotationEditor',
       query: {
-        id: row.id,
+        annotationId: row.id,
         projectId: row.projectId,
         versionId: row.versionId,
         cadFileId: row.cadFileId,
@@ -508,7 +571,7 @@
         type: 'warning'
       })
 
-      const res = await deleteAnnotation(row.id) as unknown as Http.BaseResponse<null>
+      const res = (await deleteAnnotation(row.id)) as unknown as BaseResponse<null>
       if (res.code === 200) {
         ElMessage.success('删除成功')
         loadAnnotations()
@@ -594,5 +657,28 @@
     border: 1px solid var(--el-border-color);
     border-radius: 4px;
     padding: 8px;
+
+    .image-actions {
+      margin-top: 8px;
+      text-align: center;
+    }
+  }
+
+  .image-source-section {
+    width: 100%;
+  }
+
+  .upload-section {
+    .upload-tip {
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+    }
+
+    .el-upload__tip {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+    }
   }
 </style>

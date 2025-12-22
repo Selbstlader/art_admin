@@ -378,7 +378,10 @@
 
   /*** Load compare detail data into diffData ***/
   const loadCompareDetailData = async (compareData: VersionCompareResponse) => {
-    // 先加载完整的版本详情 / First load full version details
+    // 先加载完整的版本详情用于展示 / First load full version details for display
+    let versionADetail: DesignVersionResponse | null = null
+    let versionBDetail: DesignVersionResponse | null = null
+
     if (compareData.versionAId && compareData.versionBId) {
       const fullDiffRes = (await getVersionDiff(
         compareData.versionAId,
@@ -386,86 +389,84 @@
       )) as unknown as BaseResponse<VersionDiffResponse>
 
       if (fullDiffRes.code === 200 && fullDiffRes.data) {
-        // 使用完整的版本详情，但用AI分析的变化数据覆盖 / Use full version details but override with AI analysis changes
-        diffData.value = {
-          versionA: fullDiffRes.data.versionA,
-          versionB: fullDiffRes.data.versionB,
-          layoutChanges: compareData.layoutChanges?.length
-            ? compareData.layoutChanges
-            : fullDiffRes.data.layoutChanges || [],
-          areaChanges: compareData.areaChanges?.length
-            ? compareData.areaChanges
-            : fullDiffRes.data.areaChanges || [],
-          elementChanges: compareData.elementChanges?.length
-            ? compareData.elementChanges
-            : fullDiffRes.data.elementChanges || [],
-          styleChanges: compareData.styleChanges?.length
-            ? compareData.styleChanges
-            : fullDiffRes.data.styleChanges || [],
-          materialChanges: compareData.materialChanges?.length
-            ? compareData.materialChanges
-            : fullDiffRes.data.materialChanges || [],
-          summary: compareData.summary || fullDiffRes.data.summary
-        }
-        return
+        versionADetail = fullDiffRes.data.versionA
+        versionBDetail = fullDiffRes.data.versionB
       }
     }
 
-    // 回退：只使用对比记录数据 / Fallback: use compare record data only
+    // 优先使用AI分析的变化数据，版本详情用于展示 / Prioritize AI analysis changes, use version details for display
+    // AI分析完成时使用AI结果，否则使用基础对比 / Use AI results when completed, otherwise use basic comparison
+    const hasAIAnalysis =
+      compareData.compareStatus === 'completed' &&
+      ((compareData.layoutChanges?.length || 0) > 0 ||
+        (compareData.areaChanges?.length || 0) > 0 ||
+        (compareData.elementChanges?.length || 0) > 0 ||
+        (compareData.styleChanges?.length || 0) > 0 ||
+        (compareData.materialChanges?.length || 0) > 0)
+
     diffData.value = {
-      versionA: compareData.versionA
-        ? {
-            id: compareData.versionA.id,
-            projectId: compareData.projectId,
-            versionNumber: compareData.versionA.versionNumber,
-            versionName: compareData.versionA.versionName,
-            description: '',
-            designImages: [],
-            cadFileIds: [],
-            cadFiles: [],
-            layoutInfo: [],
-            areaInfo: [],
-            styleInfo: [],
-            materialInfo: [],
-            status: compareData.versionA.status,
-            createdBy: 0,
-            createdAt: '',
-            updatedAt: ''
-          }
-        : null,
-      versionB: compareData.versionB
-        ? {
-            id: compareData.versionB.id,
-            projectId: compareData.projectId,
-            versionNumber: compareData.versionB.versionNumber,
-            versionName: compareData.versionB.versionName,
-            description: '',
-            designImages: [],
-            cadFileIds: [],
-            cadFiles: [],
-            layoutInfo: [],
-            areaInfo: [],
-            styleInfo: [],
-            materialInfo: [],
-            status: compareData.versionB.status,
-            createdBy: 0,
-            createdAt: '',
-            updatedAt: ''
-          }
-        : null,
-      layoutChanges: compareData.layoutChanges || [],
-      areaChanges: compareData.areaChanges || [],
-      elementChanges: compareData.elementChanges || [],
-      styleChanges: compareData.styleChanges || [],
-      materialChanges: compareData.materialChanges || [],
-      summary: compareData.summary
+      versionA:
+        versionADetail ||
+        (compareData.versionA
+          ? {
+              id: compareData.versionA.id,
+              projectId: compareData.projectId,
+              versionNumber: compareData.versionA.versionNumber,
+              versionName: compareData.versionA.versionName,
+              description: '',
+              designImages: [],
+              cadFileIds: [],
+              cadFiles: [],
+              layoutInfo: [],
+              areaInfo: [],
+              styleInfo: [],
+              materialInfo: [],
+              status: compareData.versionA.status,
+              createdBy: 0,
+              createdAt: '',
+              updatedAt: ''
+            }
+          : null),
+      versionB:
+        versionBDetail ||
+        (compareData.versionB
+          ? {
+              id: compareData.versionB.id,
+              projectId: compareData.projectId,
+              versionNumber: compareData.versionB.versionNumber,
+              versionName: compareData.versionB.versionName,
+              description: '',
+              designImages: [],
+              cadFileIds: [],
+              cadFiles: [],
+              layoutInfo: [],
+              areaInfo: [],
+              styleInfo: [],
+              materialInfo: [],
+              status: compareData.versionB.status,
+              createdBy: 0,
+              createdAt: '',
+              updatedAt: ''
+            }
+          : null),
+      // AI分析完成时使用AI结果 / Use AI results when analysis is completed
+      layoutChanges: hasAIAnalysis ? compareData.layoutChanges || [] : [],
+      areaChanges: hasAIAnalysis ? compareData.areaChanges || [] : [],
+      elementChanges: hasAIAnalysis ? compareData.elementChanges || [] : [],
+      styleChanges: hasAIAnalysis ? compareData.styleChanges || [] : [],
+      materialChanges: hasAIAnalysis ? compareData.materialChanges || [] : [],
+      summary: hasAIAnalysis
+        ? compareData.summary
+        : compareData.compareStatus === 'pending'
+          ? 'AI分析中...'
+          : '请点击"AI智能分析"按钮进行版本对比分析'
     }
   }
 
   /*** Handle back ***/
   const handleBack = () => {
     router.push({
-      path: '/designer-assistant/version-compare',
+      path: '/designer/designer-assistant/version-compare/VersionList',
       query: { projectId: projectId.value }
     })
   }

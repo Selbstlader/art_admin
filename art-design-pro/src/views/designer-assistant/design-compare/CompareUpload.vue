@@ -13,30 +13,72 @@
         <ElCol :span="12">
           <div class="upload-box">
             <h4>
-              上传设计图
-              <ElTag size="small" type="info">支持多文件</ElTag>
+              设计图来源
+              <ElTag size="small" type="info">支持多选</ElTag>
             </h4>
-            <ElUpload
-              class="upload-area"
-              drag
-              multiple
-              :auto-upload="false"
-              :on-change="handleFileChange"
-              :on-remove="handleFileRemove"
-              :file-list="fileList"
-              accept=".jpg,.jpeg,.png,.webp,.pdf,.dwg,.dxf"
-            >
-              <ElIcon class="el-icon--upload"><UploadFilled /></ElIcon>
-              <div class="el-upload__text">将设计图拖到此处，或<em>点击上传</em></div>
-              <template #tip>
-                <div class="el-upload__tip">
-                  支持 JPG、PNG、WEBP、PDF、DWG、DXF 格式，单文件最大 50MB
-                </div>
-              </template>
-            </ElUpload>
-            <div v-if="designFiles.length > 0" class="file-summary">
-              <span>已选择 {{ designFiles.length }} 个文件</span>
-              <ElButton type="primary" link size="small" @click="clearFiles">清空</ElButton>
+
+            <!-- 上传新文件 -->
+            <div class="upload-section">
+              <div class="section-label">上传新文件</div>
+              <ElUpload
+                class="upload-area"
+                drag
+                multiple
+                :auto-upload="false"
+                :on-change="handleFileChange"
+                :on-remove="handleFileRemove"
+                :file-list="fileList"
+                accept=".jpg,.jpeg,.png,.webp,.pdf"
+              >
+                <ElIcon class="el-icon--upload"><UploadFilled /></ElIcon>
+                <div class="el-upload__text">将设计图拖到此处，或<em>点击上传</em></div>
+                <template #tip>
+                  <div class="el-upload__tip">支持 JPG、PNG、WEBP、PDF 格式，单文件最大 50MB</div>
+                </template>
+              </ElUpload>
+              <div v-if="designFiles.length > 0" class="file-summary">
+                <span>已选择 {{ designFiles.length }} 个新文件</span>
+                <ElButton type="primary" link size="small" @click="clearFiles">清空</ElButton>
+              </div>
+            </div>
+
+            <!-- 选择 AI 生成效果图 -->
+            <div class="existing-section">
+              <div class="section-label">选择 AI 生成效果图</div>
+              <ElSelect
+                v-model="selectedRenderImages"
+                placeholder="从已生成的效果图中选择"
+                style="width: 100%"
+                :loading="loadingRenderImages"
+                filterable
+                multiple
+                collapse-tags
+                collapse-tags-tooltip
+              >
+                <ElOption
+                  v-for="item in renderRecordList"
+                  :key="item.id"
+                  :label="getImageLabel(item)"
+                  :value="getFullImageUrl(item.imageUrl)"
+                >
+                  <div class="img-option">
+                    <span class="option-style">{{ item.style || '默认风格' }}</span>
+                    <span class="option-time">{{ formatTime(item.createdAt) }}</span>
+                  </div>
+                </ElOption>
+              </ElSelect>
+              <div v-if="selectedRenderImages.length > 0" class="file-summary">
+                <span>已选择 {{ selectedRenderImages.length }} 张效果图</span>
+                <ElButton type="primary" link size="small" @click="selectedRenderImages = []">
+                  清空
+                </ElButton>
+              </div>
+            </div>
+
+            <!-- 汇总显示 -->
+            <div v-if="totalSelectedCount > 0" class="total-summary">
+              <ElIcon><Picture /></ElIcon>
+              <span>共选择 {{ totalSelectedCount }} 个设计图</span>
             </div>
           </div>
         </ElCol>
@@ -203,16 +245,33 @@
           <!-- 设计图列表 -->
           <div class="info-section">
             <h4>设计图文件</h4>
-            <div class="file-list">
+            <div class="image-grid">
               <div
                 v-for="(img, index) in currentDetail.designImages"
                 :key="index"
-                class="file-item"
+                class="image-item"
               >
-                <ElIcon><Document /></ElIcon>
-                <span class="file-name">{{ img.fileName }}</span>
-                <ElTag size="small">{{ img.fileType }}</ElTag>
-                <span class="file-size">{{ formatFileSize(img.fileSize) }}</span>
+                <ElImage
+                  :src="getFullImageUrl(img.filePath)"
+                  fit="cover"
+                  class="image-preview"
+                  :preview-src-list="getPreviewList()"
+                  :initial-index="index"
+                >
+                  <template #error>
+                    <div class="image-error">
+                      <ElIcon><Document /></ElIcon>
+                      <span>{{ img.fileType }}</span>
+                    </div>
+                  </template>
+                </ElImage>
+                <div class="image-info">
+                  <span class="file-name">{{ img.fileName }}</span>
+                  <span class="file-meta">
+                    <ElTag size="small">{{ img.fileType }}</ElTag>
+                    <span v-if="img.fileSize > 0">{{ formatFileSize(img.fileSize) }}</span>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -322,18 +381,21 @@
     Loading,
     Edit,
     Refresh,
-    Document
+    Document,
+    Picture
   } from '@element-plus/icons-vue'
   import type { UploadFile, UploadUserFile } from 'element-plus'
   import { getDocumentList, type DocumentResponse } from '@/api/designer-document'
   import {
     uploadDesignImages,
+    uploadDesignImagesWithExisting,
     analyzeDesignCompare,
     getDesignCompareDetail,
     getDesignCompareList,
     deleteDesignCompare,
     type DesignCompareResponse
   } from '@/api/designer-compare'
+  import { getRenderRecords, type RenderRecordItem } from '@/api/designer-cad'
   import { useNotificationStore } from '@/store/modules/notification'
 
   const route = useRoute()
@@ -350,6 +412,16 @@
   const analysisStatus = ref('')
   const pollingTimer = ref<number | null>(null)
 
+  // 设计图来源 - 同时支持上传和选择
+  const selectedRenderImages = ref<string[]>([]) // AI 效果图 URL 列表
+  const loadingRenderImages = ref(false)
+  const renderRecordList = ref<RenderRecordItem[]>([]) // AI 效果图记录列表
+
+  // 计算总选择数量
+  const totalSelectedCount = computed(
+    () => designFiles.value.length + selectedRenderImages.value.length
+  )
+
   // 列表相关状态
   const loadingList = ref(false)
   const compareList = ref<DesignCompareResponse[]>([])
@@ -362,7 +434,10 @@
 
   // 计算属性
   const projectId = computed(() => Number(route.query.projectId) || 0)
-  const canCompare = computed(() => designFiles.value.length > 0 && selectedDocIds.value.length > 0)
+  const canCompare = computed(() => {
+    const hasImages = designFiles.value.length > 0 || selectedRenderImages.value.length > 0
+    return hasImages && selectedDocIds.value.length > 0
+  })
   const selectedDocs = computed(() =>
     documentList.value.filter((d) => selectedDocIds.value.includes(d.id))
   )
@@ -409,6 +484,54 @@
     }
   }
 
+  // 加载 AI 生成效果图列表
+  const loadRenderImages = async () => {
+    if (!projectId.value) return
+    loadingRenderImages.value = true
+    try {
+      const res = (await getRenderRecords({
+        projectId: projectId.value,
+        current: 1,
+        size: 50
+      })) as any
+      if (res.code === 200 && res.data) {
+        // 只显示已完成的效果图
+        renderRecordList.value = (res.data.records || []).filter(
+          (r: RenderRecordItem) => r.status === 'completed' && r.imageUrl
+        )
+      }
+    } catch (error) {
+      console.error('加载效果图列表失败:', error)
+    } finally {
+      loadingRenderImages.value = false
+    }
+  }
+
+  // 获取效果图标签
+  const getImageLabel = (item: RenderRecordItem) => {
+    const style = item.style || '默认风格'
+    const time = formatTime(item.createdAt)
+    return `${style} - ${time}`
+  }
+
+  // 获取完整图片URL
+  const getFullImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return ''
+    // 如果已经是完整URL，直接返回
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl
+    }
+    // 拼接后端基础URL
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
+    return `${baseUrl}/uploads/${imageUrl}`
+  }
+
+  // 获取预览图片列表
+  const getPreviewList = () => {
+    if (!currentDetail.value?.designImages) return []
+    return currentDetail.value.designImages.map((img) => getFullImageUrl(img.filePath))
+  }
+
   // 文件操作
   const handleFileChange = (file: UploadFile) => {
     if (file.raw) {
@@ -432,8 +555,10 @@
 
   // 开始比对
   const handleCompare = async () => {
-    if (!designFiles.value.length || !selectedDocIds.value.length || !projectId.value) {
-      ElMessage.warning('请上传设计文件并选择需求文档')
+    const hasImages = designFiles.value.length > 0 || selectedRenderImages.value.length > 0
+
+    if (!hasImages || !selectedDocIds.value.length || !projectId.value) {
+      ElMessage.warning('请选择设计文件并选择需求文档')
       return
     }
 
@@ -441,18 +566,42 @@
     analysisStatus.value = ''
 
     try {
-      const uploadRes = await uploadDesignImages(
-        projectId.value,
-        selectedDocIds.value,
-        designFiles.value,
-        taskName.value
-      )
+      let uploadRes
+
+      if (designFiles.value.length > 0 && selectedRenderImages.value.length === 0) {
+        // 只有上传文件
+        uploadRes = await uploadDesignImages(
+          projectId.value,
+          selectedDocIds.value,
+          designFiles.value,
+          taskName.value
+        )
+      } else if (designFiles.value.length === 0 && selectedRenderImages.value.length > 0) {
+        // 只有选择的效果图
+        uploadRes = await uploadDesignImagesWithExisting(
+          projectId.value,
+          selectedDocIds.value,
+          selectedRenderImages.value,
+          taskName.value
+        )
+      } else {
+        // 同时有上传文件和选择的效果图，先上传文件，再追加效果图
+        uploadRes = await uploadDesignImages(
+          projectId.value,
+          selectedDocIds.value,
+          designFiles.value,
+          taskName.value,
+          selectedRenderImages.value // 传递效果图 URL
+        )
+      }
+
       if (uploadRes.code !== 200 || !uploadRes.data) {
-        throw new Error(uploadRes.msg || '上传失败')
+        throw new Error(uploadRes.msg || '创建比对任务失败')
       }
 
       const compareId = uploadRes.data.id
-      ElMessage.success(`已上传 ${uploadRes.data.designImages?.length || 0} 个文件，正在分析...`)
+      const imageCount = uploadRes.data.designImages?.length || 0
+      ElMessage.success(`已准备 ${imageCount} 个文件，正在分析...`)
 
       const analyzeRes = await analyzeDesignCompare(compareId)
       if (analyzeRes.code !== 200) {
@@ -480,20 +629,26 @@
           if (data.analysisStatus === 'completed') {
             stopPolling()
             uploading.value = false
+            analysisStatus.value = ''
             ElMessage.success('比对分析完成')
-            notificationStore.addNotification({
+            // 添加本地通知
+            ;(notificationStore as any).addNotification({
               title: `设计比对完成，匹配度: ${Math.round(data.overallScore)}%`,
               time: new Date().toLocaleString(),
               type: 'notice'
             })
-            loadCompareList()
+            // 重新加载列表
+            await loadCompareList()
+            // 清空表单
             clearFiles()
+            selectedRenderImages.value = []
             taskName.value = ''
           } else if (data.analysisStatus === 'failed') {
             stopPolling()
             uploading.value = false
+            analysisStatus.value = ''
             ElMessage.error(data.errorMessage || '分析失败')
-            loadCompareList()
+            await loadCompareList()
           }
         }
       } catch (error) {
@@ -616,11 +771,13 @@
   watch(projectId, () => {
     loadDocuments()
     loadCompareList()
+    loadRenderImages()
   })
 
   onMounted(() => {
     loadDocuments()
     loadCompareList()
+    loadRenderImages()
   })
 
   onUnmounted(() => {
@@ -664,7 +821,7 @@
 
         :deep(.el-upload-dragger) {
           width: 100%;
-          height: 150px;
+          height: 120px;
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -672,11 +829,53 @@
         }
       }
 
-      .doc-option {
+      .section-label {
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+        margin-bottom: 8px;
+      }
+
+      .upload-section {
+        margin-bottom: 16px;
+      }
+
+      .existing-section {
+        margin-bottom: 12px;
+      }
+
+      .total-summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        background: var(--el-color-primary-light-9);
+        border-radius: 4px;
+        color: var(--el-color-primary);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .doc-option,
+      .img-option {
         display: flex;
         justify-content: space-between;
         align-items: center;
         width: 100%;
+
+        .option-style {
+          font-size: 13px;
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .option-time {
+          font-size: 12px;
+          color: var(--el-text-color-secondary);
+          margin-left: 12px;
+          flex-shrink: 0;
+        }
       }
 
       .file-summary,
@@ -796,6 +995,62 @@
         .file-size {
           color: var(--el-text-color-secondary);
           font-size: 12px;
+        }
+      }
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+
+      .image-item {
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--el-fill-color-light);
+
+        .image-preview {
+          width: 100%;
+          height: 120px;
+          display: block;
+          cursor: pointer;
+        }
+
+        .image-error {
+          width: 100%;
+          height: 120px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          color: var(--el-text-color-secondary);
+          background: var(--el-fill-color);
+
+          .el-icon {
+            font-size: 32px;
+          }
+        }
+
+        .image-info {
+          padding: 8px 12px;
+
+          .file-name {
+            display: block;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 4px;
+          }
+
+          .file-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--el-text-color-secondary);
+          }
         }
       }
     }

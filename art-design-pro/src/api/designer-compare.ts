@@ -97,7 +97,8 @@ export function uploadDesignImages(
   projectId: number,
   documentIds: number[],
   files: File[],
-  name?: string
+  name?: string,
+  existingImageUrls?: string[]
 ) {
   const formData = new FormData()
   formData.append('projectId', projectId.toString())
@@ -109,11 +110,34 @@ export function uploadDesignImages(
   files.forEach((file) => {
     formData.append('files', file)
   })
+  // 追加已有效果图 URL
+  if (existingImageUrls && existingImageUrls.length > 0) {
+    formData.append('existingImageUrls', existingImageUrls.join(','))
+  }
 
   return request.post<Http.BaseResponse<DesignCompareUploadResponse>>({
     url: '/api/designer/compare/upload',
     data: formData,
     headers: { 'Content-Type': 'multipart/form-data' },
+    _fullResponse: true
+  })
+}
+
+/*** Create design compare with existing render images ***/
+export function uploadDesignImagesWithExisting(
+  projectId: number,
+  documentIds: number[],
+  imageUrls: string[],
+  name?: string
+) {
+  return request.post<Http.BaseResponse<DesignCompareUploadResponse>>({
+    url: '/api/designer/compare/create-with-images',
+    data: {
+      projectId,
+      documentIds,
+      imageUrls,
+      name
+    },
     _fullResponse: true
   })
 }

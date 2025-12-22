@@ -1,19 +1,10 @@
 <template>
-  <div class="project-material-list">
+  <div class="project-material-list art-full-height">
     <!-- 操作栏 / Action bar -->
     <div class="action-bar">
-      <ElButton type="primary" @click="handleAddMaterial">
-        <ElIcon><Plus /></ElIcon>
-        添加材料
-      </ElButton>
-      <ElButton @click="showImportDialog">
-        <ElIcon><FolderOpened /></ElIcon>
-        从材料库导入
-      </ElButton>
-      <ElButton @click="handleExport" :disabled="materials.length === 0">
-        <ElIcon><Download /></ElIcon>
-        导出清单
-      </ElButton>
+      <ElButton type="primary" @click="handleAddMaterial" v-ripple>添加材料</ElButton>
+      <ElButton @click="showImportDialog" v-ripple>从材料库导入</ElButton>
+      <ElButton @click="handleExport" :disabled="materials.length === 0" v-ripple>导出清单</ElButton>
     </div>
 
     <!-- 材料清单表格 / Material list table -->
@@ -317,12 +308,21 @@ const saveMaterialList = async () => {
 }
 
 // 导出清单 / Export list
+// 修复：处理相对路径的 fileUrl
 const handleExport = async () => {
   try {
     const res: any = await exportProjectMaterials(props.projectId)
     if (res.code === 200 && res.data?.fileUrl) {
-      window.open(res.data.fileUrl, '_blank')
+      let fileUrl = res.data.fileUrl
+      // 如果是相对路径，拼接完整URL
+      if (!fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
+        const baseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BASE_URL || ''
+        fileUrl = `${baseUrl}${fileUrl.startsWith('/') ? '' : '/'}${fileUrl}`
+      }
+      window.open(fileUrl, '_blank')
       ElMessage.success('导出成功')
+    } else {
+      ElMessage.error(res.msg || '导出失败')
     }
   } catch (error) {
     ElMessage.error('导出失败')

@@ -68,9 +68,9 @@
         <div class="btn-box notice-btn" v-if="shouldShowNotification" @click="visibleNotice">
           <div class="btn notice-button">
             <i class="iconfont-sys notice-btn">&#xe6c2;</i>
-            <span class="count notice-btn" v-if="notificationUnreadCount > 0">{{
+            <!-- <span class="count notice-btn" v-if="notificationUnreadCount > 0">{{
               notificationUnreadCount > 99 ? '99+' : notificationUnreadCount
-            }}</span>
+            }}</span> -->
           </div>
         </div>
         <!-- 聊天 -->

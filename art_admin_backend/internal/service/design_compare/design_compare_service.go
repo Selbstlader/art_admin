@@ -26,6 +26,7 @@ type DesignCompareService struct {
 	repo        *repository.DesignCompareRepository
 	projectRepo *repository.DesignerProjectRepository
 	docRepo     *repository.DocumentRepository
+	cadRepo     *repository.CadFileRepository // CAD文件仓库 / CAD file repository
 	aiClient    *volcengine.Client
 	uploadPath  string
 	baseURL     string
@@ -36,12 +37,14 @@ func NewDesignCompareService(
 	repo *repository.DesignCompareRepository,
 	projectRepo *repository.DesignerProjectRepository,
 	docRepo *repository.DocumentRepository,
+	cadRepo *repository.CadFileRepository,
 	aiClient *volcengine.Client,
 	uploadPath, baseURL string,
 ) *DesignCompareService {
 	os.MkdirAll(filepath.Join(uploadPath, "design-images"), 0755)
 	return &DesignCompareService{
 		repo: repo, projectRepo: projectRepo, docRepo: docRepo,
+		cadRepo:  cadRepo,
 		aiClient: aiClient, uploadPath: uploadPath, baseURL: baseURL,
 	}
 }
@@ -50,11 +53,10 @@ func NewDesignCompareService(
 var SupportedFileTypes = map[string]string{
 	".jpg": "image", ".jpeg": "image", ".png": "image", ".webp": "image",
 	".pdf": "pdf",
-	".dwg": "cad", ".dxf": "cad", // CAD 文件格式
 }
 
-// Upload 批量上传设计图（支持多文件、CAD）
-// Batch upload design images supporting multiple files and CAD
+// Upload 批量上传设计图（支持多文件、已有效果图）
+// Batch upload design images supporting multiple files and existing render images
 func (s *DesignCompareService) Upload(files []*multipart.FileHeader, req *request.UploadDesignImagesRequest, userID uint) (*response.DesignCompareUploadResponse, error) {
 	// 验证项目权限
 	project, err := s.projectRepo.GetByID(req.ProjectID)
@@ -85,11 +87,14 @@ func (s *DesignCompareService) Upload(files []*multipart.FileHeader, req *reques
 		}
 	}
 
-	if len(files) == 0 {
-		return nil, errors.New("请上传至少一个设计文件")
+	// 解析已有效果图URL
+	existingUrls := s.parseImageUrls(req.ExistingImageUrls)
+
+	if len(files) == 0 && len(existingUrls) == 0 {
+		return nil, errors.New("请上传至少一个设计文件或选择已有效果图")
 	}
 
-	// 保存所有文件
+	// 保存所有上传的文件
 	var designImages []model.DesignImageInfo
 	dateDir := time.Now().Format("2006/01/02")
 	fullDir := filepath.Join(s.uploadPath, "design-images", dateDir)
@@ -99,7 +104,7 @@ func (s *DesignCompareService) Upload(files []*multipart.FileHeader, req *reques
 		ext := strings.ToLower(filepath.Ext(file.Filename))
 		fileType, ok := SupportedFileTypes[ext]
 		if !ok {
-			return nil, fmt.Errorf("不支持的文件格式: %s，支持: JPG, PNG, WEBP, PDF, DWG, DXF", ext)
+			return nil, fmt.Errorf("不支持的文件格式: %s，支持: JPG, PNG, WEBP, PDF", ext)
 		}
 		if file.Size > 50*1024*1024 {
 			return nil, fmt.Errorf("文件 %s 超过50MB限制", file.Filename)
@@ -119,6 +124,16 @@ func (s *DesignCompareService) Upload(files []*multipart.FileHeader, req *reques
 			FilePath: filePath,
 			FileType: fileType,
 			FileSize: file.Size,
+		})
+	}
+
+	// 添加已有效果图
+	for i, url := range existingUrls {
+		designImages = append(designImages, model.DesignImageInfo{
+			FileName: fmt.Sprintf("效果图_%d", i+1),
+			FilePath: url, // 直接使用URL作为路径
+			FileType: "image",
+			FileSize: 0,
 		})
 	}
 
@@ -147,7 +162,9 @@ func (s *DesignCompareService) Upload(files []*multipart.FileHeader, req *reques
 	if err := s.repo.Create(compare); err != nil {
 		// 清理已上传的文件
 		for _, img := range designImages {
-			os.Remove(filepath.Join(s.uploadPath, img.FilePath))
+			if !strings.HasPrefix(img.FilePath, "http") {
+				os.Remove(filepath.Join(s.uploadPath, img.FilePath))
+			}
 		}
 		return nil, fmt.Errorf("保存比对记录失败: %w", err)
 	}
@@ -160,6 +177,22 @@ func (s *DesignCompareService) Upload(files []*multipart.FileHeader, req *reques
 		DesignImages:   s.toImageInfoResponses(designImages),
 		AnalysisStatus: compare.AnalysisStatus,
 	}, nil
+}
+
+// parseImageUrls 解析效果图URL列表
+func (s *DesignCompareService) parseImageUrls(urlsStr string) []string {
+	if urlsStr == "" {
+		return nil
+	}
+	parts := strings.Split(urlsStr, ",")
+	var urls []string
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			urls = append(urls, p)
+		}
+	}
+	return urls
 }
 
 func (s *DesignCompareService) parseDocumentIDs(idsStr string) ([]uint, error) {
@@ -180,6 +213,171 @@ func (s *DesignCompareService) parseDocumentIDs(idsStr string) ([]uint, error) {
 		ids = append(ids, uint(id))
 	}
 	return ids, nil
+}
+
+// CreateWithCadFiles 使用已有CAD文件创建比对任务
+// Create compare task with existing CAD files
+func (s *DesignCompareService) CreateWithCadFiles(req *request.CreateCompareWithCadRequest, userID uint) (*response.DesignCompareUploadResponse, error) {
+	// 验证项目权限
+	project, err := s.projectRepo.GetByID(req.ProjectID)
+	if err != nil {
+		return nil, errors.New("项目不存在")
+	}
+	if project.UserID != userID {
+		return nil, errors.New("无权访问该项目")
+	}
+
+	// 验证文档存在且属于该项目
+	for _, docID := range req.DocumentIDs {
+		doc, err := s.docRepo.GetByIDWithProject(docID)
+		if err != nil {
+			return nil, fmt.Errorf("文档ID %d 不存在", docID)
+		}
+		if doc.ProjectID != req.ProjectID {
+			return nil, fmt.Errorf("文档ID %d 不属于该项目", docID)
+		}
+	}
+
+	if len(req.CadFileIDs) == 0 {
+		return nil, errors.New("请选择至少一个CAD文件")
+	}
+
+	// 获取CAD文件信息并构建设计图列表
+	var designImages []model.DesignImageInfo
+	for _, cadID := range req.CadFileIDs {
+		cadFile, err := s.cadRepo.GetByID(cadID)
+		if err != nil {
+			return nil, fmt.Errorf("CAD文件ID %d 不存在", cadID)
+		}
+		if cadFile.ProjectID != req.ProjectID {
+			return nil, fmt.Errorf("CAD文件ID %d 不属于该项目", cadID)
+		}
+
+		// 确定文件类型
+		ext := strings.ToLower(filepath.Ext(cadFile.FileName))
+		fileType := "cad"
+		if ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".webp" {
+			fileType = "image"
+		} else if ext == ".pdf" {
+			fileType = "pdf"
+		}
+
+		designImages = append(designImages, model.DesignImageInfo{
+			FileName: cadFile.FileName,
+			FilePath: cadFile.OriginalPath,
+			FileType: fileType,
+			FileSize: cadFile.FileSize,
+		})
+	}
+
+	// 序列化数据
+	docIDsJSON, _ := json.Marshal(req.DocumentIDs)
+	imagesJSON, _ := json.Marshal(designImages)
+
+	// 生成任务名称
+	name := req.Name
+	if name == "" {
+		name = fmt.Sprintf("设计比对_%s", time.Now().Format("20060102_150405"))
+	}
+
+	// 创建比对记录
+	compare := &model.DesignCompareResult{
+		ProjectID:      req.ProjectID,
+		Name:           name,
+		DocumentIDs:    string(docIDsJSON),
+		DesignImages:   string(imagesJSON),
+		AnalysisStatus: "pending",
+		MatchItems:     "[]",
+		DeviationItems: "[]",
+		Suggestions:    "[]",
+	}
+
+	if err := s.repo.Create(compare); err != nil {
+		return nil, fmt.Errorf("保存比对记录失败: %w", err)
+	}
+
+	return &response.DesignCompareUploadResponse{
+		ID:             compare.ID,
+		ProjectID:      compare.ProjectID,
+		Name:           compare.Name,
+		DocumentIDs:    req.DocumentIDs,
+		DesignImages:   s.toImageInfoResponses(designImages),
+		AnalysisStatus: compare.AnalysisStatus,
+	}, nil
+}
+
+// CreateWithImageUrls 使用已有效果图URL创建比对任务
+// Create compare task with existing render image URLs
+func (s *DesignCompareService) CreateWithImageUrls(req *request.CreateCompareWithImagesRequest, userID uint) (*response.DesignCompareUploadResponse, error) {
+	// 验证项目权限
+	project, err := s.projectRepo.GetByID(req.ProjectID)
+	if err != nil {
+		return nil, errors.New("项目不存在")
+	}
+	if project.UserID != userID {
+		return nil, errors.New("无权访问该项目")
+	}
+
+	// 验证文档存在且属于该项目
+	for _, docID := range req.DocumentIDs {
+		doc, err := s.docRepo.GetByIDWithProject(docID)
+		if err != nil {
+			return nil, fmt.Errorf("文档ID %d 不存在", docID)
+		}
+		if doc.ProjectID != req.ProjectID {
+			return nil, fmt.Errorf("文档ID %d 不属于该项目", docID)
+		}
+	}
+
+	if len(req.ImageUrls) == 0 {
+		return nil, errors.New("请选择至少一张效果图")
+	}
+
+	// 构建设计图列表
+	var designImages []model.DesignImageInfo
+	for i, url := range req.ImageUrls {
+		designImages = append(designImages, model.DesignImageInfo{
+			FileName: fmt.Sprintf("效果图_%d", i+1),
+			FilePath: url,
+			FileType: "image",
+			FileSize: 0,
+		})
+	}
+
+	// 序列化数据
+	docIDsJSON, _ := json.Marshal(req.DocumentIDs)
+	imagesJSON, _ := json.Marshal(designImages)
+
+	// 生成任务名称
+	name := req.Name
+	if name == "" {
+		name = fmt.Sprintf("设计比对_%s", time.Now().Format("20060102_150405"))
+	}
+
+	// 创建比对记录
+	compare := &model.DesignCompareResult{
+		ProjectID:      req.ProjectID,
+		Name:           name,
+		DocumentIDs:    string(docIDsJSON),
+		DesignImages:   string(imagesJSON),
+		AnalysisStatus: "pending",
+		MatchItems:     "[]",
+		DeviationItems: "[]",
+		Suggestions:    "[]",
+	}
+
+	if err := s.repo.Create(compare); err != nil {
+		return nil, fmt.Errorf("保存比对记录失败: %w", err)
+	}
+
+	return &response.DesignCompareUploadResponse{
+		ID:             compare.ID,
+		ProjectID:      compare.ProjectID,
+		Name:           compare.Name,
+		DocumentIDs:    req.DocumentIDs,
+		DesignImages:   s.toImageInfoResponses(designImages),
+		AnalysisStatus: compare.AnalysisStatus,
+	}, nil
 }
 
 func (s *DesignCompareService) saveFile(file *multipart.FileHeader, fullPath string) error {
@@ -252,9 +450,15 @@ func (s *DesignCompareService) doAnalyze(compareID uint, designImages []model.De
 	var analyzedCount int
 
 	for _, img := range designImages {
-		fullPath := filepath.Join(s.uploadPath, img.FilePath)
+		var imagePath string
+		// 判断是 URL 还是本地文件路径
+		if strings.HasPrefix(img.FilePath, "http://") || strings.HasPrefix(img.FilePath, "https://") {
+			imagePath = img.FilePath // 直接使用 URL
+		} else {
+			imagePath = filepath.Join(s.uploadPath, img.FilePath)
+		}
 
-		result, err := s.analyzeOneImage(fullPath, img.FileName, img.FileType, requirements)
+		result, err := s.analyzeOneImage(imagePath, img.FileName, img.FileType, requirements)
 		if err != nil {
 			// 记录单个文件分析失败，继续处理其他文件
 			allDeviationItems = append(allDeviationItems, response.DeviationItemResponse{
@@ -370,15 +574,30 @@ func (s *DesignCompareService) analyzeOneImage(imagePath, fileName, fileType, re
 	var aiResponse string
 	var err error
 
+	// 判断是 URL 还是本地文件
+	isURL := strings.HasPrefix(imagePath, "http://") || strings.HasPrefix(imagePath, "https://")
+
 	switch fileType {
 	case "image":
-		imageBase64, encErr := volcengine.EncodeImageToBase64(imagePath)
-		if encErr != nil {
-			return nil, fmt.Errorf("编码图片失败: %w", encErr)
+		var imageBase64 string
+		if isURL {
+			// 从 URL 获取图片并编码
+			imageBase64, err = volcengine.EncodeImageFromURL(imagePath)
+			if err != nil {
+				return nil, fmt.Errorf("从URL获取图片失败: %w", err)
+			}
+		} else {
+			imageBase64, err = volcengine.EncodeImageToBase64(imagePath)
+			if err != nil {
+				return nil, fmt.Errorf("编码图片失败: %w", err)
+			}
 		}
 		aiResponse, err = s.aiClient.ChatWithImage(systemPrompt, userPrompt, imageBase64)
 
 	case "pdf":
+		if isURL {
+			return nil, fmt.Errorf("暂不支持URL类型的PDF文件")
+		}
 		// PDF 文件也尝试作为图片处理（如果是设计图PDF）
 		imageBase64, encErr := volcengine.EncodeImageToBase64(imagePath)
 		if encErr != nil {

@@ -817,10 +817,12 @@
   }
 
   // 获取图片完整URL / Get full image URL
+  // 修复：使用环境变量替代硬编码地址
   const getImageUrl = (path: string) => {
     if (!path) return ''
     if (path.startsWith('http')) return path
-    return `http://localhost:48080/uploads/${path}`
+    const baseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BASE_URL || ''
+    return `${baseUrl}/uploads/${path}`
   }
 
   // 生命周期 / Lifecycle

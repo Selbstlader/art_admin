@@ -1,6 +1,6 @@
 <template>
-  <div class="project-create-page">
-    <ElCard shadow="never">
+  <div class="project-create-page art-full-height">
+    <ElCard class="art-table-card" shadow="never">
       <template #header>
         <div class="card-header">
           <ElButton link @click="handleBack">
@@ -113,8 +113,16 @@
   const submitting = ref(false)
 
   // 判断是否为编辑模式 / Check if edit mode
-  const isEdit = computed(() => !!route.params.id)
-  const projectId = computed(() => Number(route.params.id) || 0)
+  // 修复：排除空对象字符串 '{}' 的情况
+  const isEdit = computed(() => {
+    const id = route.params.id
+    return !!id && id !== '{}' && id !== 'new'
+  })
+  const projectId = computed(() => {
+    const id = route.params.id
+    if (!id || id === '{}' || id === 'new') return 0
+    return Number(id) || 0
+  })
 
   // 表单数据 / Form data
   const formData = reactive({
@@ -143,7 +151,7 @@
    ***/
   const getProjectDetail = async () => {
     if (!isEdit.value) return
-
+    if (!projectId.value || projectId.value == 0) return
     loading.value = true
     try {
       const res = (await getDesignerProject(
@@ -244,8 +252,6 @@
 
 <style scoped lang="scss">
   .project-create-page {
-    padding: 16px;
-
     .card-header {
       display: flex;
       align-items: center;

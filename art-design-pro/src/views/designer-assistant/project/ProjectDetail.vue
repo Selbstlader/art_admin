@@ -1,6 +1,6 @@
 <template>
-  <div class="project-detail-page">
-    <ElCard shadow="never" v-loading="loading">
+  <div class="project-detail-page art-full-height">
+    <ElCard class="art-table-card" shadow="never" v-loading="loading">
       <template #header>
         <div class="card-header">
           <div class="left">
@@ -40,8 +40,7 @@
         <div class="workflow-hint">
           <ElAlert type="info" :closable="false" show-icon>
             <template #title>
-              推荐流程：文档分析 → AI生成CAD → CAD预览/编辑 → AI生成效果图 → 创建设计版本 →
-              施工图标注
+              推荐流程：文档分析 → AI生成CAD → CAD预览/编辑 → AI生成效果图 → 创建设计版本
             </template>
           </ElAlert>
         </div>
@@ -97,7 +96,7 @@
               <div class="count" v-if="versionCount">{{ versionCount }} 个版本</div>
             </ElCard>
           </ElCol>
-          <ElCol :span="6">
+          <!-- <ElCol :span="6">
             <ElCard shadow="hover" class="module-card step-6" @click="goToModule('annotation')">
               <div class="step-badge">6</div>
               <ElIcon :size="32"><EditPen /></ElIcon>
@@ -105,7 +104,7 @@
               <div class="desc">对CAD图纸添加施工标注</div>
               <div class="count" v-if="annotationCount">{{ annotationCount }} 个标注</div>
             </ElCard>
-          </ElCol>
+          </ElCol> -->
           <ElCol :span="6">
             <ElCard shadow="hover" class="module-card" @click="goToModule('design-compare')">
               <ElIcon :size="32"><PictureFilled /></ElIcon>
@@ -114,6 +113,13 @@
               <div class="count" v-if="compareResults.length"
                 >{{ compareResults.length }} 个结果</div
               >
+            </ElCard>
+          </ElCol>
+          <ElCol :span="6">
+            <ElCard shadow="hover" class="module-card ai-chat-card" @click="goToModule('ai-chat')">
+              <ElIcon :size="32"><ChatDotRound /></ElIcon>
+              <span>AI设计助手</span>
+              <div class="desc">智能问答，设计规范咨询</div>
             </ElCard>
           </ElCol>
         </ElRow>
@@ -234,7 +240,8 @@
     Goods,
     Cpu,
     EditPen,
-    Collection
+    Collection,
+    ChatDotRound
   } from '@element-plus/icons-vue'
   import dayjs from 'dayjs'
   import {
@@ -263,8 +270,9 @@
     'cad-viewer': '/designer/designer-assistant/cad-viewer/CadUpload',
     render: '/designer/designer-assistant/cad-viewer/CadUpload', // 效果图渲染入口在CAD预览页
     version: '/designer/designer-assistant/version-compare/VersionList',
-    annotation: '/designer/designer-assistant/construction-annotation/AnnotationList',
-    'design-compare': '/designer/designer-assistant/design-compare/CompareUpload'
+    annotation: '/designer/designer-assistant/construction-annotation',
+    'design-compare': '/designer/designer-assistant/design-compare/CompareUpload',
+    'ai-chat': '/designer/designer-assistant/chat/DesignerChat'
   }
 
   const router = useRouter()
@@ -424,8 +432,6 @@
 
 <style scoped lang="scss">
   .project-detail-page {
-    padding: 16px;
-
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -508,7 +514,6 @@
           color: var(--el-color-primary);
         }
 
-        // 不同步骤的颜色区分
         &.step-1 .el-icon {
           color: #409eff;
         }
@@ -526,6 +531,9 @@
         }
         &.step-6 .el-icon {
           color: #9c27b0;
+        }
+        &.ai-chat-card .el-icon {
+          color: #00bcd4;
         }
       }
     }

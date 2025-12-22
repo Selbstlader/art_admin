@@ -1,158 +1,38 @@
 <template>
-  <div class="material-list">
+  <div class="material-list art-full-height">
     <!-- 搜索筛选区域 / Search and filter area -->
-    <el-card class="filter-card" shadow="never">
-      <el-form :model="filterForm" inline>
-        <el-form-item label="关键字">
-          <el-input
-            v-model="filterForm.keyword"
-            placeholder="搜索材料名称/描述"
-            clearable
-            style="width: 200px"
-            @keyup.enter="handleSearch"
-          />
-        </el-form-item>
-        <el-form-item label="分类">
-          <el-select
-            v-model="filterForm.category"
-            placeholder="全部分类"
-            clearable
-            style="width: 140px"
-          >
-            <el-option
-              v-for="cat in categories"
-              :key="cat.category"
-              :label="`${cat.category} (${cat.count})`"
-              :value="cat.category"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="品牌">
-          <el-select
-            v-model="filterForm.brand"
-            placeholder="全部品牌"
-            clearable
-            style="width: 140px"
-          >
-            <el-option
-              v-for="b in brands"
-              :key="b.brand"
-              :label="`${b.brand} (${b.count})`"
-              :value="b.brand"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="价格区间">
-          <el-input-number
-            v-model="filterForm.minPrice"
-            :min="0"
-            placeholder="最低"
-            style="width: 100px"
-            controls-position="right"
-          />
-          <span style="margin: 0 8px">-</span>
-          <el-input-number
-            v-model="filterForm.maxPrice"
-            :min="0"
-            placeholder="最高"
-            style="width: 100px"
-            controls-position="right"
-          />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select
-            v-model="filterForm.status"
-            placeholder="全部状态"
-            clearable
-            style="width: 120px"
-          >
-            <el-option label="启用" value="active" />
-            <el-option label="停用" value="inactive" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+    <ArtSearchBar
+      v-model="filterForm"
+      :items="searchItems"
+      @search="handleSearch"
+      @reset="handleReset"
+    />
 
-    <!-- 操作栏 / Action bar -->
-    <div class="action-bar">
-      <el-button type="primary" @click="handleCreate">
-        <el-icon><Plus /></el-icon>
-        新增材料
-      </el-button>
-      <el-button :disabled="selectedIds.length === 0" @click="handleBatchDelete">
-        <el-icon><Delete /></el-icon>
-        批量删除
-      </el-button>
-      <el-button @click="handleImport">
-        <el-icon><Upload /></el-icon>
-        批量导入
-      </el-button>
-    </div>
+    <ElCard class="art-table-card" shadow="never">
+      <!-- 表格头部 / Table Header -->
+      <ArtTableHeader :loading="loading" @refresh="loadMaterialList">
+        <template #left>
+          <ElSpace wrap>
+            <ElButton type="primary" @click="handleCreate" v-ripple>新增材料</ElButton>
+            <ElButton :disabled="selectedIds.length === 0" @click="handleBatchDelete" v-ripple>
+              批量删除
+            </ElButton>
+            <ElButton @click="handleImport" v-ripple>批量导入</ElButton>
+          </ElSpace>
+        </template>
+      </ArtTableHeader>
 
-    <!-- 材料列表表格 / Material list table -->
-    <el-card shadow="never">
-      <el-table
-        v-loading="loading"
+      <!-- 材料列表表格 / Material list table -->
+      <ArtTable
+        :loading="loading"
         :data="materialList"
-        stripe
+        :columns="columns"
+        :pagination="pagination"
         @selection-change="handleSelectionChange"
-      >
-        <el-table-column type="selection" width="50" />
-        <el-table-column label="图片" width="80">
-          <template #default="{ row }">
-            <el-image
-              v-if="row.imageUrl"
-              :src="row.imageUrl"
-              :preview-src-list="[row.imageUrl]"
-              fit="cover"
-              style="width: 50px; height: 50px; border-radius: 4px"
-            />
-            <div v-else class="no-image">暂无</div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="name" label="材料名称" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="category" label="分类" width="100" />
-        <el-table-column prop="brand" label="品牌" width="100" show-overflow-tooltip />
-        <el-table-column prop="specification" label="规格" width="120" show-overflow-tooltip />
-        <el-table-column label="单价" width="120">
-          <template #default="{ row }">
-            <span class="price">¥{{ row.unitPrice.toFixed(2) }}/{{ row.unit }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="supplier" label="供应商" width="120" show-overflow-tooltip />
-        <el-table-column label="状态" width="80">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">
-              {{ row.status === 'active' ? '启用' : '停用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleView(row)">查看</el-button>
-            <el-button type="primary" link size="small" @click="handleEdit(row)">编辑</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <!-- 分页 / Pagination -->
-      <div class="pagination-wrapper">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ElCard>
 
     <!-- 批量导入弹窗 / Batch import dialog -->
     <el-dialog v-model="importDialogVisible" title="批量导入材料" width="900px" destroy-on-close>
@@ -448,17 +328,20 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, onMounted } from 'vue'
+  import { ref, reactive, computed, onMounted, h } from 'vue'
   import {
     ElMessage,
     ElMessageBox,
+    ElImage,
+    ElTag,
     type FormInstance,
     type FormRules,
     type UploadInstance,
     type UploadFile,
     type UploadRawFile
   } from 'element-plus'
-  import { Plus, Delete, Upload, Download, UploadFilled } from '@element-plus/icons-vue'
+  import { Plus, Download, UploadFilled } from '@element-plus/icons-vue'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import * as XLSX from 'xlsx'
   import {
     getMaterialList,
@@ -475,9 +358,10 @@
     type CreateMaterialRequest
   } from '@/api/designer-material'
   import { uploadFile } from '@/api/file'
+  import type { ColumnOption } from '@/types/component'
 
   /*** 筛选表单 / Filter form ***/
-  const filterForm = reactive({
+  const filterForm = ref({
     keyword: '',
     category: '',
     brand: '',
@@ -485,6 +369,57 @@
     maxPrice: undefined as number | undefined,
     status: ''
   })
+
+  /*** 分类和品牌数据 / Categories and brands data ***/
+  const categories = ref<MaterialCategoryResponse[]>([])
+  const brands = ref<MaterialBrandResponse[]>([])
+
+  /*** 搜索配置 / Search config ***/
+  const searchItems = computed(() => [
+    {
+      label: '关键字',
+      key: 'keyword',
+      type: 'input',
+      placeholder: '搜索材料名称/描述',
+      clearable: true
+    },
+    {
+      label: '分类',
+      key: 'category',
+      type: 'select',
+      props: {
+        placeholder: '全部分类',
+        options: categories.value.map((cat) => ({
+          label: `${cat.category} (${cat.count})`,
+          value: cat.category
+        }))
+      }
+    },
+    {
+      label: '品牌',
+      key: 'brand',
+      type: 'select',
+      props: {
+        placeholder: '全部品牌',
+        options: brands.value.map((b) => ({
+          label: `${b.brand} (${b.count})`,
+          value: b.brand
+        }))
+      }
+    },
+    {
+      label: '状态',
+      key: 'status',
+      type: 'select',
+      props: {
+        placeholder: '全部状态',
+        options: [
+          { label: '启用', value: 'active' },
+          { label: '停用', value: 'inactive' }
+        ]
+      }
+    }
+  ])
 
   /*** 分页 / Pagination ***/
   const pagination = reactive({
@@ -496,9 +431,59 @@
   /*** 数据 / Data ***/
   const loading = ref(false)
   const materialList = ref<MaterialResponse[]>([])
-  const categories = ref<MaterialCategoryResponse[]>([])
-  const brands = ref<MaterialBrandResponse[]>([])
   const selectedIds = ref<number[]>([])
+
+  /*** 表格列配置 / Table columns config ***/
+  const columns = computed<ColumnOption[]>(() => [
+    { type: 'selection', width: 50 },
+    {
+      prop: 'imageUrl',
+      label: '图片',
+      width: 80,
+      formatter: (row: MaterialResponse) =>
+        row.imageUrl
+          ? h(ElImage, {
+              src: row.imageUrl,
+              previewSrcList: [row.imageUrl],
+              fit: 'cover',
+              style: 'width: 50px; height: 50px; border-radius: 4px'
+            })
+          : h('div', { class: 'no-image' }, '暂无')
+    },
+    { prop: 'name', label: '材料名称', minWidth: 150, showOverflowTooltip: true },
+    { prop: 'category', label: '分类', width: 100 },
+    { prop: 'brand', label: '品牌', width: 100, showOverflowTooltip: true },
+    { prop: 'specification', label: '规格', width: 120, showOverflowTooltip: true },
+    {
+      prop: 'unitPrice',
+      label: '单价',
+      width: 120,
+      formatter: (row: MaterialResponse) =>
+        h('span', { class: 'price' }, `¥${row.unitPrice.toFixed(2)}/${row.unit}`)
+    },
+    { prop: 'supplier', label: '供应商', width: 120, showOverflowTooltip: true },
+    {
+      prop: 'status',
+      label: '状态',
+      width: 80,
+      formatter: (row: MaterialResponse) =>
+        h(ElTag, { type: row.status === 'active' ? 'success' : 'info', size: 'small' }, () =>
+          row.status === 'active' ? '启用' : '停用'
+        )
+    },
+    {
+      prop: 'operation',
+      label: '操作',
+      width: 180,
+      fixed: 'right',
+      formatter: (row: MaterialResponse) =>
+        h('div', { class: 'flex gap-1' }, [
+          h(ArtButtonTable, { type: 'view', onClick: () => handleView(row) }),
+          h(ArtButtonTable, { type: 'edit', onClick: () => handleEdit(row) }),
+          h(ArtButtonTable, { type: 'delete', onClick: () => handleDelete(row) })
+        ])
+    }
+  ])
 
   /*** 弹窗 / Dialog ***/
   const dialogVisible = ref(false)
@@ -623,12 +608,12 @@
       const res: any = await getMaterialList({
         current: pagination.current,
         size: pagination.size,
-        keyword: filterForm.keyword || undefined,
-        category: filterForm.category || undefined,
-        brand: filterForm.brand || undefined,
-        minPrice: filterForm.minPrice,
-        maxPrice: filterForm.maxPrice,
-        status: filterForm.status || undefined
+        keyword: filterForm.value.keyword || undefined,
+        category: filterForm.value.category || undefined,
+        brand: filterForm.value.brand || undefined,
+        minPrice: filterForm.value.minPrice,
+        maxPrice: filterForm.value.maxPrice,
+        status: filterForm.value.status || undefined
       })
       materialList.value = res.data?.records || []
       pagination.total = res.data?.total || 0
@@ -661,22 +646,25 @@
 
   // 重置 / Reset
   const handleReset = () => {
-    filterForm.keyword = ''
-    filterForm.category = ''
-    filterForm.brand = ''
-    filterForm.minPrice = undefined
-    filterForm.maxPrice = undefined
-    filterForm.status = ''
+    filterForm.value = {
+      keyword: '',
+      category: '',
+      brand: '',
+      minPrice: undefined,
+      maxPrice: undefined,
+      status: ''
+    }
     handleSearch()
   }
 
   // 分页变化 / Pagination change
-  const handleSizeChange = () => {
-    pagination.current = 1
+  const handleSizeChange = (row: any) => {
+    pagination.size = row
     loadMaterialList()
   }
 
-  const handleCurrentChange = () => {
+  const handleCurrentChange = (row: any) => {
+    pagination.current = row
     loadMaterialList()
   }
 
@@ -1010,24 +998,6 @@
 
 <style scoped lang="scss">
   .material-list {
-    padding: 16px;
-
-    .filter-card {
-      margin-bottom: 16px;
-    }
-
-    .action-bar {
-      margin-bottom: 16px;
-      display: flex;
-      gap: 12px;
-    }
-
-    .pagination-wrapper {
-      margin-top: 16px;
-      display: flex;
-      justify-content: flex-end;
-    }
-
     .no-image {
       width: 50px;
       height: 50px;

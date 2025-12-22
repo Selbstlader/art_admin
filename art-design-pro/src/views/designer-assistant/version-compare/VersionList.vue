@@ -1,100 +1,35 @@
 <template>
-  <div class="version-list-page">
-    <ElCard shadow="never">
-      <template #header>
-        <div class="card-header">
-          <div class="left">
+  <div class="version-list-page art-full-height">
+    <ElCard class="art-table-card" shadow="never">
+      <!-- 表格头部 / Table Header -->
+      <ArtTableHeader :loading="loading" @refresh="loadVersions">
+        <template #left>
+          <ElSpace wrap>
             <ElButton link @click="handleBack">
               <ElIcon><ArrowLeft /></ElIcon>
               返回项目
             </ElButton>
-            <span class="title">设计版本管理</span>
-          </div>
-          <div class="right">
-            <ElButton type="primary" @click="handleCreate">
-              <ElIcon><Plus /></ElIcon>
-              创建新版本
-            </ElButton>
-            <ElButton @click="handleCompare" :disabled="selectedVersions.length !== 2">
-              <ElIcon><Switch /></ElIcon>
-              对比选中版本
-            </ElButton>
-          </div>
-        </div>
-      </template>
+            <span class="page-title">设计版本管理</span>
+          </ElSpace>
+        </template>
+        <template #right>
+          <ElButton type="primary" @click="handleCreate" v-ripple>创建新版本</ElButton>
+          <ElButton @click="handleCompare" :disabled="selectedVersions.length !== 2" v-ripple>
+            对比选中版本
+          </ElButton>
+        </template>
+      </ArtTableHeader>
 
       <!-- 版本列表 / Version List -->
-      <ElTable
-        v-loading="loading"
+      <ArtTable
+        :loading="loading"
         :data="versions"
-        stripe
+        :columns="columns"
+        :pagination="pagination"
         @selection-change="handleSelectionChange"
-      >
-        <ElTableColumn type="selection" width="55" />
-        <ElTableColumn prop="versionNumber" label="版本号" width="100">
-          <template #default="{ row }">
-            <ElTag type="primary">V{{ row.versionNumber }}</ElTag>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn prop="versionName" label="版本名称" min-width="150" />
-        <ElTableColumn label="设计图" width="120">
-          <template #default="{ row }">
-            <div class="preview-images" v-if="row.designImages?.length">
-              <ElImage
-                v-for="(img, idx) in row.designImages.slice(0, 2)"
-                :key="idx"
-                :src="img.url"
-                :preview-src-list="row.designImages.map((i: any) => i.url)"
-                fit="cover"
-                class="preview-thumb"
-              />
-              <span v-if="row.designImages.length > 2" class="more-count">
-                +{{ row.designImages.length - 2 }}
-              </span>
-            </div>
-            <span v-else class="text-secondary">-</span>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="CAD文件" width="100">
-          <template #default="{ row }">
-            <ElTag v-if="row.cadFileIds?.length" type="info">
-              {{ row.cadFileIds.length }} 个
-            </ElTag>
-            <span v-else class="text-secondary">-</span>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn prop="description" label="版本说明" min-width="200" show-overflow-tooltip />
-        <ElTableColumn prop="status" label="状态" width="100">
-          <template #default="{ row }">
-            <ElTag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</ElTag>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn prop="createdAt" label="创建时间" width="170">
-          <template #default="{ row }">
-            {{ formatDate(row.createdAt) }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="操作" width="200" fixed="right">
-          <template #default="{ row }">
-            <ElButton link type="primary" @click="handleView(row)">查看</ElButton>
-            <ElButton link type="primary" @click="handleEdit(row)">编辑</ElButton>
-            <ElButton link type="danger" @click="handleDelete(row)">删除</ElButton>
-          </template>
-        </ElTableColumn>
-      </ElTable>
-
-      <!-- 分页 / Pagination -->
-      <div class="pagination-wrapper">
-        <ElPagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
     </ElCard>
 
     <!-- 创建/编辑版本对话框 / Create/Edit Version Dialog -->
@@ -180,6 +115,64 @@
     <ElDialog v-model="detailDialogVisible" title="版本详情" width="800px">
       <VersionDetail v-if="currentVersion" :version="currentVersion" />
     </ElDialog>
+
+    <!-- 历史对比记录 / Compare History -->
+    <ElCard shadow="never" class="compare-history-card">
+      <template #header>
+        <div class="card-header">
+          <span class="title">历史对比记录</span>
+          <ElButton
+            link
+            type="primary"
+            @click="loadCompareHistory"
+            :loading="compareHistoryLoading"
+          >
+            <ElIcon><Refresh /></ElIcon>
+            刷新
+          </ElButton>
+        </div>
+      </template>
+
+      <ElTable v-loading="compareHistoryLoading" :data="compareHistory" stripe>
+        <ElTableColumn label="对比版本" min-width="200">
+          <template #default="{ row }">
+            <div class="compare-versions">
+              <ElTag type="primary"
+                >V{{ row.versionA?.versionNumber }} {{ row.versionA?.versionName }}</ElTag
+              >
+              <ElIcon class="vs-icon"><Right /></ElIcon>
+              <ElTag type="success"
+                >V{{ row.versionB?.versionNumber }} {{ row.versionB?.versionName }}</ElTag
+              >
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="summary" label="对比摘要" min-width="250" show-overflow-tooltip />
+        <ElTableColumn prop="compareStatus" label="状态" width="100">
+          <template #default="{ row }">
+            <ElTag :type="getCompareStatusType(row.compareStatus)">
+              {{ getCompareStatusText(row.compareStatus) }}
+            </ElTag>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="createdAt" label="对比时间" width="170">
+          <template #default="{ row }">
+            {{ formatDate(row.createdAt) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="操作" width="150" fixed="right">
+          <template #default="{ row }">
+            <ElButton link type="primary" @click="handleViewCompare(row)">查看详情</ElButton>
+            <ElButton link type="danger" @click="handleDeleteCompare(row)">删除</ElButton>
+          </template>
+        </ElTableColumn>
+      </ElTable>
+
+      <ElEmpty
+        v-if="!compareHistoryLoading && compareHistory.length === 0"
+        description="暂无对比记录"
+      />
+    </ElCard>
   </div>
 </template>
 
@@ -189,7 +182,7 @@
    * 设计版本列表组件（重构版）
    * Requirements: 7.1, 7.2
    ***/
-  import { ref, reactive, computed, onMounted, watch } from 'vue'
+  import { ref, reactive, computed, onMounted, watch, h } from 'vue'
 
   // 定义响应类型 / Define response type
   interface BaseResponse<T = unknown> {
@@ -202,21 +195,28 @@
   import {
     ElMessage,
     ElMessageBox,
+    ElTag,
+    ElImage,
     type FormInstance,
     type FormRules,
     type UploadUserFile
   } from 'element-plus'
-  import { ArrowLeft, Switch, Plus } from '@element-plus/icons-vue'
+  import { ArrowLeft, Plus, Refresh, Right } from '@element-plus/icons-vue'
+  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import dayjs from 'dayjs'
   import {
     getDesignVersionList,
     createDesignVersion,
     updateDesignVersion,
     deleteDesignVersion,
-    type DesignVersionResponse
+    getVersionCompareList,
+    deleteVersionCompare,
+    type DesignVersionResponse,
+    type VersionCompareResponse
   } from '@/api/designer-version'
   import { getCadFileList, type CadFileResponse } from '@/api/designer-cad'
   import VersionDetail from './VersionDetail.vue'
+  import type { ColumnOption } from '@/types/component'
 
   const router = useRouter()
   const route = useRoute()
@@ -235,15 +235,15 @@
   const cadFilesLoading = ref(false)
   const designImageList = ref<UploadUserFile[]>([])
   const formRef = ref<FormInstance>()
+  const compareHistory = ref<VersionCompareResponse[]>([])
+  const compareHistoryLoading = ref(false)
 
   /*** Upload configuration ***/
-  // 上传地址（带认证）
   const uploadUrl = computed(() => {
     const baseUrl = import.meta.env.VITE_API_URL || ''
     return `${baseUrl}/api/file/upload`
   })
 
-  // 上传请求头（携带 token）
   const uploadHeaders = computed(() => ({
     Authorization: `Bearer ${userStore.accessToken}`
   }))
@@ -254,8 +254,97 @@
     total: 0
   })
 
-  // 获取项目ID / Get project ID
   const projectId = ref<number>(0)
+
+  // 状态配置 / Status config
+  const STATUS_CONFIG = {
+    draft: { type: 'info' as const, text: '草稿' },
+    submitted: { type: 'warning' as const, text: '已提交' },
+    approved: { type: 'success' as const, text: '已批准' },
+    rejected: { type: 'danger' as const, text: '已拒绝' }
+  } as const
+
+  // 格式化日期 / Format date
+  const formatDate = (date: string) => {
+    return date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-'
+  }
+
+  // 表格列配置 / Table columns config
+  const columns = computed<ColumnOption[]>(() => [
+    { type: 'selection', width: 55 },
+    {
+      prop: 'versionNumber',
+      label: '版本号',
+      width: 100,
+      formatter: (row: DesignVersionResponse) =>
+        h(ElTag, { type: 'primary' }, () => `V${row.versionNumber}`)
+    },
+    { prop: 'versionName', label: '版本名称', minWidth: 150 },
+    {
+      prop: 'designImages',
+      label: '设计图',
+      width: 120,
+      formatter: (row: DesignVersionResponse) => {
+        if (row.designImages?.length) {
+          return h('div', { class: 'preview-images' }, [
+            ...row.designImages.slice(0, 2).map((img: any, idx: number) =>
+              h(ElImage, {
+                key: idx,
+                src: img.url,
+                previewSrcList: row.designImages!.map((i: any) => i.url),
+                fit: 'cover',
+                class: 'preview-thumb'
+              })
+            ),
+            row.designImages.length > 2
+              ? h('span', { class: 'more-count' }, `+${row.designImages.length - 2}`)
+              : null
+          ])
+        }
+        return h('span', { class: 'text-secondary' }, '-')
+      }
+    },
+    {
+      prop: 'cadFileIds',
+      label: 'CAD文件',
+      width: 100,
+      formatter: (row: DesignVersionResponse) =>
+        row.cadFileIds?.length
+          ? h(ElTag, { type: 'info' }, () => `${row.cadFileIds!.length} 个`)
+          : h('span', { class: 'text-secondary' }, '-')
+    },
+    { prop: 'description', label: '版本说明', minWidth: 200, showOverflowTooltip: true },
+    {
+      prop: 'status',
+      label: '状态',
+      width: 100,
+      formatter: (row: DesignVersionResponse) => {
+        const config = STATUS_CONFIG[row.status as keyof typeof STATUS_CONFIG] || {
+          type: 'info' as const,
+          text: row.status
+        }
+        return h(ElTag, { type: config.type }, () => config.text)
+      }
+    },
+    {
+      prop: 'createdAt',
+      label: '创建时间',
+      width: 170,
+      formatter: (row: DesignVersionResponse) => formatDate(row.createdAt)
+    },
+    {
+      prop: 'operation',
+      label: '操作',
+      width: 180,
+      fixed: 'right',
+      formatter: (row: DesignVersionResponse) =>
+        h('div', { class: 'flex gap-1' }, [
+          h(ArtButtonTable, { type: 'view', onClick: () => handleView(row) }),
+          h(ArtButtonTable, { type: 'edit', onClick: () => handleEdit(row) }),
+          h(ArtButtonTable, { type: 'delete', onClick: () => handleDelete(row) })
+        ])
+    }
+  ])
 
   const versionForm = reactive({
     id: 0,
@@ -318,6 +407,85 @@
     } finally {
       cadFilesLoading.value = false
     }
+  }
+
+  /*** Load compare history ***/
+  const loadCompareHistory = async () => {
+    if (!projectId.value) return
+
+    compareHistoryLoading.value = true
+    try {
+      const res = (await getVersionCompareList({
+        projectId: projectId.value,
+        current: 1,
+        size: 20
+      })) as unknown as BaseResponse<{ records: VersionCompareResponse[]; total: number }>
+
+      if (res.code === 200 && res.data) {
+        compareHistory.value = res.data.records || []
+      } else {
+        console.error('获取对比历史失败:', res.msg)
+      }
+    } catch (error) {
+      console.error('获取对比历史失败:', error)
+    } finally {
+      compareHistoryLoading.value = false
+    }
+  }
+
+  /*** Handle view compare detail ***/
+  const handleViewCompare = (row: VersionCompareResponse) => {
+    router.push({
+      path: '/designer/designer-assistant/version-compare/VersionDiff',
+      query: {
+        compareId: row.id
+      }
+    })
+  }
+
+  /*** Handle delete compare record ***/
+  const handleDeleteCompare = async (row: VersionCompareResponse) => {
+    try {
+      await ElMessageBox.confirm('确定要删除这条对比记录吗？此操作不可恢复。', '删除确认', {
+        type: 'warning'
+      })
+
+      const res = (await deleteVersionCompare(row.id)) as unknown as BaseResponse<null>
+      if (res.code === 200) {
+        ElMessage.success('删除成功')
+        loadCompareHistory()
+      } else {
+        ElMessage.error(res.msg || '删除失败')
+      }
+    } catch (error) {
+      if (error !== 'cancel') {
+        console.error('删除对比记录失败:', error)
+        ElMessage.error('删除失败')
+      }
+    }
+  }
+
+  /*** Get compare status type ***/
+  type TagType = 'success' | 'warning' | 'info' | 'danger' | 'primary'
+  const getCompareStatusType = (status: string): TagType => {
+    const map: Record<string, TagType> = {
+      pending: 'warning',
+      processing: 'primary',
+      completed: 'success',
+      failed: 'danger'
+    }
+    return map[status] || 'info'
+  }
+
+  /*** Get compare status text ***/
+  const getCompareStatusText = (status: string) => {
+    const map: Record<string, string> = {
+      pending: '待分析',
+      processing: '分析中',
+      completed: '已完成',
+      failed: '分析失败'
+    }
+    return map[status] || status
   }
 
   /*** Handle selection change ***/
@@ -483,32 +651,7 @@
   }
 
   /*** Format date ***/
-  const formatDate = (date: string) => {
-    return date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-'
-  }
-
-  /*** Get status type ***/
-  type TagType = 'success' | 'warning' | 'info' | 'danger' | 'primary'
-  const getStatusType = (status: string): TagType => {
-    const map: Record<string, TagType> = {
-      draft: 'info',
-      submitted: 'warning',
-      approved: 'success',
-      rejected: 'danger'
-    }
-    return map[status] || 'info'
-  }
-
-  /*** Get status text ***/
-  const getStatusText = (status: string) => {
-    const map: Record<string, string> = {
-      draft: '草稿',
-      submitted: '已提交',
-      approved: '已批准',
-      rejected: '已拒绝'
-    }
-    return map[status] || status
-  }
+  // 已在上方定义
 
   // 监听路由参数 / Watch route params
   watch(
@@ -518,6 +661,7 @@
         projectId.value = Number(newVal)
         loadVersions()
         loadProjectCadFiles()
+        loadCompareHistory()
       }
     },
     { immediate: true }
@@ -528,34 +672,20 @@
       projectId.value = Number(route.query.projectId)
       loadVersions()
       loadProjectCadFiles()
+      loadCompareHistory()
     }
   })
 </script>
 
 <style scoped lang="scss">
   .version-list-page {
-    padding: 16px;
+    // 改为自动高度，允许内容撑开 / Change to auto height, allow content to expand
+    height: auto !important;
+    min-height: var(--art-full-height);
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      .left {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-
-        .title {
-          font-size: 16px;
-          font-weight: 500;
-        }
-      }
-
-      .right {
-        display: flex;
-        gap: 12px;
-      }
+    .page-title {
+      font-size: 16px;
+      font-weight: 500;
     }
 
     .preview-images {
@@ -579,12 +709,6 @@
       color: var(--el-text-color-secondary);
     }
 
-    .pagination-wrapper {
-      margin-top: 16px;
-      display: flex;
-      justify-content: flex-end;
-    }
-
     .upload-tip {
       font-size: 12px;
       color: var(--el-text-color-secondary);
@@ -596,6 +720,53 @@
       justify-content: space-between;
       align-items: center;
       width: 100%;
+    }
+
+    // 版本列表卡片不使用 flex:1，改为自适应高度 / Version list card uses auto height instead of flex:1
+    :deep(.art-table-card) {
+      flex: none;
+      height: auto;
+      min-height: 300px;
+
+      .el-card__body {
+        height: auto;
+        overflow: visible;
+      }
+
+      .art-table {
+        height: auto !important;
+
+        .el-table {
+          height: auto !important;
+        }
+      }
+    }
+  }
+
+  .compare-history-card {
+    margin-top: 16px;
+    flex: none;
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .title {
+        font-size: 16px;
+        font-weight: 500;
+      }
+    }
+
+    .compare-versions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .vs-icon {
+        font-size: 16px;
+        color: var(--el-text-color-secondary);
+      }
     }
   }
 </style>

@@ -548,6 +548,27 @@ func EncodeImageToBase64(filePath string) (string, error) {
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
+// EncodeImageFromURL 从URL获取图片并编码为Base64
+// Fetch image from URL and encode to Base64
+func EncodeImageFromURL(imageURL string) (string, error) {
+	resp, err := http.Get(imageURL)
+	if err != nil {
+		return "", fmt.Errorf("获取图片失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("获取图片失败，状态码: %d", resp.StatusCode)
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("读取图片数据失败: %w", err)
+	}
+
+	return base64.StdEncoding.EncodeToString(data), nil
+}
+
 // EncodeImageToBase64FromBytes 将图片字节数据编码为Base64
 // Encode image bytes to Base64
 func EncodeImageToBase64FromBytes(data []byte) string {
@@ -822,4 +843,187 @@ func mergeChunkResults(results []ChunkResult) string {
 // Auto chunking with default configuration
 func (c *Client) ChatWithAutoChunking(systemPrompt, userPrompt string) (*ChunkedResponse, error) {
 	return c.ChatWithChunking(systemPrompt, userPrompt, DefaultChunkConfig)
+}
+
+// =====================================================
+// 流式输出功能 / Streaming output functionality
+// =====================================================
+
+// StreamChunk 流式输出块
+// Stream chunk
+type StreamChunk struct {
+	Content      string `json:"content"`
+	FinishReason string `json:"finish_reason,omitempty"`
+	Done         bool   `json:"done"`
+}
+
+// StreamCallback 流式输出回调函数
+// Stream callback function
+type StreamCallback func(chunk StreamChunk) error
+
+// ChatStream 发送流式聊天请求
+// Send streaming chat request
+func (c *Client) ChatStream(messages []ChatMessage, callback StreamCallback) (*ChatResponse, error) {
+	req := ChatRequest{
+		Model:       c.model,
+		Messages:    messages,
+		MaxTokens:   c.maxTokens,
+		Temperature: c.temperature,
+		Stream:      true,
+	}
+
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("序列化请求失败: %w", err)
+	}
+
+	httpReq, err := http.NewRequest("POST", c.baseURL+"/chat/completions", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("创建请求失败: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
+	httpReq.Header.Set("Accept", "text/event-stream")
+
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("网络请求失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("HTTP错误: %d, body: %s", resp.StatusCode, string(body))
+	}
+
+	// 解析SSE流 / Parse SSE stream
+	reader := resp.Body
+	var fullContent strings.Builder
+	var totalTokens int
+
+	buf := make([]byte, 4096)
+	var lineBuffer strings.Builder
+
+	for {
+		n, err := reader.Read(buf)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, fmt.Errorf("读取流失败: %w", err)
+		}
+
+		lineBuffer.Write(buf[:n])
+		lines := strings.Split(lineBuffer.String(), "\n")
+
+		// 保留最后一个不完整的行 / Keep the last incomplete line
+		if !strings.HasSuffix(lineBuffer.String(), "\n") {
+			lineBuffer.Reset()
+			lineBuffer.WriteString(lines[len(lines)-1])
+			lines = lines[:len(lines)-1]
+		} else {
+			lineBuffer.Reset()
+		}
+
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+
+			// 处理SSE数据行 / Process SSE data line
+			if strings.HasPrefix(line, "data: ") {
+				data := strings.TrimPrefix(line, "data: ")
+				if data == "[DONE]" {
+					// 流结束 / Stream ended
+					if callback != nil {
+						callback(StreamChunk{Done: true})
+					}
+					break
+				}
+
+				// 解析JSON / Parse JSON
+				var streamResp struct {
+					ID      string `json:"id"`
+					Object  string `json:"object"`
+					Created int64  `json:"created"`
+					Model   string `json:"model"`
+					Choices []struct {
+						Index int `json:"index"`
+						Delta struct {
+							Content string `json:"content"`
+						} `json:"delta"`
+						FinishReason string `json:"finish_reason"`
+					} `json:"choices"`
+					Usage struct {
+						TotalTokens int `json:"total_tokens"`
+					} `json:"usage"`
+				}
+
+				if err := json.Unmarshal([]byte(data), &streamResp); err != nil {
+					continue // 跳过无法解析的行 / Skip unparseable lines
+				}
+
+				if len(streamResp.Choices) > 0 {
+					content := streamResp.Choices[0].Delta.Content
+					finishReason := streamResp.Choices[0].FinishReason
+
+					if content != "" {
+						fullContent.WriteString(content)
+						if callback != nil {
+							if err := callback(StreamChunk{
+								Content:      content,
+								FinishReason: finishReason,
+								Done:         finishReason == "stop",
+							}); err != nil {
+								return nil, err
+							}
+						}
+					}
+
+					if finishReason == "stop" {
+						if callback != nil {
+							callback(StreamChunk{Done: true})
+						}
+					}
+				}
+
+				if streamResp.Usage.TotalTokens > 0 {
+					totalTokens = streamResp.Usage.TotalTokens
+				}
+			}
+		}
+	}
+
+	// 构建响应 / Build response
+	return &ChatResponse{
+		Choices: []struct {
+			Index   int `json:"index"`
+			Message struct {
+				Role    string `json:"role"`
+				Content string `json:"content"`
+			} `json:"message"`
+			FinishReason string `json:"finish_reason"`
+		}{
+			{
+				Index: 0,
+				Message: struct {
+					Role    string `json:"role"`
+					Content string `json:"content"`
+				}{
+					Role:    "assistant",
+					Content: fullContent.String(),
+				},
+				FinishReason: "stop",
+			},
+		},
+		Usage: struct {
+			PromptTokens     int `json:"prompt_tokens"`
+			CompletionTokens int `json:"completion_tokens"`
+			TotalTokens      int `json:"total_tokens"`
+		}{
+			TotalTokens: totalTokens,
+		},
+	}, nil
 }

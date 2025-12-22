@@ -3,59 +3,59 @@
     <!-- 工具栏 / Toolbar -->
     <div class="editor-toolbar">
       <el-button-group>
-        <el-button
-          :type="currentTool === 'select' ? 'primary' : 'default'"
-          @click="setTool('select')"
-        >
+        <el-button :type="currentTool === 'select' ? 'primary' : 'default'" @click="setTool('select')">
           <el-icon><Select /></el-icon>
           选择
         </el-button>
-        <el-button
-          :type="currentTool === 'dimension' ? 'primary' : 'default'"
-          @click="setTool('dimension')"
-        >
-          <el-icon>
-            <Ruler />
-          </el-icon>
+        <el-button :type="currentTool === 'dimension' ? 'primary' : 'default'" @click="setTool('dimension')">
+          <el-icon><Edit /></el-icon>
           尺寸标注
         </el-button>
-        <el-button
-          :type="currentTool === 'material' ? 'primary' : 'default'"
-          @click="setTool('material')"
-        >
-          <el-icon>
-            <Grid />
-          </el-icon>
+        <el-button :type="currentTool === 'material' ? 'primary' : 'default'" @click="setTool('material')">
+          <el-icon><Grid /></el-icon>
           材料标注
         </el-button>
-        <el-button
-          :type="currentTool === 'process' ? 'primary' : 'default'"
-          @click="setTool('process')"
-        >
-          <el-icon>
-            <Setting />
-          </el-icon>
+        <el-button :type="currentTool === 'process' ? 'primary' : 'default'" @click="setTool('process')">
+          <el-icon><Setting /></el-icon>
           工艺说明
+        </el-button>
+        <el-button :type="currentTool === 'line' ? 'primary' : 'default'" @click="setTool('line')">
+          <el-icon><Share /></el-icon>
+          引线
+        </el-button>
+        <el-button :type="currentTool === 'text' ? 'primary' : 'default'" @click="setTool('text')">
+          <el-icon><EditPen /></el-icon>
+          文字
         </el-button>
       </el-button-group>
 
+      <!-- 缩放控制 / Zoom controls -->
+      <div class="zoom-controls">
+        <el-button-group>
+          <el-button size="small" @click="zoomOut" :disabled="zoomLevel <= 0.25">
+            <el-icon><ZoomOut /></el-icon>
+          </el-button>
+          <el-button size="small" disabled style="min-width: 60px">{{ Math.round(zoomLevel * 100) }}%</el-button>
+          <el-button size="small" @click="zoomIn" :disabled="zoomLevel >= 3">
+            <el-icon><ZoomIn /></el-icon>
+          </el-button>
+          <el-button size="small" @click="resetZoom">
+            <el-icon><RefreshRight /></el-icon>
+          </el-button>
+        </el-button-group>
+      </div>
+
       <div class="toolbar-actions">
         <el-button @click="handleAutoAnnotate" :loading="analyzing">
-          <el-icon>
-            <MagicStick />
-          </el-icon>
+          <el-icon><MagicStick /></el-icon>
           自动标注
         </el-button>
         <el-button @click="handleExport">
-          <el-icon>
-            <Download />
-          </el-icon>
+          <el-icon><Download /></el-icon>
           导出
         </el-button>
         <el-button type="primary" @click="handleSave" :loading="saving">
-          <el-icon>
-            <Check />
-          </el-icon>
+          <el-icon><Check /></el-icon>
           保存
         </el-button>
       </div>
@@ -64,35 +64,87 @@
     <!-- 主编辑区域 / Main editing area -->
     <div class="editor-main">
       <!-- 画布区域 / Canvas area -->
-      <div class="canvas-container" ref="canvasContainer">
+      <div class="canvas-container" ref="canvasContainer" @wheel="handleWheel">
         <div
           class="canvas-wrapper"
-          :style="canvasStyle"
+          ref="canvasWrapper"
+          :class="{ 'drawing-mode': currentTool !== 'select' }"
+          :style="canvasWrapperStyle"
           @mousedown="handleCanvasMouseDown"
           @mousemove="handleCanvasMouseMove"
           @mouseup="handleCanvasMouseUp"
+          @mouseleave="handleCanvasMouseLeave"
         >
           <!-- 背景图片 / Background image -->
-          <img v-if="imagePath" :src="imagePath" class="background-image" @load="handleImageLoad" />
+          <img
+            v-if="imagePath"
+            :src="imagePath"
+            class="background-image"
+            ref="backgroundImage"
+            @load="handleImageLoad"
+            draggable="false"
+          />
 
           <!-- 标注层 / Annotation layer -->
-          <svg class="annotation-layer" :viewBox="svgViewBox">
-            <!-- 渲染标注项 / Render annotation items -->
+          <svg
+            class="annotation-layer"
+            :width="displayWidth"
+            :height="displayHeight"
+            :viewBox="svgViewBox"
+          >
+            <!-- 渲染已有标注项 / Render existing annotation items -->
             <g v-for="item in annotations" :key="item.id">
               <AnnotationItemRenderer
                 :item="item"
                 :selected="selectedItemId === item.id"
+                :editing="editingItemId === item.id"
                 @select="handleSelectItem"
                 @update="handleUpdateItem"
                 @delete="handleDeleteItem"
+                @startEdit="handleStartEdit"
               />
             </g>
 
             <!-- 正在绘制的标注 / Currently drawing annotation -->
             <g v-if="drawingItem">
+              <!-- 引线绘制预览 / Line drawing preview -->
+              <line
+                v-if="drawingItem.properties?.lineEnd"
+                :x1="drawingItem.properties.lineStart?.x || drawingItem.position.x"
+                :y1="drawingItem.properties.lineStart?.y || drawingItem.position.y"
+                :x2="drawingItem.properties.lineEnd.x"
+                :y2="drawingItem.properties.lineEnd.y"
+                :stroke="drawingItem.style.lineColor"
+                :stroke-width="drawingItem.style.lineWidth"
+                stroke-dasharray="5,5"
+              />
               <AnnotationItemRenderer :item="drawingItem" :drawing="true" />
             </g>
           </svg>
+
+          <!-- 文字输入框 / Text input overlay -->
+          <div
+            v-if="showTextInput"
+            class="text-input-overlay"
+            :style="textInputStyle"
+          >
+            <textarea
+              ref="textInputRef"
+              v-model="textInputValue"
+              class="text-input"
+              :style="textInputTextStyle"
+              @blur="handleTextInputBlur"
+              @keydown.enter.exact="handleTextInputConfirm"
+              @keydown.escape="handleTextInputCancel"
+              placeholder="输入标注内容..."
+              autofocus
+            />
+          </div>
+
+          <!-- 绘制提示 / Drawing hint -->
+          <div v-if="currentTool !== 'select' && !isDrawing" class="drawing-hint">
+            {{ getDrawingHint(currentTool) }}
+          </div>
         </div>
       </div>
 
@@ -103,9 +155,7 @@
             <div class="card-header">
               <span>标注属性</span>
               <el-button type="danger" size="small" @click="handleDeleteSelected">
-                <el-icon>
-                  <Delete />
-                </el-icon>
+                <el-icon><Delete /></el-icon>
               </el-button>
             </div>
           </template>
@@ -116,11 +166,18 @@
                 <el-option label="尺寸标注" value="dimension" />
                 <el-option label="材料标注" value="material" />
                 <el-option label="工艺说明" value="process" />
+                <el-option label="引线" value="line" />
+                <el-option label="文字" value="text" />
               </el-select>
             </el-form-item>
 
             <el-form-item label="内容">
-              <el-input v-model="selectedItem.content" @change="handlePropertyChange" />
+              <el-input
+                v-model="selectedItem.content"
+                type="textarea"
+                :rows="2"
+                @change="handlePropertyChange"
+              />
             </el-form-item>
 
             <el-form-item label="X坐标">
@@ -135,7 +192,7 @@
               <el-input-number
                 v-model="selectedItem.style.fontSize"
                 :min="8"
-                :max="48"
+                :max="72"
                 @change="handlePropertyChange"
               />
             </el-form-item>
@@ -153,6 +210,15 @@
                 @change="handlePropertyChange"
               />
             </el-form-item>
+
+            <el-form-item label="线条粗细">
+              <el-input-number
+                v-model="selectedItem.style.lineWidth"
+                :min="1"
+                :max="10"
+                @change="handlePropertyChange"
+              />
+            </el-form-item>
           </el-form>
         </el-card>
 
@@ -162,20 +228,26 @@
             <span>标注列表 ({{ annotations.length }})</span>
           </template>
 
-          <el-scrollbar height="300px">
+          <el-scrollbar height="400px">
+            <div v-if="annotations.length === 0" class="empty-list">
+              暂无标注，请选择工具后在画布上绘制
+            </div>
             <div
               v-for="item in annotations"
               :key="item.id"
               class="annotation-list-item"
               :class="{ active: selectedItemId === item.id }"
               @click="handleSelectItem(item.id)"
+              @dblclick="handleStartEdit(item.id)"
             >
-              <el-icon>
-                <Ruler v-if="item.type === 'dimension'" />
+              <el-icon class="item-icon">
+                <Edit v-if="item.type === 'dimension'" />
                 <Grid v-else-if="item.type === 'material'" />
-                <Setting v-else />
+                <Setting v-else-if="item.type === 'process'" />
+                <Share v-else-if="item.type === 'line'" />
+                <EditPen v-else />
               </el-icon>
-              <span class="item-content">{{ item.content }}</span>
+              <span class="item-content">{{ item.content || '(空)' }}</span>
               <el-tag size="small" :type="item.isGenerated ? 'info' : 'success'">
                 {{ item.isGenerated ? '自动' : '手动' }}
               </el-tag>
@@ -217,17 +289,22 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, watch, nextTick } from 'vue'
   import { ElMessage } from 'element-plus'
   import {
     Select,
-    Ruler,
+    Edit,
     Grid,
     Setting,
     MagicStick,
     Download,
     Check,
-    Delete
+    Delete,
+    Share,
+    EditPen,
+    ZoomIn,
+    ZoomOut,
+    RefreshRight
   } from '@element-plus/icons-vue'
   import AnnotationItemRenderer from './AnnotationItemRenderer.vue'
   import {
@@ -243,13 +320,9 @@
     getExportFormats,
     analyzeConstructionDrawing
   } from '@/api/designer-construction-annotation'
+  import { useRoute } from 'vue-router'
 
-  /*** Component Props ***/
-  const props = defineProps<{
-    annotationId: number
-    projectId: number
-    cadFileId: number
-  }>()
+  const route = useRoute()
 
   /*** Component Emits ***/
   const emit = defineEmits<{
@@ -257,10 +330,16 @@
     (e: 'exported', result: any): void
   }>()
 
+  /*** Computed route params ***/
+  const annotationId = computed(() => Number(route.query.annotationId) || 0)
+  const projectId = computed(() => Number(route.query.projectId) || 0)
+  const cadFileId = computed(() => Number(route.query.cadFileId) || 0)
+
   /*** Reactive State ***/
   const currentTool = ref<string>('select')
   const annotations = ref<AnnotationItem[]>([])
   const selectedItemId = ref<string | null>(null)
+  const editingItemId = ref<string | null>(null)
   const imagePath = ref<string>('')
   const analyzing = ref(false)
   const saving = ref(false)
@@ -276,11 +355,26 @@
 
   // 画布相关状态 / Canvas related state
   const canvasContainer = ref<HTMLElement | null>(null)
+  const canvasWrapper = ref<HTMLElement | null>(null)
+  const backgroundImage = ref<HTMLImageElement | null>(null)
   const imageWidth = ref(800)
   const imageHeight = ref(600)
+  const displayWidth = ref(800)
+  const displayHeight = ref(600)
+  const zoomLevel = ref(1)
+
+  // 绘制状态 / Drawing state
   const drawingItem = ref<AnnotationItem | null>(null)
   const isDrawing = ref(false)
   const startPoint = ref({ x: 0, y: 0 })
+  const lastUsedTool = ref<string>('dimension') // 记住上次使用的工具
+
+  // 文字输入状态 / Text input state
+  const showTextInput = ref(false)
+  const textInputValue = ref('')
+  const textInputRef = ref<HTMLTextAreaElement | null>(null)
+  const textInputPosition = ref({ x: 0, y: 0 })
+  const pendingTextItem = ref<AnnotationItem | null>(null)
 
   /*** Computed Properties ***/
   const selectedItem = computed(() => {
@@ -288,30 +382,115 @@
     return annotations.value.find((item) => item.id === selectedItemId.value) || null
   })
 
-  const canvasStyle = computed(() => ({
-    width: `${imageWidth.value}px`,
-    height: `${imageHeight.value}px`
+  const svgViewBox = computed(() => `0 0 ${imageWidth.value} ${imageHeight.value}`)
+
+  // 画布缩放样式 / Canvas zoom style
+  const canvasWrapperStyle = computed(() => ({
+    transform: `scale(${zoomLevel.value})`,
+    transformOrigin: 'top left'
   }))
 
-  const svgViewBox = computed(() => `0 0 ${imageWidth.value} ${imageHeight.value}`)
+  const textInputStyle = computed(() => {
+    const img = backgroundImage.value
+    if (!img) return { left: '0px', top: '0px' }
+    
+    // 考虑缩放 / Consider zoom
+    const scaleX = (img.clientWidth * zoomLevel.value) / imageWidth.value
+    const scaleY = (img.clientHeight * zoomLevel.value) / imageHeight.value
+    
+    return {
+      left: `${textInputPosition.value.x * scaleX}px`,
+      top: `${textInputPosition.value.y * scaleY}px`
+    }
+  })
+
+  const textInputTextStyle = computed(() => {
+    const item = pendingTextItem.value
+    if (!item) return {}
+    
+    const img = backgroundImage.value
+    // 考虑缩放 / Consider zoom
+    const scale = img ? (img.clientWidth * zoomLevel.value) / imageWidth.value : 1
+    
+    return {
+      fontSize: `${Math.max(14, item.style.fontSize * scale)}px`,
+      color: item.style.fontColor
+    }
+  })
+
+  /*** Type for API response ***/
+  interface BaseResponse<T = unknown> {
+    code: number
+    msg?: string
+    data: T
+  }
 
   /*** Methods ***/
   // 设置当前工具 / Set current tool
   const setTool = (tool: string) => {
     currentTool.value = tool
-    selectedItemId.value = null
+    if (tool !== 'select') {
+      selectedItemId.value = null
+      editingItemId.value = null
+      lastUsedTool.value = tool // 记住工具
+    }
+  }
+
+  // 缩放控制 / Zoom controls
+  const zoomIn = () => {
+    zoomLevel.value = Math.min(3, zoomLevel.value + 0.25)
+  }
+
+  const zoomOut = () => {
+    zoomLevel.value = Math.max(0.25, zoomLevel.value - 0.25)
+  }
+
+  const resetZoom = () => {
+    zoomLevel.value = 1
+  }
+
+  // 鼠标滚轮缩放 / Mouse wheel zoom
+  const handleWheel = (event: WheelEvent) => {
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault()
+      if (event.deltaY < 0) {
+        zoomIn()
+      } else {
+        zoomOut()
+      }
+    }
+  }
+
+  // 获取绘制提示 / Get drawing hint
+  const getDrawingHint = (tool: string): string => {
+    switch (tool) {
+      case 'dimension':
+        return '点击并拖拽绘制尺寸标注线，松开后输入尺寸'
+      case 'material':
+        return '点击并拖拽绘制材料标注，松开后输入材料名称'
+      case 'process':
+        return '点击并拖拽绘制工艺说明，松开后输入说明内容'
+      case 'line':
+        return '点击起点并拖拽到终点绘制引线'
+      case 'text':
+        return '点击画布位置添加文字标注'
+      default:
+        return '选择工具后在画布上绘制'
+    }
   }
 
   // 加载标注数据 / Load annotation data
   const loadAnnotation = async () => {
+    if (!annotationId.value) return
     try {
-      const res = await getAnnotation(props.annotationId)
-      if (res.data) {
-        const data = res.data as ConstructionAnnotationResponse
-        annotations.value = data.annotations || []
-        imagePath.value = data.imagePath
+      const res = (await getAnnotation(
+        annotationId.value
+      )) as unknown as BaseResponse<ConstructionAnnotationResponse>
+      if (res.code === 200 && res.data) {
+        annotations.value = res.data.annotations || []
+        imagePath.value = res.data.imagePath
       }
-    } catch (error) {
+    } catch {
       ElMessage.error('加载标注数据失败')
     }
   }
@@ -319,12 +498,12 @@
   // 加载导出格式 / Load export formats
   const loadExportFormats = async () => {
     try {
-      const res = await getExportFormats()
-      if (res.data) {
-        exportFormats.value = res.data as ExportFormat[]
+      const res = (await getExportFormats()) as unknown as BaseResponse<ExportFormat[]>
+      if (res.code === 200 && res.data) {
+        exportFormats.value = res.data
       }
-    } catch (error) {
-      console.error('加载导出格式失败:', error)
+    } catch {
+      console.error('加载导出格式失败')
     }
   }
 
@@ -333,30 +512,102 @@
     const img = event.target as HTMLImageElement
     imageWidth.value = img.naturalWidth
     imageHeight.value = img.naturalHeight
+    displayWidth.value = img.clientWidth
+    displayHeight.value = img.clientHeight
+  }
+
+  // 获取画布内的鼠标坐标 / Get mouse coordinates within canvas
+  const getCanvasCoordinates = (event: MouseEvent): { x: number; y: number } => {
+    const wrapper = canvasWrapper.value
+    const img = backgroundImage.value
+    if (!wrapper || !img) return { x: 0, y: 0 }
+
+    const rect = img.getBoundingClientRect()
+    // 考虑缩放因素 / Consider zoom factor
+    const scaleX = imageWidth.value / (img.clientWidth * zoomLevel.value)
+    const scaleY = imageHeight.value / (img.clientHeight * zoomLevel.value)
+
+    return {
+      x: Math.round((event.clientX - rect.left) * scaleX),
+      y: Math.round((event.clientY - rect.top) * scaleY)
+    }
+  }
+
+  // 获取默认样式 / Get default style - 增大字体
+  const getDefaultStyle = (type: string) => {
+    const styles: Record<string, any> = {
+      dimension: {
+        fontSize: 24,
+        fontColor: '#E53935',
+        lineColor: '#E53935',
+        lineWidth: 3,
+        background: 'rgba(255,255,255,0.95)'
+      },
+      material: {
+        fontSize: 22,
+        fontColor: '#1E88E5',
+        lineColor: '#1E88E5',
+        lineWidth: 3,
+        background: 'rgba(255,255,255,0.95)'
+      },
+      process: {
+        fontSize: 22,
+        fontColor: '#43A047',
+        lineColor: '#43A047',
+        lineWidth: 3,
+        background: 'rgba(255,255,255,0.95)'
+      },
+      line: {
+        fontSize: 22,
+        fontColor: '#FF9800',
+        lineColor: '#FF9800',
+        lineWidth: 3,
+        background: 'rgba(255,255,255,0.95)'
+      },
+      text: {
+        fontSize: 28,
+        fontColor: '#333333',
+        lineColor: '#333333',
+        lineWidth: 2,
+        background: 'rgba(255,255,255,0.9)'
+      }
+    }
+    return styles[type] || styles.text
   }
 
   // 处理画布鼠标按下 / Handle canvas mouse down
   const handleCanvasMouseDown = (event: MouseEvent) => {
+    if (event.button !== 0) return
     if (currentTool.value === 'select') return
+    if (showTextInput.value) return
 
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-    startPoint.value = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    }
+    event.preventDefault()
+    const coords = getCanvasCoordinates(event)
+    startPoint.value = coords
     isDrawing.value = true
 
     // 创建新标注项 / Create new annotation item
-    drawingItem.value = {
-      id: `temp_${Date.now()}`,
+    const newItem: AnnotationItem = {
+      id: `annotation_${Date.now()}`,
       type: currentTool.value,
-      position: { x: startPoint.value.x, y: startPoint.value.y, anchor: 'top-left' },
-      content: getDefaultContent(currentTool.value),
+      position: { x: coords.x, y: coords.y, anchor: 'top-left' },
+      content: '',
       style: getDefaultStyle(currentTool.value),
-      properties: {},
+      properties: {
+        lineStart: { x: coords.x, y: coords.y },
+        lineEnd: null
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isGenerated: false
+    }
+
+    drawingItem.value = newItem
+
+    // 纯文字工具直接显示输入框 / Text tool shows input immediately
+    if (currentTool.value === 'text') {
+      isDrawing.value = false
+      showTextInputAt(coords, newItem)
     }
   }
 
@@ -364,88 +615,150 @@
   const handleCanvasMouseMove = (event: MouseEvent) => {
     if (!isDrawing.value || !drawingItem.value) return
 
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-    const currentX = event.clientX - rect.left
-    const currentY = event.clientY - rect.top
-
-    drawingItem.value.position.x = currentX
-    drawingItem.value.position.y = currentY
+    const coords = getCanvasCoordinates(event)
+    
+    // 更新引线终点 / Update line end point
+    drawingItem.value = {
+      ...drawingItem.value,
+      properties: {
+        ...drawingItem.value.properties,
+        lineEnd: { x: coords.x, y: coords.y }
+      }
+    }
   }
 
   // 处理画布鼠标抬起 / Handle canvas mouse up
-  const handleCanvasMouseUp = async () => {
+  const handleCanvasMouseUp = (event: MouseEvent) => {
     if (!isDrawing.value || !drawingItem.value) return
 
     isDrawing.value = false
+    const coords = getCanvasCoordinates(event)
+    
+    // 计算文字位置（引线终点偏移一点）/ Calculate text position
+    const textX = coords.x + 10
+    const textY = coords.y - 5
 
-    // 添加标注项 / Add annotation item
+    const finalItem: AnnotationItem = {
+      ...drawingItem.value,
+      position: { x: textX, y: textY, anchor: 'top-left' },
+      properties: {
+        lineStart: startPoint.value,
+        lineEnd: coords
+      }
+    }
+
+    // 显示文字输入框 / Show text input
+    showTextInputAt({ x: textX, y: textY }, finalItem)
+  }
+
+  // 处理鼠标离开画布 / Handle mouse leave canvas
+  const handleCanvasMouseLeave = () => {
+    if (isDrawing.value && drawingItem.value) {
+      // 取消绘制 / Cancel drawing
+      isDrawing.value = false
+      drawingItem.value = null
+    }
+  }
+
+  // 显示文字输入框 / Show text input at position
+  const showTextInputAt = (coords: { x: number; y: number }, item: AnnotationItem) => {
+    textInputPosition.value = coords
+    pendingTextItem.value = item
+    textInputValue.value = item.content || ''
+    showTextInput.value = true
+    drawingItem.value = null
+
+    nextTick(() => {
+      textInputRef.value?.focus()
+    })
+  }
+
+  // 处理文字输入确认 / Handle text input confirm
+  const handleTextInputConfirm = async (event: KeyboardEvent) => {
+    event.preventDefault()
+    await saveTextAnnotation()
+  }
+
+  // 处理文字输入失焦 / Handle text input blur
+  const handleTextInputBlur = async () => {
+    await saveTextAnnotation()
+  }
+
+  // 处理文字输入取消 / Handle text input cancel
+  const handleTextInputCancel = () => {
+    showTextInput.value = false
+    textInputValue.value = ''
+    pendingTextItem.value = null
+    // 不切换工具，保持当前工具 / Don't switch tool
+  }
+
+  // 保存文字标注 / Save text annotation
+  const saveTextAnnotation = async () => {
+    if (!pendingTextItem.value) return
+
+    const content = textInputValue.value.trim()
+    const toolUsed = pendingTextItem.value.type
+    
+    if (!content) {
+      handleTextInputCancel()
+      return
+    }
+
+    const newItem: AnnotationItem = {
+      ...pendingTextItem.value,
+      content
+    }
+
+    // 添加到列表 / Add to list
+    annotations.value.push(newItem)
+
+    // 保存到后端 / Save to backend
     try {
-      await addAnnotationItem(props.annotationId, drawingItem.value)
-      annotations.value.push({ ...drawingItem.value })
+      if (annotationId.value) {
+        await addAnnotationItem(annotationId.value, newItem)
+      }
       ElMessage.success('标注添加成功')
     } catch (error) {
-      ElMessage.error('添加标注失败')
+      console.error('保存标注失败:', error)
     }
 
-    drawingItem.value = null
-    setTool('select')
+    // 重置状态 / Reset state
+    showTextInput.value = false
+    textInputValue.value = ''
+    pendingTextItem.value = null
+    selectedItemId.value = null
+    
+    // 保持当前工具，继续添加标注 / Keep current tool for continuous annotation
+    currentTool.value = toolUsed
   }
 
-  // 获取默认内容 / Get default content
-  const getDefaultContent = (type: string): string => {
-    switch (type) {
-      case 'dimension':
-        return '尺寸'
-      case 'material':
-        return '材料'
-      case 'process':
-        return '工艺说明'
-      default:
-        return '标注'
-    }
-  }
+  // 开始编辑标注 / Start editing annotation
+  const handleStartEdit = (id: string) => {
+    const item = annotations.value.find((a) => a.id === id)
+    if (!item) return
 
-  // 获取默认样式 / Get default style
-  const getDefaultStyle = (type: string) => {
-    switch (type) {
-      case 'dimension':
-        return {
-          fontSize: 12,
-          fontColor: '#FF0000',
-          lineColor: '#FF0000',
-          lineWidth: 1,
-          background: '#FFFFFF'
-        }
-      case 'material':
-        return {
-          fontSize: 10,
-          fontColor: '#0000FF',
-          lineColor: '#0000FF',
-          lineWidth: 1,
-          background: '#FFFFFF'
-        }
-      case 'process':
-        return {
-          fontSize: 10,
-          fontColor: '#00AA00',
-          lineColor: '#00AA00',
-          lineWidth: 1,
-          background: '#FFFFFF'
-        }
-      default:
-        return {
-          fontSize: 10,
-          fontColor: '#000000',
-          lineColor: '#000000',
-          lineWidth: 1,
-          background: '#FFFFFF'
-        }
-    }
+    editingItemId.value = id
+    selectedItemId.value = id
+    
+    // 显示文字输入框进行编辑 / Show text input for editing
+    textInputPosition.value = { x: item.position.x, y: item.position.y }
+    pendingTextItem.value = { ...item }
+    textInputValue.value = item.content
+    showTextInput.value = true
+
+    // 从列表中临时移除 / Temporarily remove from list
+    annotations.value = annotations.value.filter((a) => a.id !== id)
+
+    nextTick(() => {
+      textInputRef.value?.focus()
+      textInputRef.value?.select()
+    })
   }
 
   // 选择标注项 / Select annotation item
   const handleSelectItem = (id: string) => {
     selectedItemId.value = id
+    editingItemId.value = null
     currentTool.value = 'select'
   }
 
@@ -460,14 +773,17 @@
   // 删除标注项 / Delete annotation item
   const handleDeleteItem = async (id: string) => {
     try {
-      await deleteAnnotationItem(props.annotationId, id)
+      if (annotationId.value) {
+        await deleteAnnotationItem(annotationId.value, id)
+      }
       annotations.value = annotations.value.filter((item) => item.id !== id)
       if (selectedItemId.value === id) {
         selectedItemId.value = null
       }
       ElMessage.success('标注删除成功')
-    } catch (error) {
-      ElMessage.error('删除标注失败')
+    } catch {
+      // 即使后端失败也删除本地 / Delete local even if backend fails
+      annotations.value = annotations.value.filter((item) => item.id !== id)
     }
   }
 
@@ -490,14 +806,13 @@
     analyzing.value = true
     try {
       await analyzeConstructionDrawing({
-        projectId: props.projectId,
-        cadFileId: props.cadFileId,
+        projectId: projectId.value,
+        cadFileId: cadFileId.value,
         imagePath: imagePath.value
       })
       ElMessage.success('自动标注已开始，请稍后刷新查看结果')
-      // 延迟重新加载 / Delay reload
       setTimeout(() => loadAnnotation(), 3000)
-    } catch (error) {
+    } catch {
       ElMessage.error('自动标注失败')
     } finally {
       analyzing.value = false
@@ -508,10 +823,10 @@
   const handleSave = async () => {
     saving.value = true
     try {
-      await updateAnnotations(props.annotationId, annotations.value)
+      await updateAnnotations(annotationId.value, annotations.value)
       ElMessage.success('保存成功')
       emit('saved')
-    } catch (error) {
+    } catch {
       ElMessage.error('保存失败')
     } finally {
       saving.value = false
@@ -527,11 +842,14 @@
   const confirmExport = async () => {
     exporting.value = true
     try {
-      const res = await exportAnnotation(props.annotationId, exportConfig.value)
+      const res = (await exportAnnotation(
+        annotationId.value,
+        exportConfig.value
+      )) as unknown as BaseResponse<{ downloadUrl?: string }>
       ElMessage.success('导出成功')
       exportDialogVisible.value = false
       emit('exported', res.data)
-    } catch (error) {
+    } catch {
       ElMessage.error('导出失败')
     } finally {
       exporting.value = false
@@ -544,8 +862,15 @@
     loadExportFormats()
   })
 
+  /*** Expose methods for parent component ***/
+  defineExpose({
+    openExportDialog: () => {
+      exportDialogVisible.value = true
+    }
+  })
+
   watch(
-    () => props.annotationId,
+    () => annotationId.value,
     () => {
       loadAnnotation()
     }
@@ -567,6 +892,15 @@
     padding: 12px 16px;
     background: #fff;
     border-bottom: 1px solid #e4e7ed;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .toolbar-actions {
@@ -578,6 +912,7 @@
     display: flex;
     flex: 1;
     overflow: hidden;
+    min-height: 0;
   }
 
   .canvas-container {
@@ -590,14 +925,19 @@
   .canvas-wrapper {
     position: relative;
     background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    display: inline-block;
+    transition: transform 0.1s ease-out;
+
+    &.drawing-mode {
+      cursor: crosshair;
+    }
   }
 
   .background-image {
     display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 
   .annotation-layer {
@@ -613,16 +953,60 @@
     pointer-events: auto;
   }
 
+  .text-input-overlay {
+    position: absolute;
+    z-index: 100;
+    min-width: 120px;
+    max-width: 300px;
+  }
+
+  .text-input {
+    width: 100%;
+    min-width: 120px;
+    min-height: 32px;
+    padding: 4px 8px;
+    border: 2px solid #409eff;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.95);
+    outline: none;
+    resize: both;
+    font-family: inherit;
+    line-height: 1.4;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+    &::placeholder {
+      color: #c0c4cc;
+    }
+  }
+
+  .drawing-hint {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
   .properties-panel {
-    width: 300px;
+    width: 320px;
     padding: 16px;
     background: #fff;
     border-left: 1px solid #e4e7ed;
     overflow-y: auto;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
   .property-card {
-    margin-bottom: 16px;
+    flex-shrink: 0;
   }
 
   .card-header {
@@ -632,16 +1016,32 @@
   }
 
   .annotation-list-card {
-    margin-top: 16px;
+    flex: 1;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+
+    :deep(.el-card__body) {
+      flex: 1;
+      padding: 0;
+      overflow: hidden;
+    }
+  }
+
+  .empty-list {
+    padding: 24px 16px;
+    text-align: center;
+    color: #909399;
+    font-size: 14px;
   }
 
   .annotation-list-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 10px 12px;
     cursor: pointer;
-    border-radius: 4px;
+    border-bottom: 1px solid #f0f0f0;
     transition: background 0.2s;
 
     &:hover {
@@ -652,11 +1052,26 @@
       background: #ecf5ff;
     }
 
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .item-icon {
+      flex-shrink: 0;
+      color: #606266;
+    }
+
     .item-content {
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-size: 14px;
+      color: #303133;
+    }
+
+    .el-tag {
+      flex-shrink: 0;
     }
   }
 </style>

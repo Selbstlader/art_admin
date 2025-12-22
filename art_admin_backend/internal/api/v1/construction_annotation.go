@@ -143,6 +143,9 @@ func (c *ConstructionAnnotationController) GetAnnotationsList(ctx *gin.Context) 
 		} else {
 			annotations = annotations[start:end]
 		}
+	} else {
+		// 没有筛选条件时，获取所有标注（分页）/ Get all annotations when no filter
+		annotations, total, err = c.annotationService.GetAnnotationsList(req.GetOffset(), req.PageSize)
 	}
 
 	if err != nil {

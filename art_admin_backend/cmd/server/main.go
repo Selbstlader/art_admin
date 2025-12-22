@@ -18,6 +18,7 @@ import (
 	"art_admin_backend/internal/router"
 	cadSvc "art_admin_backend/internal/service/cad"
 	chatSvc "art_admin_backend/internal/service/chat"
+	constructionAnnotationSvc "art_admin_backend/internal/service/construction_annotation"
 	designCompareSvc "art_admin_backend/internal/service/design_compare"
 	designerProjectSvc "art_admin_backend/internal/service/designer_project"
 	documentSvc "art_admin_backend/internal/service/document"
@@ -133,12 +134,16 @@ func main() {
 	v1.SetDocumentService(documentService)
 	logger.Info("文档分析服务初始化完成")
 
+	// 初始化CAD文件仓库（设计比对服务需要使用）/ Initialize CAD file repository
+	cadFileRepo := repository.NewCadFileRepository(database.GetDB())
+
 	// 初始化设计比对服务 / Initialize design compare service
 	designCompareRepo := repository.NewDesignCompareRepository(database.GetDB())
 	designCompareService := designCompareSvc.NewDesignCompareService(
 		designCompareRepo,
 		designerProjectRepo,
 		documentRepo,
+		cadFileRepo,
 		volcClient,
 		"./uploads",
 		fmt.Sprintf("http://localhost:%d", cfg.Server.Port),
@@ -147,7 +152,6 @@ func main() {
 	logger.Info("设计比对服务初始化完成")
 
 	// 初始化CAD文件服务 / Initialize CAD file service
-	cadFileRepo := repository.NewCadFileRepository(database.GetDB())
 	// 优先使用新配置，兼容旧配置 / Prefer new config, fallback to old config
 	converterType := cfg.DWGConverter.Type
 	odaPath := cfg.DWGConverter.ODAPath
@@ -196,6 +200,16 @@ func main() {
 	renderRecordService := cadSvc.NewRenderRecordService(renderRecordRepo, userQuotaRepo, renderService, notificationRepo)
 	v1.SetRenderRecordService(renderRecordService)
 	logger.Info("效果图记录服务初始化完成")
+
+	// 初始化施工图标注服务 / Initialize construction annotation service
+	constructionAnnotationRepo := repository.NewConstructionAnnotationRepository(database.GetDB())
+	constructionAnnotationService := constructionAnnotationSvc.NewAnnotationService(
+		constructionAnnotationRepo,
+		cadFileRepo,
+		volcClient,
+	)
+	router.SetConstructionAnnotationService(constructionAnnotationService)
+	logger.Info("施工图标注服务初始化完成")
 
 	// 初始化聊天室系统
 	chatHub := ws.NewHub()

@@ -4,15 +4,23 @@ import (
 	"art_admin_backend/internal/api"
 	"art_admin_backend/internal/api/middleware"
 	v1 "art_admin_backend/internal/api/v1"
+	"art_admin_backend/internal/service/construction_annotation"
 
 	"github.com/gin-gonic/gin"
 )
 
 var chatAPI *api.ChatAPI
+var constructionAnnotationService *construction_annotation.AnnotationService
 
 // SetChatAPI 设置聊天室 API（由 main 函数调用）
 func SetChatAPI(api *api.ChatAPI) {
 	chatAPI = api
+}
+
+// SetConstructionAnnotationService 设置施工图标注服务（由 main 函数调用）
+// Set construction annotation service (called by main function)
+func SetConstructionAnnotationService(service *construction_annotation.AnnotationService) {
+	constructionAnnotationService = service
 }
 
 // RegisterRoutes 注册所有路由
@@ -175,6 +183,8 @@ func RegisterRoutes(r *gin.Engine) {
 
 				// 设计比对 / Design Compare
 				designerGroup.POST("/compare/upload", v1.UploadDesignImages)
+				designerGroup.POST("/compare/create-with-cad", v1.CreateCompareWithCad)
+				designerGroup.POST("/compare/create-with-images", v1.CreateCompareWithImages)
 				designerGroup.POST("/compare/analyze", v1.AnalyzeDesignCompare)
 				designerGroup.GET("/compare", v1.GetDesignCompareList)
 				designerGroup.GET("/compare/:id", v1.GetDesignCompareDetail)
@@ -230,6 +240,7 @@ func RegisterRoutes(r *gin.Engine) {
 				// AI对话模块 / AI Chat Module
 				// Requirements: 5.1, 5.2, 5.4
 				designerGroup.POST("/chat", v1.DesignerChat)
+				designerGroup.POST("/chat/stream", v1.DesignerChatStream)
 				designerGroup.GET("/chat/history", v1.GetDesignerChatHistory)
 				designerGroup.GET("/chat/sessions", v1.GetDesignerChatSessions)
 				designerGroup.DELETE("/chat/sessions/:sessionId", v1.DeleteDesignerChatSession)
@@ -269,21 +280,22 @@ func RegisterRoutes(r *gin.Engine) {
 
 				// 施工图标注模块 / Construction Annotation Module
 				// Requirements: 9.1, 9.2, 9.3, 9.4, 9.5
-				// Note: Controller needs to be initialized with service dependencies
-				// annotationAPI := v1.NewConstructionAnnotationController(annotationService)
-				// designerGroup.POST("/construction-annotation/analyze", annotationAPI.AnalyzeConstructionDrawing)
-				// designerGroup.GET("/construction-annotation/list", annotationAPI.GetAnnotationsList)
-				// designerGroup.GET("/construction-annotation/:id", annotationAPI.GetAnnotation)
-				// designerGroup.PUT("/construction-annotation/:id/annotations", annotationAPI.UpdateAnnotations)
-				// designerGroup.DELETE("/construction-annotation/:id", annotationAPI.DeleteAnnotation)
-				// designerGroup.POST("/construction-annotation/:id/items", annotationAPI.AddAnnotationItem)
-				// designerGroup.GET("/construction-annotation/:id/items/:itemId", annotationAPI.GetAnnotationItem)
-				// designerGroup.PUT("/construction-annotation/:id/items/:itemId", annotationAPI.UpdateAnnotationItem)
-				// designerGroup.DELETE("/construction-annotation/:id/items/:itemId", annotationAPI.DeleteAnnotationItem)
-				// designerGroup.POST("/construction-annotation/:id/batch", annotationAPI.BatchUpdateAnnotations)
-				// designerGroup.POST("/construction-annotation/export", annotationAPI.ExportAnnotation)
-				// designerGroup.GET("/construction-annotation/export-formats", annotationAPI.GetExportFormats)
-				// designerGroup.GET("/construction-annotation/:id/export-history", annotationAPI.GetExportHistory)
+				if constructionAnnotationService != nil {
+					annotationAPI := v1.NewConstructionAnnotationController(constructionAnnotationService)
+					designerGroup.POST("/construction-annotation/analyze", annotationAPI.AnalyzeConstructionDrawing)
+					designerGroup.GET("/construction-annotation/list", annotationAPI.GetAnnotationsList)
+					designerGroup.GET("/construction-annotation/:id", annotationAPI.GetAnnotation)
+					designerGroup.PUT("/construction-annotation/:id/annotations", annotationAPI.UpdateAnnotations)
+					designerGroup.DELETE("/construction-annotation/:id", annotationAPI.DeleteAnnotation)
+					designerGroup.POST("/construction-annotation/:id/items", annotationAPI.AddAnnotationItem)
+					designerGroup.GET("/construction-annotation/:id/items/:itemId", annotationAPI.GetAnnotationItem)
+					designerGroup.PUT("/construction-annotation/:id/items/:itemId", annotationAPI.UpdateAnnotationItem)
+					designerGroup.DELETE("/construction-annotation/:id/items/:itemId", annotationAPI.DeleteAnnotationItem)
+					designerGroup.POST("/construction-annotation/:id/batch", annotationAPI.BatchUpdateAnnotations)
+					designerGroup.POST("/construction-annotation/export", annotationAPI.ExportAnnotation)
+					designerGroup.GET("/construction-annotation/export-formats", annotationAPI.GetExportFormats)
+					designerGroup.GET("/construction-annotation/:id/export-history", annotationAPI.GetExportHistory)
+				}
 
 				// AI生成CAD模块 / AI CAD Generation Module
 				// Requirements: AI based CAD generation from project documents

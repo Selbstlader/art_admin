@@ -19,7 +19,7 @@ import (
 // Construction annotation service for element recognition and annotation generation
 type AnnotationService struct {
 	annotationRepo repository.ConstructionAnnotationRepository
-	cadFileRepo    repository.CadFileRepository
+	cadFileRepo    *repository.CadFileRepository
 	volcClient     *volcengine.Client
 }
 
@@ -27,7 +27,7 @@ type AnnotationService struct {
 // Create annotation service instance
 func NewAnnotationService(
 	annotationRepo repository.ConstructionAnnotationRepository,
-	cadFileRepo repository.CadFileRepository,
+	cadFileRepo *repository.CadFileRepository,
 	volcClient *volcengine.Client,
 ) *AnnotationService {
 	return &AnnotationService{
@@ -42,10 +42,12 @@ func NewAnnotationService(
 func (s *AnnotationService) AnalyzeConstructionDrawing(projectID, cadFileID uint, imagePath string) (*model.ConstructionAnnotation, error) {
 	// 创建标注记录 / Create annotation record
 	annotation := &model.ConstructionAnnotation{
-		ProjectID:      projectID,
-		CadFileID:      cadFileID,
-		ImagePath:      imagePath,
-		AnalysisStatus: "processing",
+		ProjectID:        projectID,
+		CadFileID:        cadFileID,
+		ImagePath:        imagePath,
+		AnalysisStatus:   "processing",
+		ElementsDetected: "[]", // 初始化为空JSON数组 / Initialize as empty JSON array
+		Annotations:      "[]", // 初始化为空JSON数组 / Initialize as empty JSON array
 	}
 
 	// 保存到数据库 / Save to database
@@ -68,8 +70,18 @@ func (s *AnnotationService) processImageAnalysis(annotationID uint) {
 		return
 	}
 
+	// 将URL转换为本地文件路径 / Convert URL to local file path
+	imagePath := annotation.ImagePath
+	// 如果是完整URL，提取相对路径 / If full URL, extract relative path
+	if strings.HasPrefix(imagePath, "http://") || strings.HasPrefix(imagePath, "https://") {
+		// 提取 /uploads/ 之后的路径 / Extract path after /uploads/
+		if idx := strings.Index(imagePath, "/uploads/"); idx != -1 {
+			imagePath = "." + imagePath[idx:]
+		}
+	}
+
 	// 编码图片为Base64 / Encode image to Base64
-	imageBase64, err := volcengine.EncodeImageToBase64(annotation.ImagePath)
+	imageBase64, err := volcengine.EncodeImageToBase64(imagePath)
 	if err != nil {
 		s.updateAnalysisStatus(annotationID, "failed", fmt.Sprintf("图片编码失败: %v", err))
 		return

@@ -103,6 +103,17 @@ export const useNotificationStore = defineStore('notificationStore', () => {
     await Promise.all([fetchNotifications(), fetchUnreadCount()])
   }
 
+  /*** 本地添加通知（用于即时显示，不持久化到后端） ***/
+  function addNotification(item: Omit<NotificationDisplayItem, 'id'>) {
+    const newItem: NotificationDisplayItem = {
+      ...item,
+      id: Date.now(), // 临时ID
+      read: false
+    }
+    notifications.value.unshift(newItem)
+    unreadCount.value++
+  }
+
   /*** 格式化时间 ***/
   function formatTime(dateStr: string): string {
     if (!dateStr) return ''
@@ -126,6 +137,7 @@ export const useNotificationStore = defineStore('notificationStore', () => {
     fetchUnreadCount,
     markAsRead,
     markAllAsRead,
-    refresh
+    refresh,
+    addNotification
   }
 })

@@ -1,29 +1,30 @@
 <template>
-  <div class="document-upload">
-    <!-- 上传区域 -->
-    <el-upload
-      ref="uploadRef"
-      class="upload-area"
-      drag
-      action="#"
-      :auto-upload="false"
-      :on-change="handleFileChange"
-      :before-upload="beforeUpload"
-      :file-list="fileList"
-      :accept="acceptTypes"
-      :limit="10"
-      :http-request="customUpload"
-      multiple
-    >
-      <el-icon class="upload-icon"><Upload /></el-icon>
-      <div class="upload-text">
-        <span>将文件拖到此处，或</span>
-        <em>点击上传</em>
-      </div>
-      <template #tip>
-        <div class="upload-tip"> 支持 PDF、Word、JPG、PNG、WEBP 格式，单个文件不超过 50MB </div>
-      </template>
-    </el-upload>
+  <div class="document-upload art-full-height">
+    <ElCard class="art-table-card" shadow="never">
+      <!-- 上传区域 -->
+      <el-upload
+        ref="uploadRef"
+        class="upload-area"
+        drag
+        action="#"
+        :auto-upload="false"
+        :on-change="handleFileChange"
+        :before-upload="beforeUpload"
+        :file-list="fileList"
+        :accept="acceptTypes"
+        :limit="10"
+        :http-request="customUpload"
+        multiple
+      >
+        <el-icon class="upload-icon"><Upload /></el-icon>
+        <div class="upload-text">
+          <span>将文件拖到此处，或</span>
+          <em>点击上传</em>
+        </div>
+        <template #tip>
+          <div class="upload-tip"> 支持 PDF、Word、JPG、PNG、WEBP 格式，单个文件不超过 50MB </div>
+        </template>
+      </el-upload>
 
     <!-- 待上传文件列表 -->
     <div v-if="fileList.length > 0" class="file-list">
@@ -125,6 +126,7 @@
         </template>
       </el-skeleton>
     </div>
+    </ElCard>
   </div>
 </template>
 
@@ -205,11 +207,12 @@
   })
 
   /*** 启动轮询 ***/
+  // 修复：将轮询间隔从3秒增加到5秒，减少服务器压力
   function startPolling() {
     if (pollingTimer) return
     pollingTimer = setInterval(() => {
       fetchUploadedDocs(true) // 静默刷新
-    }, 3000) // 每3秒轮询一次
+    }, 5000) // 每5秒轮询一次
   }
 
   /*** 停止轮询 ***/

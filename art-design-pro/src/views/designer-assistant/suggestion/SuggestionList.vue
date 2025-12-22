@@ -159,7 +159,7 @@
    * 设计建议列表组件
    * Requirements: 3.2, 3.3, 3.4
    ***/
-  import { ref, watch, onMounted } from 'vue'
+  import { ref, watch, onMounted, onUnmounted } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { MagicStick, Check, Close } from '@element-plus/icons-vue'
   import {
@@ -260,6 +260,7 @@
   }
 
   /*** Core generate function (async mode) ***/
+  // 修复：异步任务提交后启动轮询机制自动刷新列表
   const doGenerate = async (count: number, category?: string) => {
     generating.value = true
     try {
@@ -272,6 +273,8 @@
       if (res.code === 200 && res.data) {
         // 异步模式：任务已提交，通过通知提醒用户
         ElMessage.success(res.data.message || '建议生成任务已提交，完成后将通过通知提醒您')
+        // 启动轮询，定期刷新列表以显示新生成的建议
+        startGenerationPolling()
       } else {
         ElMessage.error(res.msg || '提交生成任务失败')
       }
@@ -280,6 +283,32 @@
       ElMessage.error('提交生成任务失败，请稍后重试')
     } finally {
       generating.value = false
+    }
+  }
+
+  /*** 轮询相关 / Polling related ***/
+  let pollingTimer: ReturnType<typeof setInterval> | null = null
+  let pollingCount = 0
+  const maxPollingCount = 12 // 最多轮询12次（约1分钟）
+
+  const startGenerationPolling = () => {
+    stopGenerationPolling()
+    pollingCount = 0
+    pollingTimer = setInterval(async () => {
+      pollingCount++
+      await loadSuggestions()
+      await loadStats()
+      // 达到最大轮询次数后停止
+      if (pollingCount >= maxPollingCount) {
+        stopGenerationPolling()
+      }
+    }, 5000) // 每5秒轮询一次
+  }
+
+  const stopGenerationPolling = () => {
+    if (pollingTimer) {
+      clearInterval(pollingTimer)
+      pollingTimer = null
     }
   }
 
@@ -403,6 +432,11 @@
   onMounted(() => {
     loadSuggestions()
     loadStats()
+  })
+
+  /*** 组件卸载时清理轮询 / Clean up polling on unmount ***/
+  onUnmounted(() => {
+    stopGenerationPolling()
   })
 </script>
 

@@ -282,3 +282,85 @@ func BatchDeleteDesignCompare(c *gin.Context) {
 
 	response.SuccessWithMsg(c, "批量删除成功", nil)
 }
+
+// CreateCompareWithCad 使用已有CAD文件创建比对任务
+// @Summary 使用已有CAD文件创建比对任务
+// @Description 使用项目中已上传的CAD文件创建设计比对任务
+// @Tags 设计比对
+// @Accept json
+// @Produce json
+// @Param request body request.CreateCompareWithCadRequest true "创建请求"
+// @Success 200 {object} response.Response{data=response.DesignCompareUploadResponse}
+// @Router /api/designer/compare/create-with-cad [post]
+func CreateCompareWithCad(c *gin.Context) {
+	var req request.CreateCompareWithCadRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "参数错误: "+err.Error())
+		return
+	}
+
+	if len(req.CadFileIDs) == 0 {
+		response.BadRequest(c, "请选择CAD文件")
+		return
+	}
+
+	if len(req.DocumentIDs) == 0 {
+		response.BadRequest(c, "请选择需求文档")
+		return
+	}
+
+	userID := c.GetUint("userID")
+	if userID == 0 {
+		response.Unauthorized(c, "用户未登录")
+		return
+	}
+
+	result, err := designCompareSvc.CreateWithCadFiles(&req, userID)
+	if err != nil {
+		response.ServerError(c, err.Error())
+		return
+	}
+
+	response.SuccessWithMsg(c, "创建成功", result)
+}
+
+// CreateCompareWithImages 使用已有效果图创建比对任务
+// @Summary 使用已有效果图创建比对任务
+// @Description 使用项目中已生成的AI效果图创建设计比对任务
+// @Tags 设计比对
+// @Accept json
+// @Produce json
+// @Param request body request.CreateCompareWithImagesRequest true "创建请求"
+// @Success 200 {object} response.Response{data=response.DesignCompareUploadResponse}
+// @Router /api/designer/compare/create-with-images [post]
+func CreateCompareWithImages(c *gin.Context) {
+	var req request.CreateCompareWithImagesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "参数错误: "+err.Error())
+		return
+	}
+
+	if len(req.ImageUrls) == 0 {
+		response.BadRequest(c, "请选择效果图")
+		return
+	}
+
+	if len(req.DocumentIDs) == 0 {
+		response.BadRequest(c, "请选择需求文档")
+		return
+	}
+
+	userID := c.GetUint("userID")
+	if userID == 0 {
+		response.Unauthorized(c, "用户未登录")
+		return
+	}
+
+	result, err := designCompareSvc.CreateWithImageUrls(&req, userID)
+	if err != nil {
+		response.ServerError(c, err.Error())
+		return
+	}
+
+	response.SuccessWithMsg(c, "创建成功", result)
+}
