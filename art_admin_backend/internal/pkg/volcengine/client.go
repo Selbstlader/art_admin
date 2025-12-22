@@ -548,6 +548,12 @@ func EncodeImageToBase64(filePath string) (string, error) {
 	return base64.StdEncoding.EncodeToString(data), nil
 }
 
+// EncodeImageToBase64FromBytes 将图片字节数据编码为Base64
+// Encode image bytes to Base64
+func EncodeImageToBase64FromBytes(data []byte) string {
+	return base64.StdEncoding.EncodeToString(data)
+}
+
 // GetTokenUsage 获取最后一次请求的token使用量
 // Get token usage from last request
 func (c *Client) GetTokenUsage(resp *ChatResponse) (promptTokens, completionTokens, totalTokens int) {

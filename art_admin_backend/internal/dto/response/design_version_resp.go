@@ -144,3 +144,10 @@ type VersionDiffResponse struct {
 	MaterialChanges []ChangeItemResponse   `json:"materialChanges"` // 材料变化 / Material changes
 	Summary         string                 `json:"summary"`         // 对比摘要 / Comparison summary
 }
+
+// AIAnalyzeVersionDiffResponse AI版本对比分析响应
+// AI version diff analysis response
+type AIAnalyzeVersionDiffResponse struct {
+	TaskID  uint   `json:"taskId"`  // 任务ID / Task ID
+	Message string `json:"message"` // 提示消息 / Message
+}

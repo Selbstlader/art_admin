@@ -29,7 +29,12 @@
       <div class="scroll">
         <!-- 通知 -->
         <ul class="notice-list" v-show="barActiveIndex === 0">
-          <li v-for="(item, index) in noticeList" :key="index">
+          <li
+            v-for="(item, index) in noticeList"
+            :key="index"
+            @click="handleNoticeClick(item)"
+            :class="{ clickable: item.relatedId && item.relatedType }"
+          >
             <div
               class="icon"
               :style="{ background: getNoticeStyle(item.type).backgroundColor + '!important' }"
@@ -90,8 +95,13 @@
 <script setup lang="ts">
   import { computed, ref, watch, type Ref, type ComputedRef } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import { useRouter } from 'vue-router'
   import AppConfig from '@/config'
-  import { useNotificationStore } from '@/store/modules/notification'
+  import {
+    useNotificationStore,
+    type NotificationDisplayItem
+  } from '@/store/modules/notification'
+  import type { NotificationRelatedType } from '@/api/notification'
 
   // 导入头像图片
   // import avatar1 from '@/assets/img/avatar/avatar1.webp'
@@ -104,12 +114,18 @@
   defineOptions({ name: 'ArtNotification' })
 
   interface NoticeItem {
+    /** ID */
+    id?: number
     /** 标题 */
     title: string
     /** 时间 */
     time: string
     /** 类型 */
     type: NoticeType
+    /** 关联ID */
+    relatedId?: number
+    /** 关联类型 */
+    relatedType?: NotificationRelatedType
   }
 
   interface MessageItem {
@@ -147,9 +163,14 @@
   type NoticeType = 'email' | 'message' | 'collection' | 'user' | 'notice'
 
   const { t } = useI18n()
+  const router = useRouter()
 
   const props = defineProps<{
     value: boolean
+  }>()
+
+  const emit = defineEmits<{
+    (e: 'close'): void
   }>()
 
   const show = ref(false)
@@ -162,10 +183,13 @@
 
     // 通知数据 - 从 store 获取
     const noticeList = computed<NoticeItem[]>(() => {
-      return notificationStore.notifications.map((n) => ({
+      return notificationStore.notifications.map((n: NotificationDisplayItem) => ({
+        id: n.id,
         title: n.title,
         time: n.time,
-        type: n.type
+        type: n.type,
+        relatedId: n.relatedId,
+        relatedType: n.relatedType
       }))
     })
 
@@ -201,13 +225,19 @@
       notificationStore.markAllAsRead()
     }
 
+    // 标记单条已读 / Mark single as read
+    const markAsRead = (id: number) => {
+      notificationStore.markAsRead(id)
+    }
+
     return {
       noticeList,
       msgList,
       pendingList,
       barList,
       loadNotifications,
-      markAllRead
+      markAllRead,
+      markAsRead
     }
   }
 
@@ -341,18 +371,62 @@
       console.log('查看全部待办')
     }
 
+    /*** 点击通知跳转到对应页面 / Navigate to related page on click ***/
+    const handleNoticeClick = (item: NoticeItem) => {
+      // 标记为已读
+      if (item.id) {
+        markAsRead(item.id)
+      }
+
+      // 关闭通知面板
+      emit('close')
+
+      // 根据关联类型跳转
+      if (!item.relatedType || !item.relatedId) {
+        return
+      }
+
+      // 版本对比需要特殊处理，跳转到对比详情页面
+      if (item.relatedType === 'version_compare') {
+        router.push({
+          path: '/designer/designer-assistant/version-compare/VersionDiff',
+          query: { compareId: item.relatedId }
+        })
+        return
+      }
+
+      const routeMap: Record<NotificationRelatedType, string> = {
+        version_compare: '/designer/designer-assistant/version-compare/VersionDiff',
+        render: '/designer/designer-assistant/cad-viewer/CadUpload',
+        cad_generation: '/designer/designer-assistant/cad-generation/CadGenerationList',
+        document_analysis: '/designer/designer-assistant/document/DocumentUpload',
+        design_suggestion: '/designer/designer-assistant/suggestion/SuggestionList',
+        general: ''
+      }
+
+      const basePath = routeMap[item.relatedType]
+      if (basePath) {
+        router.push({
+          path: basePath,
+          query: { id: item.relatedId }
+        })
+      }
+    }
+
     return {
       handleNoticeAll,
       handleMsgAll,
-      handlePendingAll
+      handlePendingAll,
+      handleNoticeClick
     }
   }
 
   // 组合所有逻辑
-  const { noticeList, msgList, pendingList, barList, loadNotifications, markAllRead } = useNotificationData()
+  const { noticeList, msgList, pendingList, barList, loadNotifications, markAllRead, markAsRead } =
+    useNotificationData()
   const { getNoticeStyle } = useNotificationStyles()
   const { showNotice } = useNotificationAnimation()
-  const { handleNoticeAll, handleMsgAll, handlePendingAll } = useBusinessLogic()
+  const { handleNoticeAll, handleMsgAll, handlePendingAll, handleNoticeClick } = useBusinessLogic()
   const { changeBar, currentTabIsEmpty, handleViewAll } = useTabManagement(
     noticeList,
     msgList,

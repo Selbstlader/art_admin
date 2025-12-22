@@ -304,6 +304,7 @@ func RegisterRoutes(r *gin.Engine) {
 				designerGroup.PUT("/versions/:id", v1.UpdateDesignVersion)
 				designerGroup.DELETE("/versions/:id", v1.DeleteDesignVersion)
 				designerGroup.POST("/versions/compare", v1.CompareDesignVersions)
+				designerGroup.POST("/versions/ai-analyze", v1.StartAIVersionAnalysis) // AI异步分析
 				designerGroup.GET("/versions/compares", v1.GetVersionCompareList)
 				designerGroup.GET("/versions/compares/:id", v1.GetVersionCompareDetail)
 				designerGroup.GET("/versions/diff", v1.GetVersionDiff)

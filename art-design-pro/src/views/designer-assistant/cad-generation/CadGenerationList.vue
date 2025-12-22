@@ -4,13 +4,17 @@
     <div class="page-header">
       <div class="left">
         <ElButton link @click="handleBack" v-if="projectId">
-          <ElIcon><ArrowLeft /></ElIcon>
+          <ElIcon>
+            <ArrowLeft />
+          </ElIcon>
           返回项目
         </ElButton>
         <h2>AI生成CAD</h2>
       </div>
       <ElButton type="primary" @click="handleCreate">
-        <ElIcon><Plus /></ElIcon>
+        <ElIcon>
+          <Plus />
+        </ElIcon>
         新建生成任务
       </ElButton>
     </div>
@@ -41,7 +45,9 @@
         </ElFormItem>
         <ElFormItem>
           <ElButton type="primary" @click="handleSearch">
-            <ElIcon><Search /></ElIcon>
+            <ElIcon>
+              <Search />
+            </ElIcon>
             搜索
           </ElButton>
           <ElButton @click="handleReset">重置</ElButton>
@@ -63,6 +69,7 @@
             <ElTag>{{ row.generationLabel }}</ElTag>
           </template>
         </ElTableColumn>
+
         <ElTableColumn label="状态" width="120">
           <template #default="{ row }">
             <div class="status-cell">
@@ -76,6 +83,11 @@
             </div>
           </template>
         </ElTableColumn>
+        <ElTableColumn label="详情">
+          <template #default="{ row }">
+            {{ row.prompt }}
+          </template>
+        </ElTableColumn>
         <ElTableColumn label="文件" width="150">
           <template #default="{ row }">
             <template v-if="row.status === 'completed' && row.resultFilePath">
@@ -85,7 +97,9 @@
                 target="_blank"
                 :underline="false"
               >
-                <ElIcon><Document /></ElIcon>
+                <ElIcon>
+                  <Document />
+                </ElIcon>
                 下载DXF
               </ElLink>
             </template>
@@ -102,6 +116,7 @@
             {{ formatDate(row.createdAt) }}
           </template>
         </ElTableColumn>
+
         <ElTableColumn label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <ElButton
@@ -596,7 +611,7 @@
   const handlePreview = (row: CadGenerationResponse) => {
     if (row.resultFileId) {
       router.push({
-        path: '/designer/designer-assistant/cad-viewer/CadViewer',
+        path: '/designer/designer-assistant/cad-viewer/CadUpload',
         query: { id: row.resultFileId, projectId: row.projectId }
       })
     }

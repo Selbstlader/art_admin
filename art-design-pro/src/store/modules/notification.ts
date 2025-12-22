@@ -3,13 +3,14 @@
  * Manages notification state for the application
  ***/
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import {
   getNotificationList,
   getUnreadCount,
   markNotificationRead,
   markAllNotificationsRead,
-  type NotificationItem
+  type NotificationItem,
+  type NotificationRelatedType
 } from '@/api/notification'
 
 export type NoticeType = 'email' | 'message' | 'collection' | 'user' | 'notice'
@@ -21,6 +22,8 @@ export interface NotificationDisplayItem {
   type: NoticeType
   read?: boolean
   content?: string
+  relatedId?: number
+  relatedType?: NotificationRelatedType
 }
 
 export const useNotificationStore = defineStore('notificationStore', () => {
@@ -45,7 +48,9 @@ export const useNotificationStore = defineStore('notificationStore', () => {
           time: formatTime(item.createdAt),
           type: item.type as NoticeType,
           read: item.isRead,
-          content: item.content
+          content: item.content,
+          relatedId: item.relatedId,
+          relatedType: item.relatedType
         }))
       }
     } catch (error) {

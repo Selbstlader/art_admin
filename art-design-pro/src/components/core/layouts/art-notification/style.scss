@@ -101,6 +101,7 @@
           align-items: center;
           padding: 15px;
           cursor: pointer;
+          transition: background-color 0.2s;
 
           &:hover {
             background-color: var(--art-gray-100);
@@ -108,6 +109,18 @@
 
           &:last-of-type {
             border-bottom: 0;
+          }
+
+          &.clickable {
+            cursor: pointer;
+
+            &:hover {
+              background-color: var(--art-gray-200);
+            }
+
+            &:active {
+              background-color: var(--art-gray-300);
+            }
           }
 
           .icon {

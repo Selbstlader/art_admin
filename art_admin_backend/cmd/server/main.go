@@ -117,6 +117,10 @@ func main() {
 	)
 	logger.Info("火山AI客户端初始化完成")
 
+	// 设置设计版本服务的AI客户端 / Set AI client for design version service
+	v1.SetDesignVersionAIClient(volcClient)
+	logger.Info("设计版本AI分析服务初始化完成")
+
 	// 初始化文档分析服务 / Initialize document analysis service
 	documentRepo := repository.NewDocumentRepository(database.GetDB())
 	documentService := documentSvc.NewDocumentService(

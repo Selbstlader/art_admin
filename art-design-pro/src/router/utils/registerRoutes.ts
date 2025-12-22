@@ -222,9 +222,9 @@ function convertRouteComponent(
       '/designer/designer-assistant/project/ProjectDetail':
         '/designer/designer-assistant/project/ProjectDetail/:id',
       '/designer/designer-assistant/project/ProjectCreate':
-        '/designer/designer-assistant/project/ProjectCreate/:id',
-      '/designer/designer-assistant/version-compare/VersionDiff':
-        '/designer/designer-assistant/version-compare/VersionDiff/:id'
+        '/designer/designer-assistant/project/ProjectCreate/:id'
+      // '/designer/designer-assistant/version-compare/VersionDiff':
+      //   '/designer/designer-assistant/version-compare/VersionDiff/:id'
     }
     if (route.path && dynamicRouteMap[route.path]) {
       converted.path = dynamicRouteMap[route.path]

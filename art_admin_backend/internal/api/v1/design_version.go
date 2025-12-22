@@ -4,6 +4,7 @@ import (
 	"art_admin_backend/internal/dto/request"
 	"art_admin_backend/internal/pkg/database"
 	"art_admin_backend/internal/pkg/response"
+	"art_admin_backend/internal/pkg/volcengine"
 	"art_admin_backend/internal/service/design_version"
 	"strconv"
 
@@ -11,6 +12,13 @@ import (
 )
 
 var designVersionService *design_version.DesignVersionService
+var designVersionAIClient *volcengine.Client
+
+// SetDesignVersionAIClient 设置设计版本服务的AI客户端
+// Set AI client for design version service
+func SetDesignVersionAIClient(client *volcengine.Client) {
+	designVersionAIClient = client
+}
 
 // initDesignVersionService 初始化设计版本服务
 // Initialize design version service
@@ -18,6 +26,10 @@ func initDesignVersionService() {
 	if designVersionService == nil {
 		db := database.GetDB()
 		designVersionService = design_version.NewDesignVersionService(db)
+		// 注入AI客户端 / Inject AI client
+		if designVersionAIClient != nil {
+			designVersionService.SetAIClient(designVersionAIClient)
+		}
 	}
 }
 
@@ -309,6 +321,35 @@ func DeleteVersionCompare(c *gin.Context) {
 	}
 
 	response.Success(c, "删除成功")
+}
+
+// StartAIVersionAnalysis 启动AI版本对比分析
+// @Summary 启动AI版本对比分析
+// @Description 异步启动AI版本对比分析，完成后通过通知告知用户
+// @Tags 设计版本
+// @Accept json
+// @Produce json
+// @Param data body request.AIAnalyzeVersionDiffRequest true "AI分析请求"
+// @Success 200 {object} response.AIAnalyzeVersionDiffResponse
+// @Router /api/designer/versions/ai-analyze [post]
+func StartAIVersionAnalysis(c *gin.Context) {
+	initDesignVersionService()
+
+	var req request.AIAnalyzeVersionDiffRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "参数错误: "+err.Error())
+		return
+	}
+
+	userID := getVersionUserID(c)
+
+	resp, err := designVersionService.StartAIAnalysis(&req, userID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, resp)
 }
 
 // getVersionUserID 从上下文获取用户ID

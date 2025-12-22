@@ -11,6 +11,15 @@
             <span class="title">版本对比</span>
           </div>
           <div class="right">
+            <ElButton
+              type="success"
+              @click="handleAIAnalyze"
+              :disabled="!versionAId || !versionBId"
+              :loading="aiAnalyzing"
+            >
+              <ElIcon><MagicStick /></ElIcon>
+              AI智能分析
+            </ElButton>
             <ElButton @click="handleSwap">
               <ElIcon><Switch /></ElIcon>
               交换版本
@@ -166,20 +175,31 @@
   import { ref, computed, onMounted, watch } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
   import { ElMessage } from 'element-plus'
-  import { ArrowLeft, Switch, Right } from '@element-plus/icons-vue'
+  import { ArrowLeft, Switch, Right, MagicStick } from '@element-plus/icons-vue'
   import {
     getDesignVersionList,
     getVersionDiff,
+    getVersionCompareDetail,
+    startAIVersionAnalysis,
     type DesignVersionResponse,
-    type VersionDiffResponse
+    type VersionDiffResponse,
+    type VersionCompareResponse
   } from '@/api/designer-version'
   import VersionDetail from './VersionDetail.vue'
   import ChangeList from './ChangeList.vue'
+
+  // 定义响应类型 / Define response type
+  interface BaseResponse<T = unknown> {
+    code: number
+    msg: string
+    data: T
+  }
 
   const router = useRouter()
   const route = useRoute()
 
   const loading = ref(false)
+  const aiAnalyzing = ref(false)
   const versions = ref<DesignVersionResponse[]>([])
   const versionAId = ref<number | null>(null)
   const versionBId = ref<number | null>(null)
@@ -210,7 +230,7 @@
         projectId: projectId.value,
         current: 1,
         size: 100
-      })) as unknown as Http.BaseResponse<{ records: DesignVersionResponse[] }>
+      })) as unknown as BaseResponse<{ records: DesignVersionResponse[] }>
 
       if (res.code === 200 && res.data) {
         versions.value = res.data.records || []
@@ -229,7 +249,7 @@
       const res = (await getVersionDiff(
         versionAId.value,
         versionBId.value
-      )) as unknown as Http.BaseResponse<VersionDiffResponse>
+      )) as unknown as BaseResponse<VersionDiffResponse>
 
       if (res.code === 200 && res.data) {
         diffData.value = res.data
@@ -244,12 +264,202 @@
     }
   }
 
+  /*** Load compare detail by compareId (from notification) ***/
+  const loadCompareDetail = async (compareId: number) => {
+    loading.value = true
+    try {
+      const res = (await getVersionCompareDetail(
+        compareId
+      )) as unknown as BaseResponse<VersionCompareResponse>
+
+      if (res.code === 200 && res.data) {
+        const compareData = res.data
+        // 设置项目ID和版本ID / Set project ID and version IDs
+        projectId.value = compareData.projectId
+        versionAId.value = compareData.versionAId
+        versionBId.value = compareData.versionBId
+
+        // 加载版本列表 / Load version list
+        await loadVersions()
+
+        // 加载对比详情数据 / Load compare detail data
+        await loadCompareDetailData(compareData)
+      } else {
+        ElMessage.error(res.msg || '获取对比详情失败')
+      }
+    } catch (error) {
+      console.error('获取对比详情失败:', error)
+      ElMessage.error('获取对比详情失败')
+    } finally {
+      loading.value = false
+    }
+  }
+
   /*** Handle swap versions ***/
   const handleSwap = () => {
     const temp = versionAId.value
     versionAId.value = versionBId.value
     versionBId.value = temp
     loadDiff()
+  }
+
+  /*** Handle AI analyze - async analysis ***/
+  const handleAIAnalyze = async () => {
+    if (!versionAId.value || !versionBId.value || !projectId.value) {
+      ElMessage.warning('请先选择两个版本')
+      return
+    }
+
+    aiAnalyzing.value = true
+    try {
+      const res = (await startAIVersionAnalysis({
+        projectId: projectId.value,
+        versionAId: versionAId.value,
+        versionBId: versionBId.value
+      })) as unknown as BaseResponse<{ taskId: number; message: string }>
+
+      if (res.code === 200 && res.data?.taskId) {
+        ElMessage.success('AI分析任务已提交，完成后将通过通知告知您')
+        // 开始轮询检查分析状态 / Start polling for analysis status
+        pollAnalysisResult(res.data.taskId)
+      } else {
+        ElMessage.error(res.msg || 'AI分析任务提交失败')
+      }
+    } catch (error) {
+      console.error('AI分析任务提交失败:', error)
+      ElMessage.error('AI分析任务提交失败')
+    } finally {
+      aiAnalyzing.value = false
+    }
+  }
+
+  /*** Poll for AI analysis result ***/
+  const pollAnalysisResult = async (compareId: number) => {
+    const maxAttempts = 60 // 最多轮询60次（约2分钟）
+    const interval = 2000 // 每2秒轮询一次
+    let attempts = 0
+
+    const poll = async () => {
+      attempts++
+      try {
+        const res = (await getVersionCompareDetail(
+          compareId
+        )) as unknown as BaseResponse<VersionCompareResponse>
+
+        if (res.code === 200 && res.data) {
+          if (res.data.compareStatus === 'completed') {
+            // 分析完成，更新页面数据 / Analysis completed, update page data
+            ElMessage.success('AI分析完成')
+            await loadCompareDetailData(res.data)
+            return
+          } else if (res.data.compareStatus === 'failed') {
+            ElMessage.error('AI分析失败')
+            return
+          }
+        }
+
+        // 继续轮询 / Continue polling
+        if (attempts < maxAttempts) {
+          setTimeout(poll, interval)
+        } else {
+          ElMessage.info('分析时间较长，完成后将通过通知告知您')
+        }
+      } catch (error) {
+        console.error('轮询分析结果失败:', error)
+        if (attempts < maxAttempts) {
+          setTimeout(poll, interval)
+        }
+      }
+    }
+
+    // 延迟3秒后开始轮询 / Start polling after 3 seconds delay
+    setTimeout(poll, 3000)
+  }
+
+  /*** Load compare detail data into diffData ***/
+  const loadCompareDetailData = async (compareData: VersionCompareResponse) => {
+    // 先加载完整的版本详情 / First load full version details
+    if (compareData.versionAId && compareData.versionBId) {
+      const fullDiffRes = (await getVersionDiff(
+        compareData.versionAId,
+        compareData.versionBId
+      )) as unknown as BaseResponse<VersionDiffResponse>
+
+      if (fullDiffRes.code === 200 && fullDiffRes.data) {
+        // 使用完整的版本详情，但用AI分析的变化数据覆盖 / Use full version details but override with AI analysis changes
+        diffData.value = {
+          versionA: fullDiffRes.data.versionA,
+          versionB: fullDiffRes.data.versionB,
+          layoutChanges: compareData.layoutChanges?.length
+            ? compareData.layoutChanges
+            : fullDiffRes.data.layoutChanges || [],
+          areaChanges: compareData.areaChanges?.length
+            ? compareData.areaChanges
+            : fullDiffRes.data.areaChanges || [],
+          elementChanges: compareData.elementChanges?.length
+            ? compareData.elementChanges
+            : fullDiffRes.data.elementChanges || [],
+          styleChanges: compareData.styleChanges?.length
+            ? compareData.styleChanges
+            : fullDiffRes.data.styleChanges || [],
+          materialChanges: compareData.materialChanges?.length
+            ? compareData.materialChanges
+            : fullDiffRes.data.materialChanges || [],
+          summary: compareData.summary || fullDiffRes.data.summary
+        }
+        return
+      }
+    }
+
+    // 回退：只使用对比记录数据 / Fallback: use compare record data only
+    diffData.value = {
+      versionA: compareData.versionA
+        ? {
+            id: compareData.versionA.id,
+            projectId: compareData.projectId,
+            versionNumber: compareData.versionA.versionNumber,
+            versionName: compareData.versionA.versionName,
+            description: '',
+            designImages: [],
+            cadFileIds: [],
+            cadFiles: [],
+            layoutInfo: [],
+            areaInfo: [],
+            styleInfo: [],
+            materialInfo: [],
+            status: compareData.versionA.status,
+            createdBy: 0,
+            createdAt: '',
+            updatedAt: ''
+          }
+        : null,
+      versionB: compareData.versionB
+        ? {
+            id: compareData.versionB.id,
+            projectId: compareData.projectId,
+            versionNumber: compareData.versionB.versionNumber,
+            versionName: compareData.versionB.versionName,
+            description: '',
+            designImages: [],
+            cadFileIds: [],
+            cadFiles: [],
+            layoutInfo: [],
+            areaInfo: [],
+            styleInfo: [],
+            materialInfo: [],
+            status: compareData.versionB.status,
+            createdBy: 0,
+            createdAt: '',
+            updatedAt: ''
+          }
+        : null,
+      layoutChanges: compareData.layoutChanges || [],
+      areaChanges: compareData.areaChanges || [],
+      elementChanges: compareData.elementChanges || [],
+      styleChanges: compareData.styleChanges || [],
+      materialChanges: compareData.materialChanges || [],
+      summary: compareData.summary
+    }
   }
 
   /*** Handle back ***/
@@ -287,6 +497,12 @@
   watch(
     () => route.query,
     (newVal) => {
+      // 优先处理compareId（从通知跳转）/ Handle compareId first (from notification)
+      if (newVal.compareId) {
+        loadCompareDetail(Number(newVal.compareId))
+        return
+      }
+
       if (newVal.projectId) {
         projectId.value = Number(newVal.projectId)
         loadVersions()
@@ -305,6 +521,12 @@
   )
 
   onMounted(() => {
+    // 优先处理compareId（从通知跳转）/ Handle compareId first (from notification)
+    if (route.query.compareId) {
+      loadCompareDetail(Number(route.query.compareId))
+      return
+    }
+
     if (route.query.projectId) {
       projectId.value = Number(route.query.projectId)
       loadVersions()

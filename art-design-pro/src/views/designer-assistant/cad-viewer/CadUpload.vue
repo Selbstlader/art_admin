@@ -324,6 +324,7 @@
    * Requirements: 8.1, 8.2, 8.3, 8.5, 8.6
    ***/
   import { ref, computed, onMounted } from 'vue'
+  import { useRoute } from 'vue-router'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { UploadFilled, ZoomIn, ZoomOut, Refresh, Picture } from '@element-plus/icons-vue'
   import type { UploadFile } from 'element-plus'
@@ -348,9 +349,15 @@
   import { getDesignerProjects, type ProjectResponse } from '@/api/designer-project'
   import { getDocumentList } from '@/api/designer-document'
 
+  // 路由 / Route
+  const route = useRoute()
+
   // 项目列表 / Project list
   const projectList = ref<{ id: number; name: string }[]>([])
   const selectedProjectId = ref<number | null>(null)
+
+  // 路由参数中的CAD文件ID / CAD file ID from route params
+  const routeCadFileId = ref<number | null>(null)
 
   // CAD文件相关 / CAD file related
   const cadFileList = ref<CadFileResponse[]>([])
@@ -406,9 +413,51 @@
         id: p.id,
         name: p.name
       }))
-      if (projectList.value.length > 0) {
+
+      // 优先使用路由参数中的projectId / Prefer projectId from route params
+      const routeProjectId = route.query.projectId ? Number(route.query.projectId) : null
+      if (routeProjectId && projectList.value.some((p) => p.id === routeProjectId)) {
+        selectedProjectId.value = routeProjectId
+      } else if (projectList.value.length > 0) {
         selectedProjectId.value = projectList.value[0].id
-        loadCadFileList()
+      }
+
+      // 加载CAD文件列表 / Load CAD file list
+      await loadCadFileList()
+
+      // 如果路由参数中有CAD文件ID，自动打开预览 / Auto open preview if route has CAD file ID
+      const routeFileId = route.query.id ? Number(route.query.id) : null
+      if (routeFileId) {
+        routeCadFileId.value = routeFileId
+        // 在文件列表中查找并打开 / Find and open in file list
+        const targetFile = cadFileList.value.find((f) => f.id === routeFileId)
+        if (targetFile) {
+          handleViewCad(targetFile)
+        } else {
+          // 如果在当前项目列表中找不到，尝试直接获取解析结果 / If not found in current list, try to get parse result directly
+          try {
+            const res = (await getCadParseResult(routeFileId)) as any
+            if (res.data) {
+              // 创建一个临时的文件对象用于显示 / Create a temp file object for display
+              currentCadFile.value = {
+                id: routeFileId,
+                projectId: routeProjectId || 0,
+                fileName: res.data.fileName || 'CAD文件',
+                fileFormat: 'dxf',
+                parseStatus: 'completed',
+                createdAt: '',
+                updatedAt: ''
+              } as CadFileResponse
+              parseResult.value = res.data
+              layerList.value = (res.data?.layers || []).map((layer: CadLayerInfo) => ({
+                ...layer,
+                visible: true
+              }))
+            }
+          } catch {
+            ElMessage.warning('未找到指定的CAD文件')
+          }
+        }
       }
     } catch {
       console.error('加载项目列表失败')
@@ -470,6 +519,12 @@
     if (file.parseStatus === 'completed') {
       try {
         const res = (await getCadParseResult(file.id)) as any
+        if (!res.data) {
+          ElMessage.error('解析数据不存在，请尝试重新解析')
+          // 重置状态，允许重新解析 / Reset status, allow re-parse
+          file.parseStatus = 'pending'
+          return
+        }
         parseResult.value = res.data
 
         // 初始化图层列表 / Initialize layer list
@@ -477,8 +532,10 @@
           ...layer,
           visible: true
         }))
-      } catch {
-        ElMessage.error('获取解析结果失败')
+      } catch (error: any) {
+        ElMessage.error(error.message || '获取解析结果失败')
+        // 返回列表 / Back to list
+        currentCadFile.value = null
       }
     } else if (file.parseStatus === 'pending') {
       // 尝试解析 / Try to parse

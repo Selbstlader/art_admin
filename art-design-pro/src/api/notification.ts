@@ -4,6 +4,15 @@
  */
 import http from '@/utils/http'
 
+/*** 通知关联类型 / Notification related type ***/
+export type NotificationRelatedType =
+  | 'version_compare' // 版本对比
+  | 'render' // 效果图渲染
+  | 'cad_generation' // CAD生成
+  | 'document_analysis' // 文档分析
+  | 'design_suggestion' // 设计建议
+  | 'general' // 通用通知
+
 // 通知项类型 / Notification item type
 export interface NotificationItem {
   id: number
@@ -13,6 +22,7 @@ export interface NotificationItem {
   type: 'notice' | 'message' | 'email'
   isRead: boolean
   relatedId: number
+  relatedType: NotificationRelatedType // 关联类型，用于跳转
   createdAt: string
 }
 

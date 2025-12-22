@@ -15,10 +15,7 @@
               <ElIcon><Plus /></ElIcon>
               创建新版本
             </ElButton>
-            <ElButton
-              @click="handleCompare"
-              :disabled="selectedVersions.length !== 2"
-            >
+            <ElButton @click="handleCompare" :disabled="selectedVersions.length !== 2">
               <ElIcon><Switch /></ElIcon>
               对比选中版本
             </ElButton>
@@ -107,12 +104,7 @@
       width="700px"
       destroy-on-close
     >
-      <ElForm
-        ref="formRef"
-        :model="versionForm"
-        :rules="formRules"
-        label-width="100px"
-      >
+      <ElForm ref="formRef" :model="versionForm" :rules="formRules" label-width="100px">
         <ElFormItem label="版本名称" prop="versionName">
           <ElInput v-model="versionForm.versionName" placeholder="如：初稿、修改版1、最终版" />
         </ElFormItem>
@@ -127,7 +119,8 @@
         <ElFormItem label="设计图" prop="designImages">
           <ElUpload
             v-model:file-list="designImageList"
-            action="/api/file/upload"
+            :action="uploadUrl"
+            :headers="uploadHeaders"
             list-type="picture-card"
             :on-success="handleImageUploadSuccess"
             :on-remove="handleImageRemove"
@@ -144,6 +137,7 @@
             placeholder="选择关联的CAD文件"
             multiple
             style="width: 100%"
+            :loading="cadFilesLoading"
           >
             <ElOption
               v-for="cad in projectCadFiles"
@@ -153,7 +147,15 @@
             >
               <div class="cad-option">
                 <span>{{ cad.fileName }}</span>
-                <ElTag v-if="cad.isAiGenerated" type="success" size="small">AI生成</ElTag>
+                <ElTag v-if="cad.parseStatus === 'completed'" type="success" size="small"
+                  >已解析</ElTag
+                >
+                <ElTag v-else-if="cad.parseStatus === 'processing'" type="warning" size="small"
+                  >解析中</ElTag
+                >
+                <ElTag v-else-if="cad.parseStatus === 'failed'" type="danger" size="small"
+                  >解析失败</ElTag
+                >
               </div>
             </ElOption>
           </ElSelect>
@@ -187,9 +189,23 @@
    * 设计版本列表组件（重构版）
    * Requirements: 7.1, 7.2
    ***/
-  import { ref, reactive, onMounted, watch } from 'vue'
+  import { ref, reactive, computed, onMounted, watch } from 'vue'
+
+  // 定义响应类型 / Define response type
+  interface BaseResponse<T = unknown> {
+    code: number
+    msg: string
+    data: T
+  }
   import { useRouter, useRoute } from 'vue-router'
-  import { ElMessage, ElMessageBox, type FormInstance, type FormRules, type UploadUserFile } from 'element-plus'
+  import { useUserStore } from '@/store/modules/user'
+  import {
+    ElMessage,
+    ElMessageBox,
+    type FormInstance,
+    type FormRules,
+    type UploadUserFile
+  } from 'element-plus'
   import { ArrowLeft, Switch, Plus } from '@element-plus/icons-vue'
   import dayjs from 'dayjs'
   import {
@@ -199,9 +215,12 @@
     deleteDesignVersion,
     type DesignVersionResponse
   } from '@/api/designer-version'
+  import { getCadFileList, type CadFileResponse } from '@/api/designer-cad'
+  import VersionDetail from './VersionDetail.vue'
 
   const router = useRouter()
   const route = useRoute()
+  const userStore = useUserStore()
 
   /*** State ***/
   const loading = ref(false)
@@ -212,9 +231,22 @@
   const versions = ref<DesignVersionResponse[]>([])
   const selectedVersions = ref<DesignVersionResponse[]>([])
   const currentVersion = ref<DesignVersionResponse | null>(null)
-  const projectCadFiles = ref<{ id: number; fileName: string; isAiGenerated?: boolean }[]>([])
+  const projectCadFiles = ref<CadFileResponse[]>([])
+  const cadFilesLoading = ref(false)
   const designImageList = ref<UploadUserFile[]>([])
   const formRef = ref<FormInstance>()
+
+  /*** Upload configuration ***/
+  // 上传地址（带认证）
+  const uploadUrl = computed(() => {
+    const baseUrl = import.meta.env.VITE_API_URL || ''
+    return `${baseUrl}/api/file/upload`
+  })
+
+  // 上传请求头（携带 token）
+  const uploadHeaders = computed(() => ({
+    Authorization: `Bearer ${userStore.accessToken}`
+  }))
 
   const pagination = reactive({
     current: 1,
@@ -248,7 +280,7 @@
         projectId: projectId.value,
         current: pagination.current,
         size: pagination.size
-      })) as unknown as Http.BaseResponse<{ records: DesignVersionResponse[]; total: number }>
+      })) as unknown as BaseResponse<{ records: DesignVersionResponse[]; total: number }>
 
       if (res.code === 200 && res.data) {
         versions.value = res.data.records || []
@@ -267,13 +299,25 @@
   /*** Load project CAD files ***/
   const loadProjectCadFiles = async () => {
     if (!projectId.value) return
-    // TODO: 调用API获取项目CAD文件列表
-    // 模拟数据 / Mock data
-    projectCadFiles.value = [
-      { id: 1, fileName: '平面布局图.dxf', isAiGenerated: true },
-      { id: 2, fileName: '立面图.dwg', isAiGenerated: false },
-      { id: 3, fileName: '天花图.dxf', isAiGenerated: true }
-    ]
+
+    cadFilesLoading.value = true
+    try {
+      const res = (await getCadFileList({
+        projectId: projectId.value,
+        current: 1,
+        size: 100 // 获取所有CAD文件用于选择
+      })) as unknown as BaseResponse<{ records: CadFileResponse[]; total: number }>
+
+      if (res.code === 200 && res.data) {
+        projectCadFiles.value = res.data.records || []
+      } else {
+        console.error('获取CAD文件列表失败:', res.msg)
+      }
+    } catch (error) {
+      console.error('获取CAD文件列表失败:', error)
+    } finally {
+      cadFilesLoading.value = false
+    }
   }
 
   /*** Handle selection change ***/
@@ -317,14 +361,15 @@
     versionForm.id = row.id
     versionForm.versionName = row.versionName
     versionForm.description = row.description
-    versionForm.designImages = row.designImages?.map(img => img.url) || []
-    versionForm.cadFileIds = [] // TODO: 从row.cadFileIds解析
+    versionForm.designImages = row.designImages?.map((img) => img.url) || []
+    versionForm.cadFileIds = row.cadFileIds || []
     versionForm.status = row.status
     // 设置图片列表
-    designImageList.value = row.designImages?.map((img, idx) => ({
-      name: img.name || `image-${idx}`,
-      url: img.url
-    })) || []
+    designImageList.value =
+      row.designImages?.map((img, idx) => ({
+        name: img.name || `image-${idx}`,
+        url: img.url
+      })) || []
     formDialogVisible.value = true
   }
 
@@ -343,7 +388,7 @@
         { type: 'warning' }
       )
 
-      const res = (await deleteDesignVersion(row.id)) as unknown as Http.BaseResponse<null>
+      const res = (await deleteDesignVersion(row.id)) as unknown as BaseResponse<null>
       if (res.code === 200) {
         ElMessage.success('删除成功')
         loadVersions()
@@ -359,7 +404,8 @@
   }
 
   /*** Handle image upload success ***/
-  const handleImageUploadSuccess = (response: any, file: UploadUserFile) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleImageUploadSuccess = (response: any, _file: UploadUserFile) => {
     if (response.code === 200 && response.data?.url) {
       versionForm.designImages.push(response.data.url)
     }
@@ -389,17 +435,18 @@
           versionName: versionForm.versionName,
           description: versionForm.description,
           designImages: versionForm.designImages,
+          cadFileIds: versionForm.cadFileIds,
           status: versionForm.status
         }
 
-        let res: Http.BaseResponse<DesignVersionResponse>
+        let res: BaseResponse<DesignVersionResponse>
         if (isEdit.value) {
           res = (await updateDesignVersion({
             id: versionForm.id,
             ...data
-          })) as unknown as Http.BaseResponse<DesignVersionResponse>
+          })) as unknown as BaseResponse<DesignVersionResponse>
         } else {
-          res = (await createDesignVersion(data)) as unknown as Http.BaseResponse<DesignVersionResponse>
+          res = (await createDesignVersion(data)) as unknown as BaseResponse<DesignVersionResponse>
         }
 
         if (res.code === 200) {

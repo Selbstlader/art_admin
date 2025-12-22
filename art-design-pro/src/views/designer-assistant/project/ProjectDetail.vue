@@ -93,7 +93,7 @@
               <div class="step-badge">5</div>
               <ElIcon :size="32"><Collection /></ElIcon>
               <span>设计版本管理</span>
-              <div class="desc">归档设计图和CAD文件</div>
+              <div class="desc">归档设计图和CAD文件，支持AI智能对比</div>
               <div class="count" v-if="versionCount">{{ versionCount }} 个版本</div>
             </ElCard>
           </ElCol>
@@ -104,13 +104,6 @@
               <span>施工图标注</span>
               <div class="desc">对CAD图纸添加施工标注</div>
               <div class="count" v-if="annotationCount">{{ annotationCount }} 个标注</div>
-            </ElCard>
-          </ElCol>
-          <ElCol :span="6">
-            <ElCard shadow="hover" class="module-card" @click="goToModule('version-compare')">
-              <ElIcon :size="32"><Switch /></ElIcon>
-              <span>版本对比</span>
-              <div class="desc">对比不同版本差异</div>
             </ElCard>
           </ElCol>
           <ElCol :span="6">
@@ -238,7 +231,6 @@
     PictureFilled,
     Files,
     MagicStick,
-    Switch,
     Goods,
     Cpu,
     EditPen,
@@ -272,7 +264,6 @@
     render: '/designer/designer-assistant/cad-viewer/CadUpload', // 效果图渲染入口在CAD预览页
     version: '/designer/designer-assistant/version-compare/VersionList',
     annotation: '/designer/designer-assistant/construction-annotation/AnnotationList',
-    'version-compare': '/designer/designer-assistant/version-compare/VersionDiff',
     'design-compare': '/designer/designer-assistant/design-compare/CompareUpload'
   }
 

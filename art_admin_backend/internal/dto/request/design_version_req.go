@@ -67,3 +67,11 @@ type UploadVersionImageRequest struct {
 	ProjectID uint `form:"projectId" binding:"required"` // 项目ID / Project ID
 	VersionID uint `form:"versionId"`                    // 版本ID(可选，不传则创建新版本) / Version ID (optional)
 }
+
+// AIAnalyzeVersionDiffRequest AI版本对比分析请求
+// AI version diff analysis request
+type AIAnalyzeVersionDiffRequest struct {
+	ProjectID  uint `json:"projectId" binding:"required"`  // 项目ID / Project ID
+	VersionAID uint `json:"versionAId" binding:"required"` // 版本A ID / Version A ID
+	VersionBID uint `json:"versionBId" binding:"required"` // 版本B ID / Version B ID
+}

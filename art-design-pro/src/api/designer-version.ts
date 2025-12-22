@@ -263,6 +263,28 @@ export function getVersionDiff(versionAId: number, versionBId: number) {
   })
 }
 
+/*** AI Analyze Version Diff Request ***/
+export interface AIAnalyzeVersionDiffRequest {
+  projectId: number
+  versionAId: number
+  versionBId: number
+}
+
+/*** AI Analyze Version Diff Response ***/
+export interface AIAnalyzeVersionDiffResponse {
+  taskId: number
+  message: string
+}
+
+/*** Start AI version diff analysis (async) ***/
+export function startAIVersionAnalysis(data: AIAnalyzeVersionDiffRequest) {
+  return request.post<Http.BaseResponse<AIAnalyzeVersionDiffResponse>>({
+    url: '/api/designer/versions/ai-analyze',
+    data,
+    _fullResponse: true
+  })
+}
+
 /*** Delete version compare record ***/
 export function deleteVersionCompare(id: number) {
   return request.del<Http.BaseResponse<null>>({
