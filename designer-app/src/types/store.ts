@@ -47,6 +47,9 @@ export interface NotificationState {
   unreadCount: number
   hasPermission: boolean
   loading: boolean
+  currentPage: number
+  hasMore: boolean
+  total: number
 }
 
 /*** 缓存数据结构 - Cache data structure ***/

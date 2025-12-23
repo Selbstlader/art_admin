@@ -39,17 +39,17 @@
     - **Property 19: 平台功能可用性**
     - **Validates: Requirements 4.1, 4.2, 7.1**
 
-- [ ] 2. Checkpoint - 确保基础架构完成
+- [x] 2. Checkpoint - 确保基础架构完成
   - 确保所有测试通过，如有问题请询问用户
 
-- [ ] 3. 用户认证模块
-  - [ ] 3.1 实现 User Store (Pinia)
+- [x] 3. 用户认证模块
+  - [x] 3.1 实现 User Store (Pinia)
     - 定义 UserState 接口
     - 实现 login、logout、getUserInfo actions
     - 实现 token 本地存储管理
     - _Requirements: 1.2, 1.4_
 
-  - [ ] 3.2 实现登录页面 (pages/login/index.vue)
+  - [x] 3.2 实现登录页面 (pages/login/index.vue)
     - 实现账号密码登录表单
     - 实现登录按钮和加载状态
     - 登录成功后跳转首页
@@ -59,14 +59,14 @@
     - **Property 1: Token 管理一致性**
     - **Validates: Requirements 1.2, 1.4**
 
-- [ ] 4. 项目列表模块
-  - [ ] 4.1 实现 Project Store (Pinia)
+- [x] 4. 项目列表模块
+  - [x] 4.1 实现 Project Store (Pinia)
     - 定义 ProjectState 接口
     - 实现 fetchList、loadMore、search actions
     - 实现本地缓存管理
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 8.1_
 
-  - [ ] 4.2 实现缓存管理工具
+  - [x] 4.2 实现缓存管理工具
     - 实现 setCache、getCache、isExpired 方法
     - 缓存过期时间设为 7 天
     - _Requirements: 8.1, 8.4_
@@ -76,13 +76,13 @@
     - **Property 15: 缓存过期判断**
     - **Validates: Requirements 8.1, 8.4**
 
-  - [ ] 4.4 实现 ProjectCard 组件
+  - [x] 4.4 实现 ProjectCard 组件
     - 悬浮卡片设计，蓝色渐变背景
     - 显示项目名称、状态、面积、更新时间
     - 点击触发 @click 事件
     - _Requirements: 2.1_
 
-  - [ ] 4.5 实现首页项目列表 (pages/index/index.vue)
+  - [x] 4.5 实现首页项目列表 (pages/index/index.vue)
     - 实现搜索框和实时过滤
     - 实现下拉刷新和上拉加载
     - 实现空状态展示
@@ -95,11 +95,11 @@
     - **Property 4: 搜索过滤结果匹配**
     - **Validates: Requirements 2.1, 2.3, 2.4**
 
-- [ ] 5. Checkpoint - 确保项目列表模块完成
+- [x] 5. Checkpoint - 确保项目列表模块完成
   - 确保所有测试通过，如有问题请询问用户
 
-- [ ] 6. 项目详情模块
-  - [ ] 6.1 实现项目详情页 (pages/project/detail.vue)
+- [x] 6. 项目详情模块
+  - [x] 6.1 实现项目详情页 (pages/project/detail.vue)
     - 展示项目基本信息（名称、描述、面积、预算、风格、状态）
     - 展示文档数量、设计图数量、最近分析时间
     - 提供"查看文档分析"、"查看成本预算"入口
@@ -110,14 +110,14 @@
     - **Property 20: 错误状态显示**
     - **Validates: Requirements 3.5**
 
-- [ ] 7. 文档分析模块
-  - [ ] 7.1 实现文档列表页 (pages/project/documents.vue)
+- [x] 7. 文档分析模块
+  - [x] 7.1 实现文档列表页 (pages/project/documents.vue)
     - 展示文档列表（文件名、分析状态、分析时间）
     - 点击已分析文档跳转详情
     - 未分析文档显示提示状态
     - _Requirements: 5.1, 5.4_
 
-  - [ ] 7.2 实现文档分析结果展示
+  - [x] 7.2 实现文档分析结果展示
     - 展示关键字提取结果
     - 按"项目概述、核心需求、特殊要求"三部分展示摘要
     - _Requirements: 5.2, 5.3_
@@ -126,14 +126,14 @@
     - **Property 8: 文档摘要结构完整性**
     - **Validates: Requirements 5.3**
 
-- [ ] 8. 成本预算模块
-  - [ ] 8.1 实现 CostSummaryCard 组件
+- [x] 8. 成本预算模块
+  - [x] 8.1 实现 CostSummaryCard 组件
     - 3D 立体数据图表设计
     - 显示总成本和预算上限
     - 超支时显示红色警告样式
     - _Requirements: 6.1, 6.2_
 
-  - [ ] 8.2 实现成本报告页 (pages/project/cost.vue)
+  - [x] 8.2 实现成本报告页 (pages/project/cost.vue)
     - 展示成本汇总卡片
     - 按类别（材料费、人工费、设备费、管理费）分项展示
     - 点击类别展开明细
@@ -147,20 +147,20 @@
 - [ ] 9. Checkpoint - 确保项目相关模块完成
   - 确保所有测试通过，如有问题请询问用户
 
-- [ ] 10. AI 对话模块 (仅 App)
-  - [ ] 10.1 实现 Chat Store (Pinia)
+- [x] 10. AI 对话模块 (仅 App)
+  - [x] 10.1 实现 Chat Store (Pinia)
     - 定义 ChatState 接口
     - 实现 sendMessage、loadHistory、clearSession actions
     - 实现流式消息处理
     - _Requirements: 4.4, 4.5, 4.7_
 
-  - [ ] 10.2 实现 ChatBubble 组件
+  - [x] 10.2 实现 ChatBubble 组件
     - 玻璃拟态设计
     - 区分用户消息和 AI 消息样式
     - 支持流式输出动画
     - _Requirements: 4.4, 4.5_
 
-  - [ ] 10.3 实现 AI 对话页面 (pages/chat/index.vue)
+  - [x] 10.3 实现 AI 对话页面 (pages/chat/index.vue)
     - 使用条件编译仅在 App 端显示
     - 实现对话界面和输入框
     - 实现流式输出展示
@@ -175,14 +175,14 @@
     - **Property 7: 项目上下文传递**
     - **Validates: Requirements 4.4, 4.5, 4.6**
 
-- [ ] 11. 设计图预览模块
-  - [ ] 11.1 实现设计图列表页 (pages/project/designs.vue)
+- [x] 11. 设计图预览模块
+  - [x] 11.1 实现设计图列表页 (pages/project/designs.vue)
     - 展示设计图缩略图网格
     - 显示加载进度指示器
     - 加载失败显示占位图
     - _Requirements: 9.1, 9.4, 9.5_
 
-  - [ ] 11.2 实现设计图全屏预览
+  - [x] 11.2 实现设计图全屏预览
     - 支持双指缩放和拖动
     - 支持左右滑动切换
     - _Requirements: 9.2, 9.3_
@@ -194,23 +194,23 @@
 - [ ] 12. Checkpoint - 确保 AI 对话和设计图模块完成
   - 确保所有测试通过，如有问题请询问用户
 
-- [ ] 13. 材料库模块
-  - [ ] 13.1 实现 MaterialCard 组件
+- [x] 13. 材料库模块
+  - [x] 13.1 实现 MaterialCard 组件
     - 显示材料图片、名称、品牌、单价
     - 点击跳转详情
     - _Requirements: 10.1_
 
-  - [ ] 13.2 实现材料分类页 (pages/material/index.vue)
+  - [x] 13.2 实现材料分类页 (pages/material/index.vue)
     - 展示材料分类列表（地板、墙面、天花、家具等）
     - 点击分类跳转材料列表
     - _Requirements: 10.1_
 
-  - [ ] 13.3 实现材料列表页 (pages/material/list.vue)
+  - [x] 13.3 实现材料列表页 (pages/material/list.vue)
     - 展示分类下的材料列表
     - 实现搜索功能（名称、品牌模糊搜索）
     - _Requirements: 10.2, 10.3_
 
-  - [ ] 13.4 实现材料详情页 (pages/material/detail.vue)
+  - [x] 13.4 实现材料详情页 (pages/material/detail.vue)
     - 展示材料详情（名称、规格、单价、供应商、适用场景）
     - 图片支持点击放大
     - _Requirements: 10.4, 10.5_
@@ -220,24 +220,24 @@
     - **Property 17: 材料分类过滤正确性**
     - **Validates: Requirements 10.2, 10.3**
 
-- [ ] 14. 消息通知模块 (仅 App)
-  - [ ] 14.1 实现 Notification Store (Pinia)
+- [x] 14. 消息通知模块 (仅 App)
+  - [x] 14.1 实现 Notification Store (Pinia)
     - 定义 NotificationState 接口
     - 实现 fetchList、markAsRead、getUnreadCount actions
     - _Requirements: 7.5, 7.6, 7.7_
 
-  - [ ] 14.2 实现消息中心页 (pages/message/index.vue)
+  - [x] 14.2 实现消息中心页 (pages/message/index.vue)
     - 使用条件编译仅在 App 端显示
     - 展示通知列表（按时间倒序）
     - 点击标记已读并跳转
     - _Requirements: 7.1, 7.5, 7.6_
 
-  - [ ] 14.3 实现推送通知权限请求
+  - [x] 14.3 实现推送通知权限请求
     - App 启动时请求推送权限
     - 小程序使用订阅消息
     - _Requirements: 7.3, 7.2_
 
-  - [ ] 14.4 实现未读消息红点显示
+  - [x] 14.4 实现未读消息红点显示
     - 在 tabBar 消息图标上显示红点
     - _Requirements: 7.7_
 
@@ -247,8 +247,8 @@
     - **Property 13: 未读消息红点显示**
     - **Validates: Requirements 7.5, 7.6, 7.7**
 
-- [ ] 15. 我的页面模块
-  - [ ] 15.1 实现我的页面 (pages/mine/index.vue)
+- [x] 15. 我的页面模块
+  - [x] 15.1 实现我的页面 (pages/mine/index.vue)
     - 展示用户头像、名称、角色
     - 实现退出登录（确认弹窗）
     - 实现关于页面（版本号）

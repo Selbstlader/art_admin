@@ -17,6 +17,9 @@
 - 网络请求：uni.request 封装
 - 数据缓存：uni.setStorageSync / uni.getStorageSync
 
+**APP手机UI设计**
+- APP手机UI设计，C4D风格高级UI，3D立体数据图表，蓝色渐变界面，悬浮卡片设计，玻璃拟态按钮，动态数据实时显示，纯白色背景，杰作，高细节、卡片每个数字清晰
+
 ## Architecture
 
 ```

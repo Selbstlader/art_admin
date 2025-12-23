@@ -8,6 +8,7 @@ export { projectApi } from './project'
 export { documentApi } from './document'
 export { costApi } from './cost'
 export { materialApi } from './material'
+export { designApi } from './design'
 
 // 以下 API 仅在 App 端使用
 // The following APIs are only used in App

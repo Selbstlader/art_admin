@@ -11,7 +11,7 @@ export const notificationApi = {
   /*** 获取通知列表 - Get notification list ***/
   getList(params?: PageParams): Promise<ApiResponse<PageResponse<Notification>>> {
     return request({
-      url: '/api/v1/notifications',
+      url: '/api/notifications',
       method: 'GET',
       data: params
     })
@@ -20,7 +20,7 @@ export const notificationApi = {
   /*** 标记为已读 - Mark as read ***/
   markAsRead(id: number): Promise<ApiResponse<null>> {
     return request({
-      url: `/api/v1/notifications/${id}/read`,
+      url: `/api/notifications/${id}/read`,
       method: 'PUT'
     })
   },
@@ -28,7 +28,7 @@ export const notificationApi = {
   /*** 获取未读数量 - Get unread count ***/
   getUnreadCount(): Promise<ApiResponse<number>> {
     return request({
-      url: '/api/v1/notifications/unread-count',
+      url: '/api/notifications/unread-count',
       method: 'GET'
     })
   },
@@ -36,7 +36,7 @@ export const notificationApi = {
   /*** 标记全部已读 - Mark all as read ***/
   markAllAsRead(): Promise<ApiResponse<null>> {
     return request({
-      url: '/api/v1/notifications/read-all',
+      url: '/api/notifications/read-all',
       method: 'PUT'
     })
   }

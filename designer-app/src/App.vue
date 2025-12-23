@@ -1,13 +1,99 @@
 <script setup lang="ts">
 /*** Root App component - handles app lifecycle events ***/
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app'
+import { useNotificationStore } from '@/store/notification'
+import { pushManager, subscribeManager } from '@/utils/push'
+import { platform } from '@/utils/platform'
+
+/*** 初始化推送通知 - Initialize push notifications ***/
+const initPushNotification = async () => {
+  const notificationStore = useNotificationStore()
+  
+  // #ifdef APP-PLUS
+  /*** Request push permission on App ***/
+  const hasPermission = await pushManager.requestPermission()
+  notificationStore.setPermission(hasPermission)
+  
+  if (hasPermission) {
+    /*** Listen to push messages ***/
+    pushManager.onPushMessage((message) => {
+      console.log('收到推送消息:', message)
+      
+      if (message.type === 'click') {
+        /*** Handle push message click - navigate to related page ***/
+        handlePushClick(message.payload)
+      } else if (message.type === 'receive') {
+        /*** Handle push message receive - refresh unread count ***/
+        notificationStore.getUnreadCount()
+      }
+    })
+  }
+  // #endif
+  
+  // #ifdef MP-WEIXIN
+  /*** Request subscribe message permission on Mini Program ***/
+  /*** Note: Subscribe message templates need to be configured in WeChat backend ***/
+  const subscribeResult = await subscribeManager.requestSubscribe([
+    // TODO: 添加实际的订阅消息模板 ID
+    // 'template_id_1',
+    // 'template_id_2'
+  ])
+  notificationStore.setPermission(subscribeResult.success)
+  // #endif
+}
+
+/*** 处理推送消息点击 - Handle push message click ***/
+const handlePushClick = (payload: any) => {
+  if (!payload) return
+  
+  try {
+    const data = typeof payload === 'string' ? JSON.parse(payload) : payload
+    
+    /*** Navigate based on notification type ***/
+    if (data.type === 'project' && data.projectId) {
+      uni.navigateTo({
+        url: `/pages/project/detail?id=${data.projectId}`
+      })
+    } else if (data.type === 'approval' && data.projectId) {
+      uni.navigateTo({
+        url: `/pages/project/detail?id=${data.projectId}`
+      })
+    } else {
+      /*** Default: go to message center ***/
+      uni.switchTab({
+        url: '/pages/message/index'
+      })
+    }
+  } catch (error) {
+    console.error('解析推送消息失败:', error)
+    /*** Fallback: go to message center ***/
+    uni.switchTab({
+      url: '/pages/message/index'
+    })
+  }
+}
+
+/*** 初始化未读消息数量 - Initialize unread message count ***/
+const initUnreadCount = async () => {
+  // #ifdef APP-PLUS
+  const notificationStore = useNotificationStore()
+  /*** getUnreadCount will automatically update tabBar badge ***/
+  await notificationStore.getUnreadCount()
+  // #endif
+}
 
 onLaunch(() => {
   console.log('App Launch')
+  
+  /*** Initialize push notification on app launch ***/
+  initPushNotification()
 })
 
 onShow(() => {
   console.log('App Show')
+  
+  /*** Refresh unread count when app becomes visible ***/
+  initUnreadCount()
 })
 
 onHide(() => {

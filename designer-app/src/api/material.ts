@@ -11,7 +11,7 @@ export const materialApi = {
   /*** 获取材料分类 - Get material categories ***/
   getCategories(): Promise<ApiResponse<MaterialCategory[]>> {
     return request({
-      url: '/api/v1/designer/materials/categories',
+      url: '/api/designer/materials/categories',
       method: 'GET'
     })
   },
@@ -19,7 +19,7 @@ export const materialApi = {
   /*** 获取材料列表 - Get material list ***/
   getList(params: MaterialListParams): Promise<ApiResponse<PageResponse<Material>>> {
     return request({
-      url: '/api/v1/designer/materials',
+      url: '/api/designer/materials',
       method: 'GET',
       data: params
     })
@@ -28,7 +28,7 @@ export const materialApi = {
   /*** 获取材料详情 - Get material detail ***/
   getDetail(id: number): Promise<ApiResponse<MaterialDetail>> {
     return request({
-      url: `/api/v1/designer/materials/${id}`,
+      url: `/api/designer/materials/${id}`,
       method: 'GET'
     })
   },
@@ -36,7 +36,7 @@ export const materialApi = {
   /*** 搜索材料 - Search materials ***/
   search(keyword: string): Promise<ApiResponse<Material[]>> {
     return request({
-      url: '/api/v1/designer/materials/search',
+      url: '/api/designer/materials/search',
       method: 'GET',
       data: { keyword }
     })

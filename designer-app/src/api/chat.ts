@@ -12,7 +12,7 @@ export const chatApi = {
   /*** 发送消息 - Send message ***/
   sendMessage(data: ChatRequest): Promise<ApiResponse<ChatResponse>> {
     return request({
-      url: '/api/v1/designer/chat/send',
+      url: '/api/designer/chat/send',
       method: 'POST',
       data,
       timeout: AI_REQUEST_TIMEOUT
@@ -42,7 +42,7 @@ export const chatApi = {
   /*** 获取历史消息 - Get history messages ***/
   getHistory(params: PageParams & { sessionId?: string }): Promise<ApiResponse<PageResponse<ChatMessage>>> {
     return request({
-      url: '/api/v1/designer/chat/history',
+      url: '/api/designer/chat/history',
       method: 'GET',
       data: params
     })
@@ -51,7 +51,7 @@ export const chatApi = {
   /*** 获取会话列表 - Get sessions ***/
   getSessions(projectId?: number): Promise<ApiResponse<ChatSession[]>> {
     return request({
-      url: '/api/v1/designer/chat/sessions',
+      url: '/api/designer/chat/sessions',
       method: 'GET',
       data: projectId ? { projectId } : {}
     })

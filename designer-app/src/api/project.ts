@@ -11,7 +11,7 @@ export const projectApi = {
   /*** 获取项目列表 - Get project list ***/
   getList(params: ProjectListParams): Promise<ApiResponse<PageResponse<Project>>> {
     return request({
-      url: '/api/v1/designer/projects',
+      url: '/api/designer/projects',
       method: 'GET',
       data: params
     })
@@ -20,7 +20,7 @@ export const projectApi = {
   /*** 获取项目详情 - Get project detail ***/
   getDetail(id: number): Promise<ApiResponse<ProjectDetail>> {
     return request({
-      url: `/api/v1/designer/projects/${id}`,
+      url: `/api/designer/projects/${id}`,
       method: 'GET'
     })
   },
@@ -28,7 +28,7 @@ export const projectApi = {
   /*** 搜索项目 - Search projects ***/
   search(keyword: string, page: number, size: number): Promise<ApiResponse<PageResponse<Project>>> {
     return request({
-      url: '/api/v1/designer/projects',
+      url: '/api/designer/projects',
       method: 'GET',
       data: { name: keyword, current: page, size }
     })

@@ -9,7 +9,7 @@ import { REQUEST_TIMEOUT, NetworkErrorType } from '@/types/common'
 /*** 请求配置选项 - Request options ***/
 export interface RequestOptions {
   url: string
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'HEAD' | 'TRACE' | 'CONNECT'
   data?: Record<string, any>
   header?: Record<string, string>
   timeout?: number
@@ -18,7 +18,18 @@ export interface RequestOptions {
 }
 
 /*** API 基础配置 - API base config ***/
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8888'
+// H5 开发模式直接请求后端，其他平台使用完整 URL
+// H5 dev mode requests backend directly, other platforms use full URL
+function getBaseUrl(): string {
+  // @ts-ignore - Vite env types
+  const envBaseUrl = typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_BASE_URL
+  
+  // 开发环境直接使用后端地址，因为 uni.request 不走 Vite 代理
+  // Dev environment uses backend URL directly, as uni.request doesn't use Vite proxy
+  return envBaseUrl || 'http://localhost:48080'
+}
+
+const BASE_URL = getBaseUrl()
 
 /*** 获取存储的 token - Get stored token ***/
 function getToken(): string {
@@ -234,5 +245,10 @@ export const http = {
   
   delete<T = any>(url: string, data?: Record<string, any>, options?: Partial<RequestOptions>): Promise<ApiResponse<T>> {
     return request<T>({ url, method: 'DELETE', data, ...options })
+  },
+
+  /*** OPTIONS 请求 - OPTIONS request ***/
+  options<T = any>(url: string, data?: Record<string, any>, options?: Partial<RequestOptions>): Promise<ApiResponse<T>> {
+    return request<T>({ url, method: 'OPTIONS', data, ...options })
   }
 }

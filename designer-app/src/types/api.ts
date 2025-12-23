@@ -27,17 +27,19 @@ export interface PageParams {
 
 /*** 登录响应 - Login response ***/
 export interface LoginResponse {
-  accessToken: string
+  token: string
+  accessToken?: string  // 兼容两种字段名
   refreshToken: string
-  expiresIn: number
-  user: UserInfo
+  expiresIn?: number
+  user?: UserInfo
 }
 
 /*** Token 响应 - Token response ***/
 export interface TokenResponse {
-  accessToken: string
+  token: string
+  accessToken?: string  // 兼容两种字段名
   refreshToken: string
-  expiresIn: number
+  expiresIn?: number
 }
 
 /*** 用户信息 - User info ***/
@@ -194,4 +196,24 @@ export interface Notification {
   relatedId?: number
   isRead: boolean
   createdAt: string
+}
+
+/*** 设计图信息 - Design image info ***/
+export interface DesignImage {
+  id: number
+  projectId: number
+  name: string
+  description?: string
+  imageUrl: string
+  thumbnailUrl?: string
+  fileSize: number
+  width?: number
+  height?: number
+  createdAt: string
+  updatedAt: string
+}
+
+/*** 设计图列表参数 - Design image list params ***/
+export interface DesignImageListParams extends PageParams {
+  projectId: number
 }
