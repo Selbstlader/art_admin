@@ -1,0 +1,72 @@
+/**
+ * UniApp 全局样式变量
+ * Global style variables for UniApp
+ */
+
+/* 主题色 - Theme colors */
+$primary-color: #3B82F6;
+$primary-dark: #1D4ED8;
+$primary-light: #60A5FA;
+
+/* 功能色 - Functional colors */
+$success-color: #10B981;
+$warning-color: #F59E0B;
+$danger-color: #EF4444;
+$info-color: #3B82F6;
+
+/* 文本色 - Text colors */
+$text-primary: #2C3E50;
+$text-secondary: #64748B;
+$text-placeholder: #94A3B8;
+$text-disabled: #CBD5E1;
+
+/* 背景色 - Background colors */
+$bg-page: #F5F7FA;
+$bg-card: #FFFFFF;
+$bg-hover: #F1F5F9;
+
+/* 边框色 - Border colors */
+$border-color: #E2E8F0;
+$border-light: #F1F5F9;
+
+/* 阴影 - Shadows */
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+
+/* 圆角 - Border radius */
+$radius-sm: 8rpx;
+$radius-md: 12rpx;
+$radius-lg: 16rpx;
+$radius-xl: 24rpx;
+
+/* 间距 - Spacing */
+$spacing-xs: 8rpx;
+$spacing-sm: 16rpx;
+$spacing-md: 24rpx;
+$spacing-lg: 32rpx;
+$spacing-xl: 48rpx;
+
+/* 字体大小 - Font sizes */
+$font-xs: 24rpx;
+$font-sm: 26rpx;
+$font-md: 28rpx;
+$font-lg: 32rpx;
+$font-xl: 36rpx;
+$font-xxl: 40rpx;
+
+/* 行高 - Line heights */
+$line-height-tight: 1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.75;
+
+/* 动画时长 - Animation durations */
+$transition-fast: 0.15s;
+$transition-normal: 0.2s;
+$transition-slow: 0.3s;
+
+/* uni-ui 组件主题色覆盖 */
+$uni-primary: $primary-color;
+$uni-success: $success-color;
+$uni-warning: $warning-color;
+$uni-error: $danger-color;
