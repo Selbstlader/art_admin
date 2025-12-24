@@ -43,6 +43,7 @@ type DatabaseConfig struct {
 	MaxIdleConns    int    `mapstructure:"maxIdleConns"`
 	MaxOpenConns    int    `mapstructure:"maxOpenConns"`
 	ConnMaxLifetime int    `mapstructure:"connMaxLifetime"` // 秒
+	TLS             bool   `mapstructure:"tls"`             // TiDB Cloud 等云数据库需要 TLS
 }
 
 // JWTConfig JWT配置
@@ -222,6 +223,9 @@ func overrideFromEnv(config *Config) {
 	if pass := viper.GetString("DB_PASSWORD"); pass != "" {
 		config.Database.Password = pass
 	}
+	if tls := viper.GetString("DB_TLS"); tls == "true" {
+		config.Database.TLS = true
+	}
 	if secret := viper.GetString("JWT_SECRET"); secret != "" {
 		config.JWT.Secret = secret
 	}
@@ -234,8 +238,9 @@ func overrideFromEnv(config *Config) {
 }
 
 // GetDSN 获取数据库连接字符串
+// 支持 TiDB Cloud 等需要 TLS 的云数据库
 func (c *DatabaseConfig) GetDSN() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=%t&loc=Local",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=%t&loc=Local",
 		c.Username,
 		c.Password,
 		c.Host,
@@ -244,6 +249,11 @@ func (c *DatabaseConfig) GetDSN() string {
 		c.Charset,
 		c.ParseTime,
 	)
+	// TiDB Cloud 需要 TLS 连接 / TiDB Cloud requires TLS
+	if c.TLS {
+		dsn += "&tls=true"
+	}
+	return dsn
 }
 
 // GetAccessTokenDuration 获取访问令牌有效期

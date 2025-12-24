@@ -3,22 +3,23 @@ package database
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"art_admin_backend/internal/model"
 	"art_admin_backend/internal/pkg/config"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
-// InitDB 初始化数据库连接
+// InitDB 初始化数据库连接，支持 MySQL 和 PostgreSQL
+// Initialize database connection, supports MySQL and PostgreSQL
 func InitDB(cfg *config.DatabaseConfig) error {
-	dsn := cfg.GetDSN()
-
 	// GORM 配置
 	gormConfig := &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -27,8 +28,25 @@ func InitDB(cfg *config.DatabaseConfig) error {
 		},
 	}
 
-	// 连接数据库
-	db, err := gorm.Open(mysql.Open(dsn), gormConfig)
+	var db *gorm.DB
+	var err error
+
+	// 优先使用 DATABASE_URL 环境变量（Render 等云平台）
+	// Prefer DATABASE_URL env var for cloud platforms like Render
+	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
+		log.Println("使用 DATABASE_URL 连接 PostgreSQL...")
+		db, err = gorm.Open(postgres.Open(databaseURL), gormConfig)
+	} else if cfg.Driver == "postgres" {
+		// PostgreSQL 连接
+		dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+			cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Database)
+		db, err = gorm.Open(postgres.Open(dsn), gormConfig)
+	} else {
+		// MySQL 连接（默认）
+		dsn := cfg.GetDSN()
+		db, err = gorm.Open(mysql.Open(dsn), gormConfig)
+	}
+
 	if err != nil {
 		return fmt.Errorf("连接数据库失败: %w", err)
 	}
