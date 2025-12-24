@@ -349,9 +349,10 @@ export interface UserRenderQuotaInfo {
 
 // 获取用户效果图配额
 export function fetchGetUserRenderQuota(userId: number) {
-  return request.get<UserRenderQuotaInfo>({
+  return request.get<Http.BaseResponse<UserRenderQuotaInfo>>({
     url: '/api/system/user/render-quota',
-    params: { userId }
+    params: { userId },
+    _fullResponse: true
   })
 }
 

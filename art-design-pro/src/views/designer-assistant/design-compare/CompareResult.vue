@@ -28,9 +28,9 @@
         <ElTableColumn label="设计图" width="120">
           <template #default="{ row }">
             <ElImage
-              v-if="row.designImageUrl"
-              :src="row.designImageUrl"
-              :preview-src-list="[row.designImageUrl]"
+              v-if="row.designImages?.length"
+              :src="row.designImages[0].fileUrl"
+              :preview-src-list="row.designImages.map((img: any) => img.fileUrl)"
               fit="cover"
               style="width: 80px; height: 60px; border-radius: 4px"
             />
@@ -108,9 +108,9 @@
         <!-- 设计图预览 -->
         <div class="image-preview">
           <ElImage
-            v-if="currentDetail.designImageUrl"
-            :src="currentDetail.designImageUrl"
-            :preview-src-list="[currentDetail.designImageUrl]"
+            v-if="currentDetail.designImages?.length"
+            :src="currentDetail.designImages[0].fileUrl"
+            :preview-src-list="currentDetail.designImages.map(img => img.fileUrl)"
             fit="contain"
             style="max-width: 100%; max-height: 300px"
           />

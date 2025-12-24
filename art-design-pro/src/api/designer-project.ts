@@ -121,7 +121,7 @@ export interface ProjectStatsResponse {
  * 获取设计师项目列表
  ***/
 export function getDesignerProjects(params: ProjectListParams) {
-  return request.get<ProjectListResponse>({
+  return request.get<Http.BaseResponse<ProjectListResponse>>({
     url: '/api/designer/projects',
     params,
     _fullResponse: true
