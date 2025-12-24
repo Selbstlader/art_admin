@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.zeabur.app/zeabur.json",
+  "build": {
+    "type": "go",
+    "go": {
+      "entry": "./cmd/server"
+    }
+  },
+  "start": {
+    "command": "./main"
+  }
+}
