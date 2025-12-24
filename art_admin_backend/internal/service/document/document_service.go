@@ -567,18 +567,122 @@ func (s *DocumentService) extractFromText(text string) *response.DocumentAnalysi
 }
 
 // GetSummary 获取文档摘要
-func (s *DocumentService) GetSummary(documentID uint, userID uint) (string, error) {
+// Get document summary - returns structured summary with overview, requirements, special
+func (s *DocumentService) GetSummary(documentID uint, userID uint) (*response.DocumentSummaryResponse, error) {
 	doc, err := s.repo.GetByIDWithProject(documentID)
 	if err != nil {
-		return "", errors.New("文档不存在")
+		return nil, errors.New("文档不存在")
 	}
 	if doc.Project != nil && doc.Project.UserID != userID {
-		return "", errors.New("无权访问该文档")
+		return nil, errors.New("无权访问该文档")
 	}
 	if doc.AnalysisStatus != "completed" {
-		return "", errors.New("文档尚未完成分析")
+		return nil, errors.New("文档尚未完成分析")
 	}
-	return doc.Summary, nil
+
+	// 解析摘要内容，提取项目概述、核心需求、特殊要求
+	// Parse summary content to extract overview, requirements, special
+	summary := doc.Summary
+	result := &response.DocumentSummaryResponse{}
+
+	// 尝试按段落分割摘要内容
+	// Try to split summary by sections
+	if strings.Contains(summary, "项目概述") || strings.Contains(summary, "核心需求") || strings.Contains(summary, "特殊要求") {
+		// 结构化摘要格式
+		lines := strings.Split(summary, "\n")
+		currentSection := ""
+		var sectionContent []string
+
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+
+			// 检测段落标题
+			if strings.Contains(line, "项目概述") || strings.Contains(line, "概述") {
+				if currentSection != "" && len(sectionContent) > 0 {
+					s.assignSectionContent(result, currentSection, strings.Join(sectionContent, "\n"))
+				}
+				currentSection = "overview"
+				sectionContent = []string{}
+				// 如果标题后有内容，提取它
+				if idx := strings.Index(line, "："); idx != -1 {
+					content := strings.TrimSpace(line[idx+3:])
+					if content != "" {
+						sectionContent = append(sectionContent, content)
+					}
+				} else if idx := strings.Index(line, ":"); idx != -1 {
+					content := strings.TrimSpace(line[idx+1:])
+					if content != "" {
+						sectionContent = append(sectionContent, content)
+					}
+				}
+			} else if strings.Contains(line, "核心需求") || strings.Contains(line, "需求") {
+				if currentSection != "" && len(sectionContent) > 0 {
+					s.assignSectionContent(result, currentSection, strings.Join(sectionContent, "\n"))
+				}
+				currentSection = "requirements"
+				sectionContent = []string{}
+				if idx := strings.Index(line, "："); idx != -1 {
+					content := strings.TrimSpace(line[idx+3:])
+					if content != "" {
+						sectionContent = append(sectionContent, content)
+					}
+				} else if idx := strings.Index(line, ":"); idx != -1 {
+					content := strings.TrimSpace(line[idx+1:])
+					if content != "" {
+						sectionContent = append(sectionContent, content)
+					}
+				}
+			} else if strings.Contains(line, "特殊要求") || strings.Contains(line, "特殊") {
+				if currentSection != "" && len(sectionContent) > 0 {
+					s.assignSectionContent(result, currentSection, strings.Join(sectionContent, "\n"))
+				}
+				currentSection = "special"
+				sectionContent = []string{}
+				if idx := strings.Index(line, "："); idx != -1 {
+					content := strings.TrimSpace(line[idx+3:])
+					if content != "" {
+						sectionContent = append(sectionContent, content)
+					}
+				} else if idx := strings.Index(line, ":"); idx != -1 {
+					content := strings.TrimSpace(line[idx+1:])
+					if content != "" {
+						sectionContent = append(sectionContent, content)
+					}
+				}
+			} else if currentSection != "" {
+				sectionContent = append(sectionContent, line)
+			}
+		}
+
+		// 处理最后一个段落
+		if currentSection != "" && len(sectionContent) > 0 {
+			s.assignSectionContent(result, currentSection, strings.Join(sectionContent, "\n"))
+		}
+	}
+
+	// 如果没有解析到结构化内容，将整个摘要作为概述
+	// If no structured content parsed, use entire summary as overview
+	if result.Overview == "" && result.Requirements == "" && result.Special == "" {
+		result.Overview = summary
+	}
+
+	return result, nil
+}
+
+// assignSectionContent 分配段落内容到对应字段
+// Assign section content to corresponding field
+func (s *DocumentService) assignSectionContent(result *response.DocumentSummaryResponse, section string, content string) {
+	switch section {
+	case "overview":
+		result.Overview = content
+	case "requirements":
+		result.Requirements = content
+	case "special":
+		result.Special = content
+	}
 }
 
 // GetKeywords 获取文档关键字

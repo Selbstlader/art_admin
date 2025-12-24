@@ -1,78 +1,87 @@
 <template>
   <!-- 
     首页项目列表 - C4D风格高级UI
-    Home page project list - C4D style premium UI
+    Home page project list - C4D style premium UI with 3D effects
   -->
   <view class="page-container">
-    <!-- 顶部区域 - Header area with blue gradient -->
+    <!-- 背景装饰元素 - Background decorative elements -->
+    <view class="bg-decoration">
+      <view class="bg-orb bg-orb-1"></view>
+      <view class="bg-orb bg-orb-2"></view>
+      <view class="bg-orb bg-orb-3"></view>
+    </view>
+
+    <!-- 顶部区域 - Header area with 3D blue gradient -->
     <view class="header-area">
-      <view class="header-bg"></view>
+      <view class="header-bg">
+        <view class="header-bg-layer-1"></view>
+        <view class="header-bg-layer-2"></view>
+        <view class="header-bg-shine"></view>
+      </view>
       <view class="header-content">
+        <view class="header-badge">
+          <view class="badge-dot"></view>
+          <text class="badge-text">设计工作台</text>
+        </view>
         <text class="header-title">项目列表</text>
         <text class="header-subtitle">管理您的设计项目</text>
       </view>
+      <!-- 3D装饰球体 - 3D decorative spheres -->
+      <view class="header-sphere header-sphere-1"></view>
+      <view class="header-sphere header-sphere-2"></view>
     </view>
 
     <!-- 搜索框 - Search bar with glass morphism effect -->
     <view class="search-section">
       <view class="search-wrapper">
-        <view class="search-icon-wrapper">
-          <!-- Search icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-          </svg>
-        </view>
-        <input
-          class="search-input"
-          type="text"
-          placeholder="搜索项目名称"
-          v-model="searchKeyword"
-          @input="handleSearch"
-          @confirm="handleSearchConfirm"
-        />
-        <view v-if="searchKeyword" class="clear-btn" @click="clearSearch">
-          <!-- Clear icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="m15 9-6 6"></path>
-            <path d="m9 9 6 6"></path>
-          </svg>
+        <view class="search-glow"></view>
+        <view class="search-inner">
+          <view class="search-icon-wrapper">
+            <!-- Search icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+          </view>
+          <input class="search-input" type="text" placeholder="搜索项目名称" v-model="searchKeyword" @input="handleSearch"
+            @confirm="handleSearchConfirm" />
+          <view v-if="searchKeyword" class="clear-btn" @click="clearSearch">
+            <!-- Clear icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="m15 9-6 6"></path>
+              <path d="m9 9 6 6"></path>
+            </svg>
+          </view>
         </view>
       </view>
     </view>
 
     <!-- 项目列表 - Project list with scroll view -->
-    <scroll-view
-      class="project-list"
-      scroll-y
-      :refresher-enabled="true"
-      :refresher-triggered="isRefreshing"
-      @refresherrefresh="handleRefresh"
-      @scrolltolower="handleLoadMore"
-    >
-      <!-- 加载中状态 - Loading state -->
-      <view v-if="projectStore.loading && projectStore.list.length === 0" class="loading-container">
+    <scroll-view class="project-list" scroll-y :refresher-enabled="true" :refresher-triggered="isRefreshing"
+      @refresherrefresh="handleRefresh" @scrolltolower="handleLoadMore" refresher-default-style="none">
+      <!-- 加载中状态 - Loading state (仅首次加载时显示，排除下拉刷新场景) -->
+      <view v-if="projectStore.loading && projectStore.list.length === 0 && !isRefreshing" class="loading-container">
         <view class="loading-spinner"></view>
         <text class="loading-text">加载中...</text>
       </view>
 
       <!-- 项目卡片列表 - Project cards with 3D effect -->
       <view v-else-if="displayProjects.length > 0" class="project-cards">
-        <ProjectCard
-          v-for="project in displayProjects"
-          :key="project.id"
-          :project="project"
-          @click="goToDetail"
-        />
+        <ProjectCard v-for="project in displayProjects" :key="project.id" :project="project" @click="goToDetail" />
       </view>
 
       <!-- 空状态 - Empty state -->
       <view v-else class="empty-container">
         <view class="empty-icon">
           <!-- Folder icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path>
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z">
+            </path>
           </svg>
         </view>
         <text class="empty-title">{{ searchKeyword ? '未找到匹配项目' : '暂无项目' }}</text>
@@ -84,27 +93,21 @@
         <view v-if="loadingMore" class="loading-spinner-small"></view>
         <text class="load-more-text">{{ loadingMore ? '加载中...' : '上拉加载更多' }}</text>
       </view>
-      
+
       <!-- 没有更多数据 - No more data -->
       <view v-else-if="!projectStore.hasMore && displayProjects.length > 0" class="no-more">
         <text class="no-more-text">— 已加载全部项目 —</text>
       </view>
-      
+
       <!-- 底部安全区 - Bottom safe area -->
       <view class="safe-area-bottom"></view>
     </scroll-view>
 
-    <!-- 离线模式提示 - Offline mode tip -->
-    <view v-if="isOffline" class="offline-tip">
-      <view class="offline-icon">
-        <!-- Wifi off icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12.01 21.49 23.64 7c-.45-.34-4.93-4-11.64-4C5.28 3 .81 6.66.36 7l11.63 14.49.01.01.01-.01z"></path>
-          <line x1="2" x2="22" y1="2" y2="22"></line>
-        </svg>
-      </view>
-      <text class="offline-text">当前为离线模式</text>
-    </view>
+    <!-- 离线模式提示 - Offline mode tip (using global component) -->
+    <OfflineTip :bottom="180" />
+
+    <!-- 自定义底部导航栏 - Custom TabBar -->
+    <CustomTabBar />
   </view>
 </template>
 
@@ -113,19 +116,21 @@
  * Project list page - C4D style premium UI with 3D cards
  * 首页项目列表页面 - C4D风格高级UI，3D立体卡片设计
  ***/
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { onPullDownRefresh, onReachBottom, onShow } from '@dcloudio/uni-app'
 import { useProjectStore } from '@/store/project'
-import { ProjectCard } from '@/components'
+import { useNetworkStore } from '@/store/network'
+import { ProjectCard, OfflineTip } from '@/components'
+import CustomTabBar from '@/components/CustomTabBar.vue'
 
 /*** Store instance - 状态管理实例 ***/
 const projectStore = useProjectStore()
+const networkStore = useNetworkStore()
 
 /*** Local state - 本地状态 ***/
 const searchKeyword = ref('')
 const isRefreshing = ref(false)
 const loadingMore = ref(false)
-const isOffline = ref(false)
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 /*** 显示的项目列表 - Display projects (filtered or all) ***/
@@ -136,27 +141,10 @@ const displayProjects = computed(() => {
   return projectStore.list
 })
 
-/*** 检查网络状态 - Check network status ***/
-const checkNetworkStatus = (): void => {
-  uni.getNetworkType({
-    success: (res) => {
-      isOffline.value = res.networkType === 'none'
-    }
-  })
-}
-
-/*** 监听网络状态变化 - Listen to network status changes ***/
-const setupNetworkListener = (): void => {
-  uni.onNetworkStatusChange((res) => {
-    const wasOffline = isOffline.value
-    isOffline.value = !res.isConnected
-    
-    // 网络恢复时自动刷新 - Auto refresh when network recovers
-    if (wasOffline && res.isConnected) {
-      uni.showToast({ title: '网络已恢复', icon: 'none' })
-      handleRefresh()
-    }
-  })
+/*** 处理网络恢复事件 - Handle network recovery event ***/
+const handleNetworkRecovered = (): void => {
+  /*** Auto refresh data when network recovers ***/
+  handleRefresh()
 }
 
 /*** 处理搜索输入 - Handle search input with debounce ***/
@@ -165,10 +153,10 @@ const handleSearch = (): void => {
   if (searchTimer) {
     clearTimeout(searchTimer)
   }
-  
+
   // 设置本地过滤关键字 - Set local filter keyword
   projectStore.setSearchKeyword(searchKeyword.value)
-  
+
   // 防抖处理远程搜索 - Debounce remote search
   searchTimer = setTimeout(() => {
     if (searchKeyword.value.length >= 2) {
@@ -191,7 +179,7 @@ const handleSearchConfirm = (): void => {
 const clearSearch = (): void => {
   searchKeyword.value = ''
   projectStore.setSearchKeyword('')
-  
+
   // 重新加载完整列表 - Reload full list
   const cachedData = projectStore.loadFromCache()
   if (cachedData && cachedData.length > 0) {
@@ -204,9 +192,9 @@ const clearSearch = (): void => {
 /*** 处理下拉刷新 - Handle pull down refresh ***/
 const handleRefresh = async (): Promise<void> => {
   if (isRefreshing.value) return
-  
+
   isRefreshing.value = true
-  
+
   try {
     await projectStore.fetchList(true)
   } catch (error) {
@@ -220,9 +208,9 @@ const handleRefresh = async (): Promise<void> => {
 /*** 处理上拉加载更多 - Handle scroll to bottom load more ***/
 const handleLoadMore = async (): Promise<void> => {
   if (loadingMore.value || !projectStore.hasMore || projectStore.loading) return
-  
+
   loadingMore.value = true
-  
+
   try {
     await projectStore.loadMore()
   } catch (error) {
@@ -240,14 +228,12 @@ const goToDetail = (id: number): void => {
 
 /*** 初始化加载 - Initial load ***/
 const initLoad = async (): Promise<void> => {
-  checkNetworkStatus()
-  
   // 先尝试从缓存加载 - Try to load from cache first
   const cachedData = projectStore.loadFromCache()
-  
+
   if (cachedData && cachedData.length > 0 && !projectStore.isCacheExpired()) {
     // 使用缓存数据，后台静默刷新 - Use cache, silent refresh in background
-    if (!isOffline.value) {
+    if (networkStore.isOnline) {
       projectStore.fetchList(true).catch(() => {
         // 静默失败，已有缓存数据 - Silent fail, already have cached data
       })
@@ -257,7 +243,7 @@ const initLoad = async (): Promise<void> => {
     try {
       await projectStore.fetchList(true)
     } catch (error) {
-      if (isOffline.value) {
+      if (networkStore.isOffline) {
         uni.showToast({ title: '网络不可用，请检查网络连接', icon: 'none' })
       }
     }
@@ -266,13 +252,22 @@ const initLoad = async (): Promise<void> => {
 
 /*** 页面显示时 - On page show ***/
 onShow(() => {
-  checkNetworkStatus()
+  /*** Check network status when page shows ***/
+  networkStore.checkNetworkStatus()
 })
 
 /*** 组件挂载时 - On component mounted ***/
 onMounted(() => {
-  setupNetworkListener()
+  /*** Listen to network recovery event ***/
+  uni.$on('network:recovered', handleNetworkRecovered)
+
   initLoad()
+})
+
+/*** 组件卸载时 - On component unmounted ***/
+onUnmounted(() => {
+  /*** Remove network recovery event listener ***/
+  uni.$off('network:recovered', handleNetworkRecovered)
 })
 
 /*** 页面下拉刷新 - Page pull down refresh ***/
@@ -295,28 +290,171 @@ watch(searchKeyword, (newVal) => {
 </script>
 
 <style lang="scss" scoped>
-/*** 页面容器 - Page container with gradient background ***/
+/*** 页面容器 - Page container with subtle gradient ***/
 .page-container {
-  min-height: 100vh;
-  background: linear-gradient(180deg, #E8F4FD 0%, #FFFFFF 30%, #F8FAFC 100%);
+  min-height: calc(100vh - 50px);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-/*** 顶部区域 - Header area with blue gradient ***/
+/*** 背景装饰元素 - Background decorative orbs with glass effect ***/
+.bg-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100rpx);
+  opacity: 0.35;
+}
+
+.bg-orb-1 {
+  width: 500rpx;
+  height: 500rpx;
+  background: linear-gradient(135deg, #93C5FD 0%, #3B82F6 100%);
+  top: -150rpx;
+  right: -150rpx;
+  animation: float-orb 12s ease-in-out infinite;
+}
+
+.bg-orb-2 {
+  width: 400rpx;
+  height: 400rpx;
+  background: linear-gradient(135deg, #BFDBFE 0%, #60A5FA 100%);
+  top: 500rpx;
+  left: -200rpx;
+  animation: float-orb 15s ease-in-out infinite reverse;
+}
+
+.bg-orb-3 {
+  width: 300rpx;
+  height: 300rpx;
+  background: linear-gradient(135deg, #DBEAFE 0%, #93C5FD 100%);
+  bottom: 400rpx;
+  right: -100rpx;
+  animation: float-orb 10s ease-in-out infinite 2s;
+}
+
+@keyframes float-orb {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30rpx) scale(1.08); }
+}
+
+/*** 顶部区域 - Header area with 3D blue gradient ***/
 .header-area {
   position: relative;
-  padding: 60rpx 40rpx 80rpx;
-  overflow: hidden;
+  padding: 80rpx 40rpx 110rpx;
+  overflow: visible;
 }
 
 .header-bg {
   position: absolute;
-  top: -100rpx;
-  left: -50rpx;
-  right: -50rpx;
-  height: 400rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%);
-  border-radius: 0 0 60rpx 60rpx;
-  transform: rotate(-3deg);
+  top: -80rpx;
+  left: -60rpx;
+  right: -60rpx;
+  height: 460rpx;
+  overflow: hidden;
+}
+
+.header-bg-layer-1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    155deg,
+    #60A5FA 0%,
+    #3B82F6 30%,
+    #2563EB 60%,
+    #1D4ED8 100%
+  );
+  border-radius: 0 0 100rpx 100rpx;
+  transform: rotate(-3deg) translateY(-30rpx);
+}
+
+.header-bg-layer-2 {
+  position: absolute;
+  top: 30rpx;
+  left: 30rpx;
+  right: 30rpx;
+  bottom: -30rpx;
+  background: linear-gradient(155deg, #3B82F6 0%, #1E40AF 100%);
+  border-radius: 0 0 80rpx 80rpx;
+  transform: rotate(-1.5deg);
+  opacity: 0.5;
+}
+
+.header-bg-shine {
+  position: absolute;
+  top: 50rpx;
+  left: 80rpx;
+  width: 280rpx;
+  height: 140rpx;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  border-radius: 140rpx;
+  transform: rotate(-20deg);
+}
+
+/*** 3D装饰球体 - 3D decorative glass spheres ***/
+.header-sphere {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.header-sphere-1 {
+  width: 140rpx;
+  height: 140rpx;
+  top: 50rpx;
+  right: 30rpx;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.15) 40%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  box-shadow:
+    inset -15rpx -15rpx 40rpx rgba(0, 0, 0, 0.08),
+    inset 15rpx 15rpx 40rpx rgba(255, 255, 255, 0.4),
+    0 25rpx 50rpx rgba(30, 64, 175, 0.35);
+  animation: float-sphere 5s ease-in-out infinite;
+}
+
+.header-sphere-2 {
+  width: 70rpx;
+  height: 70rpx;
+  top: 190rpx;
+  right: 150rpx;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  box-shadow:
+    inset -8rpx -8rpx 20rpx rgba(0, 0, 0, 0.06),
+    inset 8rpx 8rpx 20rpx rgba(255, 255, 255, 0.5),
+    0 15rpx 30rpx rgba(30, 64, 175, 0.25);
+  animation: float-sphere 4s ease-in-out infinite 0.8s;
+}
+
+@keyframes float-sphere {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20rpx) rotate(5deg); }
 }
 
 .header-content {
@@ -324,114 +462,191 @@ watch(searchKeyword, (newVal) => {
   z-index: 2;
 }
 
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 10rpx 24rpx;
+  border-radius: 32rpx;
+  margin-bottom: 20rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.badge-dot {
+  width: 14rpx;
+  height: 14rpx;
+  background: linear-gradient(135deg, #4ADE80 0%, #22C55E 100%);
+  border-radius: 50%;
+  margin-right: 12rpx;
+  box-shadow: 0 0 12rpx rgba(34, 197, 94, 0.6);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 12rpx rgba(34, 197, 94, 0.6); }
+  50% { opacity: 0.7; box-shadow: 0 0 20rpx rgba(34, 197, 94, 0.8); }
+}
+
+.badge-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  letter-spacing: 1rpx;
+}
+
 .header-title {
-  font-size: 48rpx;
-  font-weight: 700;
+  font-size: 60rpx;
+  font-weight: 800;
   color: #FFFFFF;
   display: block;
-  margin-bottom: 8rpx;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  margin-bottom: 14rpx;
+  text-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.2);
+  letter-spacing: 3rpx;
 }
 
 .header-subtitle {
-  font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  letter-spacing: 1rpx;
 }
 
-/*** 搜索区域 - Search section with glass morphism ***/
+/*** 搜索区域 - Search section with premium glass morphism ***/
 .search-section {
   padding: 0 32rpx;
-  margin-top: -50rpx;
+  margin-top: -65rpx;
   position: relative;
   z-index: 10;
 }
 
 .search-wrapper {
+  position: relative;
+}
+
+.search-glow {
+  position: absolute;
+  top: 15rpx;
+  left: 25rpx;
+  right: 25rpx;
+  bottom: -15rpx;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.25) 0%,
+    rgba(37, 99, 235, 0.15) 100%
+  );
+  border-radius: 32rpx;
+  filter: blur(25rpx);
+}
+
+.search-inner {
+  position: relative;
   display: flex;
   align-items: center;
-  background: #FFFFFF;
-  border-radius: 24rpx;
-  padding: 0 28rpx;
-  height: 96rpx;
-  box-shadow: 
-    0 8rpx 32rpx rgba(59, 130, 246, 0.12),
-    0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 255, 255, 0.92) 100%
+  );
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 32rpx;
+  padding: 0 36rpx;
+  height: 112rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 12rpx 40rpx rgba(59, 130, 246, 0.18),
+    0 4rpx 12rpx rgba(0, 0, 0, 0.04),
+    inset 0 2rpx 6rpx rgba(255, 255, 255, 1);
 }
 
 .search-icon-wrapper {
-  width: 44rpx;
-  height: 44rpx;
+  width: 52rpx;
+  height: 52rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94A3B8;
-  margin-right: 16rpx;
+  color: #3B82F6;
+  margin-right: 18rpx;
 }
 
 .search-input {
   flex: 1;
-  font-size: 28rpx;
+  font-size: 32rpx;
   color: #1E293B;
   height: 100%;
+  background: transparent;
+  font-weight: 500;
 }
 
 .search-input::placeholder {
   color: #94A3B8;
+  font-weight: 400;
 }
 
 .clear-btn {
-  width: 44rpx;
-  height: 44rpx;
+  width: 52rpx;
+  height: 52rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94A3B8;
-  transition: opacity 0.2s ease;
-  
+  color: #64748B;
+  transition: all 0.25s ease;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #F1F5F9 0%, #E2E8F0 100%);
+  box-shadow: inset 0 1rpx 2rpx rgba(255, 255, 255, 0.8);
+
   &:active {
     opacity: 0.7;
+    transform: scale(0.9);
   }
 }
 
 /*** 项目列表 - Project list scroll view ***/
 .project-list {
-  height: calc(100vh - 280rpx);
-  padding: 32rpx;
+  width: 100%;
+  height: calc(100% - 400rpx);
+  padding: 48rpx 32rpx;
+  box-sizing: border-box;
 }
 
 .project-cards {
   display: flex;
   flex-direction: column;
-  gap: 28rpx;
+  gap: 36rpx;
 }
 
-/*** 加载状态 - Loading state ***/
+/*** 加载状态 - Loading state with glass spinner ***/
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120rpx 0;
+  padding: 180rpx 0;
 }
 
 .loading-spinner {
-  width: 48rpx;
-  height: 48rpx;
-  border: 4rpx solid #E2E8F0;
+  width: 72rpx;
+  height: 72rpx;
+  border: 6rpx solid rgba(59, 130, 246, 0.15);
   border-top-color: #3B82F6;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 20rpx;
+  animation: spin 0.9s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  margin-bottom: 28rpx;
+  box-shadow:
+    0 6rpx 20rpx rgba(59, 130, 246, 0.25),
+    inset 0 0 20rpx rgba(59, 130, 246, 0.05);
 }
 
 .loading-spinner-small {
-  width: 32rpx;
-  height: 32rpx;
-  border: 3rpx solid #E2E8F0;
+  width: 40rpx;
+  height: 40rpx;
+  border: 4rpx solid rgba(59, 130, 246, 0.15);
   border-top-color: #3B82F6;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-right: 12rpx;
+  animation: spin 0.9s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  margin-right: 14rpx;
 }
 
 @keyframes spin {
@@ -439,41 +654,55 @@ watch(searchKeyword, (newVal) => {
 }
 
 .loading-text {
-  font-size: 26rpx;
-  color: #94A3B8;
+  font-size: 30rpx;
+  color: #64748B;
+  font-weight: 600;
+  letter-spacing: 1rpx;
 }
 
-/*** 空状态 - Empty state ***/
+/*** 空状态 - Empty state with 3D glass icon ***/
 .empty-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120rpx 0;
+  padding: 180rpx 0;
 }
 
 .empty-icon {
-  width: 160rpx;
-  height: 160rpx;
+  width: 200rpx;
+  height: 200rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F1F5F9;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(241, 245, 249, 0.8) 100%
+  );
   border-radius: 50%;
-  margin-bottom: 32rpx;
-  color: #CBD5E1;
+  margin-bottom: 48rpx;
+  color: #94A3B8;
+  box-shadow:
+    0 25rpx 50rpx rgba(59, 130, 246, 0.1),
+    0 10rpx 20rpx rgba(0, 0, 0, 0.04),
+    inset 0 -6rpx 12rpx rgba(0, 0, 0, 0.03),
+    inset 0 6rpx 12rpx rgba(255, 255, 255, 1);
+  border: 2rpx solid rgba(255, 255, 255, 0.8);
 }
 
 .empty-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #64748B;
-  margin-bottom: 12rpx;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 14rpx;
+  letter-spacing: 1rpx;
 }
 
 .empty-desc {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #94A3B8;
+  font-weight: 500;
 }
 
 /*** 加载更多 - Load more ***/
@@ -481,12 +710,13 @@ watch(searchKeyword, (newVal) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32rpx 0;
+  padding: 48rpx 0;
 }
 
 .load-more-text {
-  font-size: 26rpx;
-  color: #94A3B8;
+  font-size: 28rpx;
+  color: #64748B;
+  font-weight: 500;
 }
 
 /*** 没有更多 - No more data ***/
@@ -494,46 +724,18 @@ watch(searchKeyword, (newVal) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32rpx 0;
+  padding: 48rpx 0;
 }
 
 .no-more-text {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #CBD5E1;
+  letter-spacing: 3rpx;
+  font-weight: 500;
 }
 
 /*** 底部安全区 - Bottom safe area ***/
 .safe-area-bottom {
-  height: 120rpx;
-}
-
-/*** 离线提示 - Offline tip ***/
-.offline-tip {
-  position: fixed;
-  bottom: 180rpx;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  background: rgba(30, 41, 59, 0.9);
-  padding: 16rpx 28rpx;
-  border-radius: 40rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
-  z-index: 100;
-}
-
-.offline-icon {
-  width: 32rpx;
-  height: 32rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #FBBF24;
-  margin-right: 12rpx;
-}
-
-.offline-text {
-  font-size: 24rpx;
-  color: #FFFFFF;
+  height: 160rpx;
 }
 </style>

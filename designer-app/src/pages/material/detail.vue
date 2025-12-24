@@ -240,9 +240,10 @@ const formattedPrice = computed((): string => {
 })
 
 /*** 页面加载 - Page load with route params ***/
-onLoad((options: { id?: string }) => {
-  if (options?.id) {
-    materialId.value = parseInt(options.id, 10)
+onLoad((options) => {
+  const params = options as { id?: string } | undefined
+  if (params?.id) {
+    materialId.value = parseInt(params.id, 10)
     loadMaterialDetail()
   } else {
     loadError.value = '材料ID无效'

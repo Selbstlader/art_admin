@@ -90,6 +90,9 @@
       <text class="not-supported-desc">消息通知功能仅在 App 端可用</text>
       <text class="not-supported-hint">请下载 App 体验完整功能</text>
     </view>
+    
+    <!-- 自定义底部导航栏 - Custom TabBar (小程序端不显示此页面，但保留组件) -->
+    <CustomTabBar />
   </view>
   <!-- #endif -->
 </template>
@@ -100,6 +103,7 @@ import { ref, onMounted } from 'vue'
 import { onShow, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
 import { useNotificationStore } from '@/store/notification'
 import type { Notification } from '@/types/api'
+import CustomTabBar from '@/components/CustomTabBar.vue'
 
 const notificationStore = useNotificationStore()
 const isRefreshing = ref(false)

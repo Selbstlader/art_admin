@@ -82,6 +82,9 @@
     <view v-if="errorMsg" class="error-toast">
       <text class="error-text">{{ errorMsg }}</text>
     </view>
+    
+    <!-- 自定义底部导航栏 - Custom TabBar -->
+    <CustomTabBar />
   </view>
 </template>
 
@@ -94,6 +97,7 @@
 import { ref, onMounted } from 'vue'
 import { materialApi } from '@/api/material'
 import type { MaterialCategory } from '@/types/api'
+import CustomTabBar from '@/components/CustomTabBar.vue'
 
 /*** 分类列表 - Category list ***/
 const categories = ref<MaterialCategory[]>([])

@@ -85,7 +85,7 @@
           </svg>
         </view>
         <text class="empty-text">{{ emptyText }}</text>
-        <view v-if="!searchKeyword" class="retry-btn" @click="loadMaterials">
+        <view v-if="!searchKeyword" class="retry-btn" @click="() => loadMaterials()">
           <text class="retry-text">点击重试</text>
         </view>
       </view>
@@ -113,12 +113,16 @@
  * 材料列表页面 - 展示分类下的材料列表，支持搜索功能
  * Display materials in category with search functionality
  ***/
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onLoad, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
 import { materialApi } from '@/api/material'
 import { MaterialCard } from '@/components'
+import { useNetworkStore } from '@/store/network'
 import type { Material, MaterialListParams } from '@/types/api'
 import { DEFAULT_PAGE_SIZE } from '@/types/common'
+
+/*** Store instance - 状态管理实例 ***/
+const networkStore = useNetworkStore()
 
 /*** 分类名称 - Category name from route params ***/
 const categoryName = ref('')
@@ -155,19 +159,43 @@ const emptyText = computed((): string => {
   if (searchKeyword.value) {
     return `未找到"${searchKeyword.value}"相关材料`
   }
+  if (networkStore.isOffline) {
+    return '网络不可用，请检查网络连接'
+  }
   return '暂无材料数据'
 })
 
+/*** 处理网络恢复事件 - Handle network recovery event ***/
+const handleNetworkRecovered = (): void => {
+  /*** Auto reload data when network recovers ***/
+  if (materials.value.length === 0) {
+    loadMaterials()
+  }
+}
+
 /*** 页面加载 - Page load with route params ***/
-onLoad((options: { category?: string }) => {
-  if (options?.category) {
-    categoryName.value = decodeURIComponent(options.category)
+onLoad((options) => {
+  const params = options as { category?: string } | undefined
+  if (params?.category) {
+    categoryName.value = decodeURIComponent(params.category)
     // 设置导航栏标题
     uni.setNavigationBarTitle({
       title: categoryName.value
     })
   }
   loadMaterials()
+})
+
+/*** 组件挂载时 - On component mounted ***/
+onMounted(() => {
+  /*** Listen to network recovery event ***/
+  uni.$on('network:recovered', handleNetworkRecovered)
+})
+
+/*** 组件卸载时 - On component unmounted ***/
+onUnmounted(() => {
+  /*** Remove network recovery event listener ***/
+  uni.$off('network:recovered', handleNetworkRecovered)
 })
 
 /*** 下拉刷新 - Pull down refresh ***/
@@ -229,7 +257,11 @@ const loadMaterials = async (isLoadMore: boolean = false): Promise<void> => {
     }
   } catch (error) {
     console.error('Failed to load materials:', error)
-    showError('网络错误，请稍后重试')
+    if (networkStore.isOffline) {
+      showError('网络不可用，请检查网络连接')
+    } else {
+      showError('网络错误，请稍后重试')
+    }
   } finally {
     loading.value = false
     loadingMore.value = false

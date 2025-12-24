@@ -58,3 +58,11 @@ type DocumentUploadResponse struct {
 	ProjectID uint   `json:"projectId"` // 项目ID / Project ID
 	Status    string `json:"status"`    // 状态 / Status
 }
+
+// DocumentSummaryResponse 文档摘要响应
+// Document summary response - structured summary with overview, requirements, special
+type DocumentSummaryResponse struct {
+	Overview     string `json:"overview"`     // 项目概述 / Project overview
+	Requirements string `json:"requirements"` // 核心需求 / Core requirements
+	Special      string `json:"special"`      // 特殊要求 / Special requirements
+}

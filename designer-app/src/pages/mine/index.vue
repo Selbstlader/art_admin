@@ -120,6 +120,9 @@
         </view>
       </view>
     </view>
+    
+    <!-- 自定义底部导航栏 - Custom TabBar -->
+    <CustomTabBar />
   </view>
 </template>
 
@@ -131,6 +134,7 @@
  ***/
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/store/user'
+import CustomTabBar from '@/components/CustomTabBar.vue'
 
 /*** Store instance - 状态管理实例 ***/
 const userStore = useUserStore()

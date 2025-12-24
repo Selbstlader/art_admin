@@ -52,6 +52,23 @@ export interface NotificationState {
   total: number
 }
 
+/*** 网络类型 - Network type ***/
+export type NetworkType = 'wifi' | '2g' | '3g' | '4g' | '5g' | 'ethernet' | 'unknown' | 'none'
+
+/*** 网络状态 - Network state ***/
+export interface NetworkState {
+  /*** 是否在线 - Is online ***/
+  isOnline: boolean
+  /*** 网络类型 - Network type ***/
+  networkType: NetworkType
+  /*** 上次在线时间 - Last online time ***/
+  lastOnlineTime: number
+  /*** 是否显示离线提示 - Show offline tip ***/
+  showOfflineTip: boolean
+  /*** 是否正在恢复 - Is recovering ***/
+  isRecovering: boolean
+}
+
 /*** 缓存数据结构 - Cache data structure ***/
 export interface CacheData<T> {
   data: T

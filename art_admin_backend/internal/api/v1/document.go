@@ -191,7 +191,7 @@ func GetDocumentKeywords(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "文档ID"
-// @Success 200 {object} response.Response{data=string}
+// @Success 200 {object} response.Response{data=response.DocumentSummaryResponse}
 // @Router /api/designer/documents/{id}/summary [get]
 func GetDocumentSummary(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)

@@ -42,17 +42,18 @@ type CustomCostItem struct {
 // ProjectCostSummary 项目成本汇总响应
 // Project cost summary response
 type ProjectCostSummary struct {
-	ProjectID       uint             `json:"projectId"`
-	MaterialCost    float64          `json:"materialCost"`
-	LaborCost       float64          `json:"laborCost"`
-	EquipmentCost   float64          `json:"equipmentCost"`
-	ManagementCost  float64          `json:"managementCost"`
-	CustomCosts     []CustomCostItem `json:"customCosts"`     // 自定义费用项 / Custom cost items
-	CustomCostTotal float64          `json:"customCostTotal"` // 自定义费用小计 / Custom cost subtotal
-	TotalCost       float64          `json:"totalCost"`
-	BudgetLimit     float64          `json:"budgetLimit"`
-	BudgetExceeded  bool             `json:"budgetExceeded"`
-	ExceededAmount  float64          `json:"exceededAmount"`
+	ProjectID       uint                  `json:"projectId"`
+	MaterialCost    float64               `json:"materialCost"`
+	LaborCost       float64               `json:"laborCost"`
+	EquipmentCost   float64               `json:"equipmentCost"`
+	ManagementCost  float64               `json:"managementCost"`
+	CustomCosts     []CustomCostItem      `json:"customCosts"`     // 自定义费用项 / Custom cost items
+	CustomCostTotal float64               `json:"customCostTotal"` // 自定义费用小计 / Custom cost subtotal
+	TotalCost       float64               `json:"totalCost"`
+	BudgetLimit     float64               `json:"budgetLimit"`
+	BudgetExceeded  bool                  `json:"budgetExceeded"`
+	ExceededAmount  float64               `json:"exceededAmount"`
+	MaterialItems   []ProjectMaterialItem `json:"materialItems"` // 材料明细列表 / Material items list
 }
 
 // ExportProjectMaterialsResponse 导出项目材料清单响应

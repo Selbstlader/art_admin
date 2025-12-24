@@ -1,71 +1,230 @@
 /**
  * UniApp 全局样式变量
  * Global style variables for UniApp
+ * 
+ * C4D风格高级UI设计系统
+ * C4D style premium UI design system
  */
+
+/* ============================================
+   蓝色渐变色系 - Blue Gradient Color System
+   ============================================ */
 
 /* 主题色 - Theme colors */
 $primary-color: #3B82F6;
 $primary-dark: #1D4ED8;
 $primary-light: #60A5FA;
+$primary-lighter: #93C5FD;
+$primary-lightest: #DBEAFE;
+
+/* 蓝色渐变 - Blue gradients */
+$gradient-primary: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+$gradient-primary-light: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+$gradient-primary-dark: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+$gradient-primary-vertical: linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%);
+$gradient-primary-radial: radial-gradient(circle, #60A5FA 0%, #3B82F6 100%);
+
+/* 蓝色渐变背景 - Blue gradient backgrounds */
+$gradient-bg-light: linear-gradient(180deg, #F0F7FF 0%, #F5F7FA 100%);
+$gradient-bg-card: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+$gradient-bg-header: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
 
 /* 功能色 - Functional colors */
 $success-color: #10B981;
+$success-light: #34D399;
+$success-dark: #059669;
 $warning-color: #F59E0B;
+$warning-light: #FBBF24;
+$warning-dark: #D97706;
 $danger-color: #EF4444;
+$danger-light: #F87171;
+$danger-dark: #DC2626;
 $info-color: #3B82F6;
 
+/* 功能色渐变 - Functional gradients */
+$gradient-success: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+$gradient-warning: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+$gradient-danger: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+
 /* 文本色 - Text colors */
-$text-primary: #2C3E50;
+$text-primary: #1E293B;
 $text-secondary: #64748B;
+$text-tertiary: #94A3B8;
 $text-placeholder: #94A3B8;
 $text-disabled: #CBD5E1;
+$text-inverse: #FFFFFF;
 
 /* 背景色 - Background colors */
 $bg-page: #F5F7FA;
 $bg-card: #FFFFFF;
 $bg-hover: #F1F5F9;
+$bg-active: #E2E8F0;
+$bg-mask: rgba(0, 0, 0, 0.5);
 
 /* 边框色 - Border colors */
 $border-color: #E2E8F0;
 $border-light: #F1F5F9;
+$border-primary: rgba(59, 130, 246, 0.2);
 
-/* 阴影 - Shadows */
+/* ============================================
+   悬浮卡片阴影 - Floating Card Shadows
+   ============================================ */
+
+/* 基础阴影 - Basic shadows */
+$shadow-xs: 0 1rpx 4rpx rgba(0, 0, 0, 0.04);
 $shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 $shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 $shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+$shadow-xl: 0 12rpx 32rpx rgba(0, 0, 0, 0.15);
 
-/* 圆角 - Border radius */
+/* 悬浮卡片阴影 - Floating card shadows (C4D style) */
+$shadow-card: 0 8rpx 32rpx rgba(59, 130, 246, 0.08), 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$shadow-card-hover: 0 12rpx 40rpx rgba(59, 130, 246, 0.12), 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+$shadow-card-active: 0 4rpx 16rpx rgba(59, 130, 246, 0.06), 0 2rpx 6rpx rgba(0, 0, 0, 0.03);
+
+/* 3D 立体阴影 - 3D stereoscopic shadows */
+$shadow-3d-bottom: radial-gradient(ellipse, rgba(0, 0, 0, 0.08) 0%, transparent 70%);
+$shadow-3d-primary: radial-gradient(ellipse, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+$shadow-3d-success: radial-gradient(ellipse, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+$shadow-3d-danger: radial-gradient(ellipse, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+
+/* 蓝色主题阴影 - Blue theme shadows */
+$shadow-primary-sm: 0 4rpx 12rpx rgba(59, 130, 246, 0.15);
+$shadow-primary-md: 0 8rpx 24rpx rgba(59, 130, 246, 0.2);
+$shadow-primary-lg: 0 12rpx 32rpx rgba(59, 130, 246, 0.25);
+
+/* 内阴影 - Inner shadows (for depth effect) */
+$shadow-inner-light: inset 0 1rpx 0 rgba(255, 255, 255, 0.2);
+$shadow-inner-dark: inset 0 -1rpx 0 rgba(0, 0, 0, 0.05);
+
+/* ============================================
+   玻璃拟态样式 - Glass Morphism Styles
+   ============================================ */
+
+/* 玻璃拟态背景 - Glass morphism backgrounds */
+$glass-bg-white: rgba(255, 255, 255, 0.95);
+$glass-bg-white-light: rgba(255, 255, 255, 0.85);
+$glass-bg-white-medium: rgba(255, 255, 255, 0.75);
+$glass-bg-primary: rgba(59, 130, 246, 0.1);
+$glass-bg-dark: rgba(30, 41, 59, 0.8);
+
+/* 玻璃拟态边框 - Glass morphism borders */
+$glass-border-white: 2rpx solid rgba(255, 255, 255, 0.3);
+$glass-border-light: 2rpx solid rgba(255, 255, 255, 0.2);
+$glass-border-primary: 2rpx solid rgba(59, 130, 246, 0.1);
+$glass-border-dark: 2rpx solid rgba(0, 0, 0, 0.1);
+
+/* 玻璃拟态阴影 - Glass morphism shadows */
+$glass-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06), inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
+$glass-shadow-primary: 0 8rpx 24rpx rgba(59, 130, 246, 0.25), inset 0 1rpx 0 rgba(255, 255, 255, 0.2);
+$glass-shadow-dark: 0 8rpx 32rpx rgba(0, 0, 0, 0.2), inset 0 1rpx 0 rgba(255, 255, 255, 0.1);
+
+/* 模糊效果值 - Blur effect values */
+$blur-sm: 8px;
+$blur-md: 10px;
+$blur-lg: 16px;
+$blur-xl: 24px;
+
+/* ============================================
+   圆角 - Border Radius
+   ============================================ */
+
+$radius-xs: 4rpx;
 $radius-sm: 8rpx;
 $radius-md: 12rpx;
 $radius-lg: 16rpx;
 $radius-xl: 24rpx;
+$radius-2xl: 28rpx;
+$radius-3xl: 32rpx;
+$radius-full: 9999rpx;
 
-/* 间距 - Spacing */
+/* ============================================
+   间距 - Spacing
+   ============================================ */
+
 $spacing-xs: 8rpx;
 $spacing-sm: 16rpx;
 $spacing-md: 24rpx;
 $spacing-lg: 32rpx;
 $spacing-xl: 48rpx;
+$spacing-2xl: 64rpx;
 
-/* 字体大小 - Font sizes */
-$font-xs: 24rpx;
-$font-sm: 26rpx;
+/* ============================================
+   字体大小 - Font Sizes
+   ============================================ */
+
+$font-xs: 20rpx;
+$font-sm: 24rpx;
 $font-md: 28rpx;
 $font-lg: 32rpx;
 $font-xl: 36rpx;
-$font-xxl: 40rpx;
+$font-2xl: 40rpx;
+$font-3xl: 48rpx;
+
+/* 字体粗细 - Font weights */
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
 
 /* 行高 - Line heights */
 $line-height-tight: 1.25;
 $line-height-normal: 1.5;
 $line-height-relaxed: 1.75;
 
+/* ============================================
+   动画 - Animations
+   ============================================ */
+
 /* 动画时长 - Animation durations */
 $transition-fast: 0.15s;
 $transition-normal: 0.2s;
 $transition-slow: 0.3s;
+$transition-slower: 0.5s;
 
-/* uni-ui 组件主题色覆盖 */
+/* 动画缓动函数 - Animation easing functions */
+$ease-default: ease;
+$ease-in-out: ease-in-out;
+$ease-out: ease-out;
+$ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+$ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+/* ============================================
+   组件特定样式 - Component Specific Styles
+   ============================================ */
+
+/* 按钮样式 - Button styles */
+$btn-height-sm: 64rpx;
+$btn-height-md: 80rpx;
+$btn-height-lg: 96rpx;
+$btn-padding-sm: 24rpx;
+$btn-padding-md: 32rpx;
+$btn-padding-lg: 48rpx;
+
+/* 输入框样式 - Input styles */
+$input-height: 88rpx;
+$input-padding: 24rpx;
+$input-bg: #F8FAFC;
+$input-border: 2rpx solid #E2E8F0;
+$input-border-focus: 2rpx solid #3B82F6;
+
+/* 卡片样式 - Card styles */
+$card-padding: 32rpx;
+$card-radius: 28rpx;
+$card-bg: #FFFFFF;
+
+/* TabBar 样式 - TabBar styles */
+$tabbar-height: 100rpx;
+$tabbar-icon-size: 48rpx;
+$tabbar-text-size: 22rpx;
+$tabbar-color: #94A3B8;
+$tabbar-color-active: #3B82F6;
+
+/* ============================================
+   uni-ui 组件主题色覆盖
+   uni-ui component theme color override
+   ============================================ */
+
 $uni-primary: $primary-color;
 $uni-success: $success-color;
 $uni-warning: $warning-color;

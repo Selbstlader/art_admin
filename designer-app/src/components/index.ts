@@ -14,3 +14,9 @@ export { default as ChatBubble } from './ChatBubble.vue'
 
 /*** 材料卡片组件 - Material card component ***/
 export { default as MaterialCard } from './MaterialCard.vue'
+
+/*** 离线提示组件 - Offline tip component ***/
+export { default as OfflineTip } from './OfflineTip.vue'
+
+/*** 自定义底部导航栏组件 - Custom TabBar component ***/
+export { default as CustomTabBar } from './CustomTabBar.vue'

@@ -1,0 +1,67 @@
+# 生产环境配置模板 - Railway 部署使用
+# Production config template for Railway deployment
+# 敏感信息通过环境变量注入 / Sensitive data injected via environment variables
+
+server:
+  port: 8080  # Railway 会通过 PORT 环境变量覆盖
+  mode: release
+
+database:
+  driver: mysql
+  host: ""      # 通过 DB_HOST 环境变量设置
+  port: 3306    # 通过 DB_PORT 环境变量设置
+  database: ""  # 通过 DB_NAME 环境变量设置
+  username: ""  # 通过 DB_USER 环境变量设置
+  password: ""  # 通过 DB_PASSWORD 环境变量设置
+  charset: utf8mb4
+  parseTime: true
+  maxIdleConns: 10
+  maxOpenConns: 100
+  connMaxLifetime: 3600
+
+jwt:
+  secret: ""  # 通过 JWT_SECRET 环境变量设置
+  accessTokenExpire: 86400
+  refreshTokenExpire: 604800
+  issuer: art-admin
+
+log:
+  level: info
+  filename: logs/app.log
+  maxSize: 100
+  maxAge: 30
+  maxBackups: 5
+  compress: true
+
+cors:
+  allowOrigins:
+    - "*"
+  allowMethods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowHeaders:
+    - Origin
+    - Content-Type
+    - Authorization
+  exposeHeaders:
+    - Content-Length
+  allowCredentials: true
+  maxAge: 86400
+
+volcengine:
+  apiKey: ""  # 通过 VOLCENGINE_API_KEY 环境变量设置
+  baseUrl: "https://ark.cn-beijing.volces.com/api/v3"
+  model: ""
+  timeout: 60
+  maxTokens: 4096
+  temperature: 0.7
+
+volcengineImage:
+  apiKey: ""  # 通过 VOLCENGINE_IMAGE_API_KEY 环境变量设置
+  baseUrl: "https://visual.volcengineapi.com"
+  model: ""
+  timeout: 120
+  size: "1024x1024"

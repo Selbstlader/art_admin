@@ -1,114 +1,126 @@
 <template>
   <!-- 
-    项目卡片组件 - C4D风格高级UI
-    Project Card Component - C4D style premium UI with 3D floating effect
+    项目卡片组件 - C4D风格玻璃拟态UI
+    Project Card Component - C4D style glassmorphism premium UI
   -->
   <view class="project-card" @click="handleClick">
-    <!-- 卡片左侧装饰条 - Card left accent bar with gradient -->
-    <view :class="['card-accent', `accent-${project.status}`]"></view>
-    
-    <view class="card-content">
-      <!-- 卡片头部 - Card header with title and status -->
-      <view class="card-header">
-        <text class="project-name">{{ project.name }}</text>
-        <view :class="['status-badge', `status-${project.status}`]">
-          <view class="status-dot"></view>
-          <text class="status-text">{{ statusText }}</text>
+    <!-- 卡片玻璃主体 - Card glass body -->
+    <view class="card-glass">
+      <!-- 玻璃高光层 - Glass highlight layer -->
+      <view class="glass-highlight"></view>
+      <!-- 玻璃边框光效 - Glass border glow -->
+      <view class="glass-border"></view>
+
+      <!-- 卡片内容 - Card content -->
+      <view class="card-inner">
+        <!-- 头部区域 - Header area -->
+        <view class="card-header">
+          <view class="title-area">
+            <text class="project-name">{{ project.name }}</text>
+          </view>
+          <view :class="['status-pill', `status-${project.status}`]">
+            <view class="pill-glow"></view>
+            <view class="pill-dot"></view>
+            <text class="pill-text">{{ statusText }}</text>
+          </view>
         </view>
-      </view>
-      
-      <!-- 卡片数据区 - Card data area with icons -->
-      <view class="card-data">
-        <view class="data-item">
-          <view class="data-icon">
-            <!-- Area icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect width="18" height="18" x="3" y="3" rx="2"></rect>
-              <path d="M3 9h18"></path>
-              <path d="M9 21V9"></path>
+
+        <!-- 数据展示区 - Data display area with 3D effect -->
+        <view class="data-section">
+          <view class="data-card">
+            <view class="data-card-inner">
+              <view class="data-icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                  <path d="M3 9h18"></path>
+                  <path d="M9 21V9"></path>
+                </svg>
+              </view>
+              <view class="data-info">
+                <text class="data-label">面积</text>
+                <view class="data-value-row">
+                  <text class="data-number">{{ project.area }}</text>
+                  <text class="data-unit">㎡</text>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <view class="data-card">
+            <view class="data-card-inner">
+              <view class="data-icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </view>
+              <view class="data-info">
+                <text class="data-label">更新时间</text>
+                <text class="data-date">{{ formattedDate }}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 底部区域 - Footer area -->
+        <view class="card-footer">
+          <view class="budget-area">
+            <text class="budget-label">预算</text>
+            <view class="budget-display">
+              <text class="budget-symbol">¥</text>
+              <text class="budget-amount">{{ formattedBudget }}</text>
+            </view>
+          </view>
+          <view class="action-btn">
+            <view class="btn-glow"></view>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m9 18 6-6-6-6"></path>
             </svg>
           </view>
-          <view class="data-content">
-            <text class="data-label">面积</text>
-            <text class="data-value">{{ project.area }}<text class="data-unit">㎡</text></text>
-          </view>
-        </view>
-        
-        <view class="data-divider"></view>
-        
-        <view class="data-item">
-          <view class="data-icon">
-            <!-- Time icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-          </view>
-          <view class="data-content">
-            <text class="data-label">更新时间</text>
-            <text class="data-value">{{ formattedDate }}</text>
-          </view>
-        </view>
-      </view>
-      
-      <!-- 卡片底部 - Card footer with budget info -->
-      <view class="card-footer">
-        <view class="budget-info">
-          <text class="budget-label">预算</text>
-          <text class="budget-value">¥{{ formattedBudget }}</text>
-        </view>
-        <view class="arrow-icon">
-          <!-- Arrow right icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m9 18 6-6-6-6"></path>
-          </svg>
         </view>
       </view>
     </view>
-    
-    <!-- 卡片3D阴影效果 - Card 3D shadow effect -->
-    <view class="card-shadow"></view>
+
+    <!-- 3D悬浮阴影 - 3D floating shadow -->
+    <view class="card-float-shadow"></view>
   </view>
 </template>
 
 <script setup lang="ts">
 /*** 
- * ProjectCard Component
- * 项目卡片组件 - 悬浮卡片设计，蓝色渐变背景
- * Floating card design with blue gradient background
+ * ProjectCard Component - C4D Glassmorphism Style
+ * 项目卡片组件 - C4D风格玻璃拟态设计
  ***/
 import { computed } from 'vue'
 import type { Project } from '@/types/api'
 import { ProjectStatusText, ProjectStatus } from '@/types/common'
 
-/*** Component Props - 组件属性定义 ***/
 interface Props {
   project: Project
 }
 
 const props = defineProps<Props>()
 
-/*** Component Emits - 组件事件定义 ***/
 const emit = defineEmits<{
   (e: 'click', id: number): void
 }>()
 
-/*** 状态文本 - Status text mapping ***/
+/*** 状态文本映射 ***/
 const statusText = computed((): string => {
   return ProjectStatusText[props.project.status as ProjectStatus] || props.project.status
 })
 
-/*** 格式化日期 - Format date to YYYY-MM-DD ***/
+/*** 格式化日期 ***/
 const formattedDate = computed((): string => {
   if (!props.project.updatedAt) return '-'
   const date = new Date(props.project.updatedAt)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 })
 
-/*** 格式化预算 - Format budget with unit ***/
+/*** 格式化预算 ***/
 const formattedBudget = computed((): string => {
   const budget = props.project.budget
   if (budget >= 10000) {
@@ -117,186 +129,261 @@ const formattedBudget = computed((): string => {
   return budget.toLocaleString()
 })
 
-/*** 处理点击事件 - Handle card click event ***/
 const handleClick = (): void => {
   emit('click', props.project.id)
 }
 </script>
 
 <style lang="scss" scoped>
-/*** 项目卡片 - Project card with 3D floating effect ***/
+/*** 项目卡片容器 ***/
 .project-card {
   position: relative;
-  background: #FFFFFF;
-  border-radius: 24rpx;
-  overflow: hidden;
-  display: flex;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
+  margin-bottom: 8rpx;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
   &:active {
-    transform: scale(0.98);
-    opacity: 0.9;
+    transform: scale(0.97) translateY(6rpx);
+
+    .card-float-shadow {
+      opacity: 0.3;
+      transform: translateY(-8rpx) scale(0.9);
+    }
+
+    .action-btn {
+      transform: translateX(6rpx);
+    }
   }
 }
 
-/*** 卡片左侧装饰条 - Card left accent bar ***/
-.card-accent {
-  width: 8rpx;
-  flex-shrink: 0;
+/*** 玻璃卡片主体 ***/
+.card-glass {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.55) 20%, rgba(240, 245, 255, 0.65) 100%);
+  -webkit-backdrop-filter: blur(40px);
+  border-radius: 32rpx;
+  overflow: hidden;
 }
 
-.accent-draft {
-  background: linear-gradient(180deg, #94A3B8 0%, #64748B 100%);
-}
-
-.accent-in_progress {
-  background: linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%);
-}
-
-.accent-completed {
-  background: linear-gradient(180deg, #34D399 0%, #10B981 100%);
-}
-
-.accent-archived {
-  background: linear-gradient(180deg, #F87171 0%, #EF4444 100%);
-}
-
-/*** 卡片内容区 - Card content area ***/
-.card-content {
-  flex: 1;
-  padding: 28rpx 28rpx 24rpx;
-}
-
-/*** 卡片3D阴影 - Card 3D shadow ***/
-.card-shadow {
+/*** 玻璃高光效果 ***/
+.glass-highlight {
   position: absolute;
-  bottom: -8rpx;
-  left: 24rpx;
-  right: 24rpx;
-  height: 16rpx;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.08) 0%, transparent 70%);
-  border-radius: 50%;
-  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(255, 255, 255, 0.2) 60%,
+      transparent 100%);
+  pointer-events: none;
 }
 
-/*** 卡片头部 - Card header ***/
+/*** 玻璃边框光效 ***/
+.glass-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 32rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8rpx 32rpx rgba(59, 130, 246, 0.12),
+    0 2rpx 8rpx rgba(0, 0, 0, 0.04),
+    inset 0 1rpx 0 rgba(255, 255, 255, 1),
+    inset 0 -1rpx 0 rgba(0, 0, 0, 0.02);
+  pointer-events: none;
+}
+
+/*** 卡片内容区 ***/
+.card-inner {
+  position: relative;
+  padding: 32rpx;
+  z-index: 1;
+}
+
+/*** 头部区域 ***/
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20rpx;
+  margin-bottom: 28rpx;
+}
+
+.title-area {
+  flex: 1;
+  margin-right: 20rpx;
 }
 
 .project-name {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1E293B;
-  flex: 1;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #0F172A;
   line-height: 1.4;
-  margin-right: 16rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: 1rpx;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/*** 状态徽章 - Status badge ***/
-.status-badge {
+/*** 状态胶囊 ***/
+.status-pill {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 28rpx;
   flex-shrink: 0;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
+.pill-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+}
+
+.pill-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  margin-right: 10rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.pill-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+/*** 状态颜色变体 ***/
 .status-draft {
-  background: rgba(148, 163, 184, 0.15);
+  background: rgba(113, 113, 122, 0.08);
+
+  .pill-glow {
+    background: linear-gradient(135deg, #A1A1AA, #71717A);
+  }
+
+  .pill-dot {
+    background: linear-gradient(135deg, #A1A1AA, #71717A);
+    box-shadow: 0 2rpx 8rpx rgba(113, 113, 122, 0.4);
+  }
+
+  .pill-text {
+    color: #52525B;
+  }
 }
 
 .status-in_progress {
-  background: rgba(59, 130, 246, 0.12);
+  background: rgba(59, 130, 246, 0.08);
+
+  .pill-glow {
+    background: linear-gradient(135deg, #60A5FA, #3B82F6);
+  }
+
+  .pill-dot {
+    background: linear-gradient(135deg, #60A5FA, #3B82F6);
+    box-shadow: 0 2rpx 12rpx rgba(59, 130, 246, 0.6);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .pill-text {
+    color: #2563EB;
+  }
 }
 
 .status-completed {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgba(34, 197, 94, 0.08);
+
+  .pill-glow {
+    background: linear-gradient(135deg, #4ADE80, #22C55E);
+  }
+
+  .pill-dot {
+    background: linear-gradient(135deg, #4ADE80, #22C55E);
+    box-shadow: 0 2rpx 8rpx rgba(34, 197, 94, 0.5);
+  }
+
+  .pill-text {
+    color: #16A34A;
+  }
 }
 
 .status-archived {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(249, 115, 22, 0.08);
+
+  .pill-glow {
+    background: linear-gradient(135deg, #FB923C, #F97316);
+  }
+
+  .pill-dot {
+    background: linear-gradient(135deg, #FB923C, #F97316);
+    box-shadow: 0 2rpx 8rpx rgba(249, 115, 22, 0.4);
+  }
+
+  .pill-text {
+    color: #EA580C;
+  }
 }
 
-.status-dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 50%;
-  margin-right: 8rpx;
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
 }
 
-.status-draft .status-dot {
-  background: #64748B;
-}
-
-.status-in_progress .status-dot {
-  background: #3B82F6;
-}
-
-.status-completed .status-dot {
-  background: #10B981;
-}
-
-.status-archived .status-dot {
-  background: #EF4444;
-}
-
-.status-text {
-  font-size: 22rpx;
-  font-weight: 500;
-}
-
-.status-draft .status-text {
-  color: #64748B;
-}
-
-.status-in_progress .status-text {
-  color: #3B82F6;
-}
-
-.status-completed .status-text {
-  color: #10B981;
-}
-
-.status-archived .status-text {
-  color: #EF4444;
-}
-
-/*** 卡片数据区 - Card data area ***/
-.card-data {
+/*** 数据展示区 ***/
+.data-section {
   display: flex;
-  align-items: center;
-  padding: 20rpx 0;
-  border-top: 1rpx solid #F1F5F9;
-  border-bottom: 1rpx solid #F1F5F9;
-  margin-bottom: 16rpx;
+  gap: 20rpx;
+  margin-bottom: 28rpx;
 }
 
-.data-item {
+.data-card {
   flex: 1;
-  display: flex;
-  align-items: center;
+  background: linear-gradient(145deg,
+      rgba(248, 250, 252, 0.8) 0%,
+      rgba(241, 245, 249, 0.6) 100%);
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 2rpx 4rpx rgba(255, 255, 255, 0.9),
+    inset 0 -1rpx 2rpx rgba(0, 0, 0, 0.02),
+    0 2rpx 8rpx rgba(0, 0, 0, 0.03);
 }
 
-.data-icon {
-  width: 40rpx;
-  height: 40rpx;
+.data-card-inner {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+}
+
+.data-icon-box {
+  width: 52rpx;
+  height: 52rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94A3B8;
-  margin-right: 12rpx;
+  background: linear-gradient(145deg, #FFFFFF 0%, #F1F5F9 100%);
+  border-radius: 16rpx;
+  margin-right: 16rpx;
+  color: #3B82F6;
+  box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.15),
+    inset 0 1rpx 2rpx rgba(255, 255, 255, 1);
 }
 
-.data-content {
+.data-info {
   display: flex;
   flex-direction: column;
 }
@@ -304,63 +391,111 @@ const handleClick = (): void => {
 .data-label {
   font-size: 22rpx;
   color: #94A3B8;
-  margin-bottom: 4rpx;
+  font-weight: 500;
+  margin-bottom: 6rpx;
 }
 
-.data-value {
-  font-size: 28rpx;
-  font-weight: 600;
+.data-value-row {
+  display: flex;
+  align-items: baseline;
+}
+
+.data-number {
+  font-size: 32rpx;
+  font-weight: 800;
   color: #1E293B;
+  letter-spacing: 0.5rpx;
 }
 
 .data-unit {
-  font-size: 22rpx;
-  font-weight: 400;
+  font-size: 20rpx;
+  font-weight: 600;
   color: #64748B;
+  margin-left: 4rpx;
 }
 
-.data-divider {
-  width: 1rpx;
-  height: 48rpx;
-  background: #E2E8F0;
-  margin: 0 24rpx;
+.data-date {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1E293B;
 }
 
-/*** 卡片底部 - Card footer ***/
+/*** 底部区域 ***/
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.budget-info {
+.budget-area {
   display: flex;
   align-items: baseline;
 }
 
 .budget-label {
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: #94A3B8;
-  margin-right: 8rpx;
+  font-weight: 500;
+  margin-right: 12rpx;
 }
 
-.budget-value {
-  font-size: 30rpx;
+.budget-display {
+  display: flex;
+  align-items: baseline;
+}
+
+.budget-symbol {
+  font-size: 28rpx;
   font-weight: 700;
   color: #3B82F6;
+  margin-right: 2rpx;
 }
 
-.arrow-icon {
-  width: 44rpx;
-  height: 44rpx;
+.budget-amount {
+  font-size: 40rpx;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/*** 操作按钮 ***/
+.action-btn {
+  position: relative;
+  width: 60rpx;
+  height: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #CBD5E1;
-  transition: transform 0.2s ease;
+  background: linear-gradient(145deg, #FFFFFF 0%, #F1F5F9 100%);
+  border-radius: 18rpx;
+  color: #3B82F6;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.15),
+    inset 0 1rpx 2rpx rgba(255, 255, 255, 1);
+  overflow: hidden;
 }
 
-.project-card:active .arrow-icon {
-  transform: translateX(4rpx);
+.btn-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+}
+
+/*** 3D悬浮阴影 ***/
+.card-float-shadow {
+  position: absolute;
+  bottom: -16rpx;
+  left: 40rpx;
+  right: 40rpx;
+  height: 32rpx;
+  background: radial-gradient(ellipse 50% 100%,
+      rgba(59, 130, 246, 0.15) 0%,
+      rgba(59, 130, 246, 0.05) 40%,
+      transparent 70%);
+  border-radius: 50%;
+  z-index: -1;
+  transition: all 0.35s ease;
 }
 </style>

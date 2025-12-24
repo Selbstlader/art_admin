@@ -38,7 +38,7 @@
       </view>
       <text class="error-title">加载失败</text>
       <text class="error-desc">{{ errorMessage }}</text>
-      <view class="retry-btn" @click="loadDesignList">
+      <view class="retry-btn" @click="() => loadDesignList()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
           <path d="M3 3v5h5"></path>
@@ -461,28 +461,79 @@ onReachBottom(() => {
 </script>
 
 <style lang="scss" scoped>
-/*** 页面容器 - Page container with gradient background ***/
+/*** 页面容器 - Page container with pure white background ***/
 .page-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #E8F4FD 0%, #FFFFFF 30%, #F8FAFC 100%);
+  background: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  /*** 背景装饰光晕 - Background decorative glow ***/
+  &::before {
+    content: '';
+    position: absolute;
+    top: -200rpx;
+    right: -150rpx;
+    width: 500rpx;
+    height: 500rpx;
+    background: radial-gradient(circle, rgba(244, 114, 182, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 200rpx;
+    left: -100rpx;
+    width: 400rpx;
+    height: 400rpx;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
 }
 
-/*** 顶部区域 - Header area with blue gradient ***/
+/*** 顶部区域 - Header area with pink gradient ***/
 .header-area {
   position: relative;
-  padding: 60rpx 32rpx 40rpx;
+  padding: 30rpx 30rpx 30rpx;
   overflow: hidden;
 }
 
 .header-bg {
   position: absolute;
-  top: -100rpx;
-  left: -50rpx;
-  right: -50rpx;
-  height: 350rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%);
-  border-radius: 0 0 60rpx 60rpx;
-  transform: rotate(-3deg);
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 320rpx;
+  background: linear-gradient(145deg, #F472B6 0%, #EC4899 100%);
+  border-radius: 0 0 48rpx 48rpx;
+
+  /*** 3D光泽效果 - 3D glossy effect ***/
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
+    border-radius: 0 0 48rpx 48rpx;
+  }
+
+  /*** 装饰光点 - Decorative light spots ***/
+  &::after {
+    content: '';
+    position: absolute;
+    top: 40rpx;
+    right: 60rpx;
+    width: 120rpx;
+    height: 120rpx;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+    border-radius: 50%;
+  }
 }
 
 .header-content {
@@ -493,39 +544,43 @@ onReachBottom(() => {
 }
 
 .back-btn {
-  width: 72rpx;
-  height: 72rpx;
+  width: 76rpx;
+  height: 76rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 20rpx;
+  backdrop-filter: blur(10px);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 22rpx;
   color: #FFFFFF;
   margin-right: 24rpx;
-  transition: all 0.2s ease;
-  
+
   &:active {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(0.92);
   }
 }
 
 .header-title {
-  font-size: 36rpx;
-  font-weight: 600;
+  font-size: 38rpx;
+  font-weight: 700;
   color: #FFFFFF;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  letter-spacing: 2rpx;
   flex: 1;
 }
 
 .header-count {
   background: rgba(255, 255, 255, 0.2);
-  padding: 8rpx 20rpx;
-  border-radius: 20rpx;
+  backdrop-filter: blur(10px);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  padding: 10rpx 24rpx;
+  border-radius: 24rpx;
 }
 
 .count-text {
   font-size: 24rpx;
+  font-weight: 500;
   color: #FFFFFF;
 }
 
@@ -534,18 +589,17 @@ onReachBottom(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 200rpx 0;
 }
 
 .loading-spinner {
-  width: 64rpx;
-  height: 64rpx;
-  border: 4rpx solid #E2E8F0;
-  border-top-color: #3B82F6;
+  width: 72rpx;
+  height: 72rpx;
+  border: 4rpx solid rgba(236, 72, 153, 0.15);
+  border-top-color: #EC4899;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin-bottom: 24rpx;
+  margin-bottom: 28rpx;
 }
 
 @keyframes spin {
@@ -554,33 +608,40 @@ onReachBottom(() => {
 
 .loading-text {
   font-size: 28rpx;
-  color: #94A3B8;
+  color: #64748B;
 }
 
-/*** 错误状态 - Error state ***/
-.error-container {
+/*** 玻璃拟态状态卡片 - Glass morphism state card ***/
+.error-container,
+.empty-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 160rpx 48rpx;
+  padding: 120rpx 48rpx;
+  margin: 0 32rpx;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.55) 20%, rgba(255, 240, 245, 0.65) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.04), inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
 }
 
 .error-icon {
-  width: 160rpx;
-  height: 160rpx;
+  width: 120rpx;
+  height: 120rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #FEF2F2;
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.8), rgba(254, 202, 202, 0.6));
   border-radius: 50%;
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
   color: #EF4444;
 }
 
 .error-title {
   font-size: 32rpx;
-  font-weight: 600;
+  font-weight: 700;
   color: #1E293B;
   margin-bottom: 12rpx;
 }
@@ -589,7 +650,7 @@ onReachBottom(() => {
   font-size: 26rpx;
   color: #64748B;
   text-align: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 32rpx;
 }
 
 .retry-btn {
@@ -597,62 +658,53 @@ onReachBottom(() => {
   align-items: center;
   justify-content: center;
   padding: 20rpx 48rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  background: linear-gradient(135deg, #F472B6 0%, #EC4899 100%);
   border-radius: 40rpx;
-  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(236, 72, 153, 0.25);
   transition: all 0.2s ease;
   color: #FFFFFF;
   
   &:active {
     transform: scale(0.95);
-    opacity: 0.9;
   }
 }
 
 .retry-text {
   font-size: 28rpx;
-  font-weight: 500;
+  font-weight: 600;
   color: #FFFFFF;
   margin-left: 12rpx;
 }
 
-/*** 空状态 - Empty state ***/
-.empty-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 160rpx 48rpx;
-}
-
 .empty-icon {
-  width: 160rpx;
-  height: 160rpx;
+  width: 120rpx;
+  height: 120rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+  background: linear-gradient(135deg, rgba(252, 231, 243, 0.8), rgba(251, 207, 232, 0.6));
   border-radius: 50%;
-  margin-bottom: 32rpx;
-  color: #94A3B8;
+  margin-bottom: 24rpx;
+  color: #EC4899;
 }
 
 .empty-title {
   font-size: 32rpx;
-  font-weight: 600;
+  font-weight: 700;
   color: #1E293B;
   margin-bottom: 12rpx;
 }
 
 .empty-desc {
   font-size: 26rpx;
-  color: #94A3B8;
+  color: #64748B;
 }
 
 /*** 内容滚动区 - Content scroll area ***/
 .content-scroll {
-  height: calc(100vh - 180rpx);
-  padding: 0 24rpx;
+  height: calc(100vh - 140rpx);
+  padding: 0 32rpx;
+  box-sizing: border-box;
 }
 
 /*** 设计图网格 - Design grid ***/
@@ -663,21 +715,34 @@ onReachBottom(() => {
   padding-top: 16rpx;
 }
 
-/*** 设计图卡片 - Design card with 3D effect ***/
+/*** 玻璃拟态设计图卡片 - Glass morphism design card ***/
 .design-card {
-  background: #FFFFFF;
-  border-radius: 24rpx;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.55) 20%, rgba(255, 240, 245, 0.65) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.04), 0 2rpx 8rpx rgba(0, 0, 0, 0.02), inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
   overflow: hidden;
-  box-shadow: 
-    0 8rpx 32rpx rgba(59, 130, 246, 0.08),
-    0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
+  position: relative;
+  
+  /*** 3D光泽效果 - 3D glossy effect ***/
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
+    border-radius: 28rpx 28rpx 0 0;
+    pointer-events: none;
+    z-index: 1;
+  }
   
   &:active {
     transform: scale(0.98);
-    box-shadow: 
-      0 4rpx 16rpx rgba(59, 130, 246, 0.12),
-      0 1rpx 4rpx rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4rpx 16rpx rgba(236, 72, 153, 0.12), 0 1rpx 4rpx rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -686,7 +751,7 @@ onReachBottom(() => {
   position: relative;
   width: 100%;
   padding-top: 100%; /* 1:1 比例 - 1:1 aspect ratio */
-  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  background: linear-gradient(135deg, rgba(252, 231, 243, 0.5) 0%, rgba(251, 207, 232, 0.3) 100%);
   overflow: hidden;
 }
 
@@ -711,14 +776,14 @@ onReachBottom(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  background: linear-gradient(135deg, rgba(252, 231, 243, 0.5) 0%, rgba(251, 207, 232, 0.3) 100%);
 }
 
 .loading-ring {
   width: 48rpx;
   height: 48rpx;
-  border: 4rpx solid #E2E8F0;
-  border-top-color: #3B82F6;
+  border: 4rpx solid rgba(236, 72, 153, 0.2);
+  border-top-color: #EC4899;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 12rpx;
@@ -799,8 +864,8 @@ onReachBottom(() => {
 .loading-more-spinner {
   width: 32rpx;
   height: 32rpx;
-  border: 3rpx solid #E2E8F0;
-  border-top-color: #3B82F6;
+  border: 3rpx solid rgba(236, 72, 153, 0.2);
+  border-top-color: #EC4899;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-right: 12rpx;
@@ -826,7 +891,7 @@ onReachBottom(() => {
 
 /*** 底部安全区 - Bottom safe area ***/
 .safe-area-bottom {
-  height: 60rpx;
+  height: 100rpx;
 }
 
 /*** 预览弹窗 - Preview modal ***/
@@ -861,13 +926,15 @@ onReachBottom(() => {
 }
 
 .preview-close {
-  width: 72rpx;
-  height: 72rpx;
+  width: 76rpx;
+  height: 76rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  border-radius: 22rpx;
   color: #FFFFFF;
   margin-right: 20rpx;
   
@@ -879,7 +946,7 @@ onReachBottom(() => {
 .preview-title {
   flex: 1;
   font-size: 32rpx;
-  font-weight: 600;
+  font-weight: 700;
   color: #FFFFFF;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -890,6 +957,9 @@ onReachBottom(() => {
   font-size: 26rpx;
   color: rgba(255, 255, 255, 0.7);
   margin-left: 16rpx;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
 }
 
 /*** 预览轮播 - Preview swiper ***/
@@ -931,7 +1001,7 @@ onReachBottom(() => {
   width: 64rpx;
   height: 64rpx;
   border: 4rpx solid rgba(255, 255, 255, 0.2);
-  border-top-color: #FFFFFF;
+  border-top-color: #F472B6;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 16rpx;

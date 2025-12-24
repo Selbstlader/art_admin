@@ -145,15 +145,23 @@ type ODAConverterConfig struct {
 
 var GlobalConfig *Config
 
-// LoadConfig 加载配置文件
+// LoadConfig 加载配置文件，支持环境变量覆盖
+// Load config from file with environment variable override support
 func LoadConfig(configPath string) (*Config, error) {
 	viper.SetConfigFile(configPath)
 	viper.SetConfigType("yaml")
 
-	// 读取配置文件
+	// 启用环境变量支持 / Enable environment variable support
+	viper.AutomaticEnv()
+
+	// 读取配置文件（如果存在）/ Read config file if exists
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("读取配置文件失败: %w", err)
+		// 配置文件不存在时使用默认值 / Use defaults if config file not found
+		fmt.Printf("配置文件未找到，使用环境变量: %v\n", err)
 	}
+
+	// 绑定环境变量到配置项 / Bind environment variables to config keys
+	bindEnvVariables()
 
 	// 解析配置
 	var config Config
@@ -161,8 +169,68 @@ func LoadConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("解析配置文件失败: %w", err)
 	}
 
+	// 从环境变量覆盖关键配置 / Override key configs from environment variables
+	overrideFromEnv(&config)
+
 	GlobalConfig = &config
 	return &config, nil
+}
+
+// bindEnvVariables 绑定环境变量
+// Bind environment variables to viper keys
+func bindEnvVariables() {
+	// 服务器配置 / Server config
+	viper.BindEnv("server.port", "PORT")
+	viper.BindEnv("server.mode", "GIN_MODE")
+
+	// 数据库配置 / Database config
+	viper.BindEnv("database.host", "DB_HOST")
+	viper.BindEnv("database.port", "DB_PORT")
+	viper.BindEnv("database.database", "DB_NAME")
+	viper.BindEnv("database.username", "DB_USER")
+	viper.BindEnv("database.password", "DB_PASSWORD")
+
+	// JWT配置 / JWT config
+	viper.BindEnv("jwt.secret", "JWT_SECRET")
+
+	// 火山引擎配置 / VolcEngine config
+	viper.BindEnv("volcengine.apiKey", "VOLCENGINE_API_KEY")
+	viper.BindEnv("volcengineImage.apiKey", "VOLCENGINE_IMAGE_API_KEY")
+}
+
+// overrideFromEnv 从环境变量覆盖配置
+// Override config values from environment variables
+func overrideFromEnv(config *Config) {
+	if port := viper.GetInt("PORT"); port != 0 {
+		config.Server.Port = port
+	}
+	if mode := viper.GetString("GIN_MODE"); mode != "" {
+		config.Server.Mode = mode
+	}
+	if host := viper.GetString("DB_HOST"); host != "" {
+		config.Database.Host = host
+	}
+	if port := viper.GetInt("DB_PORT"); port != 0 {
+		config.Database.Port = port
+	}
+	if name := viper.GetString("DB_NAME"); name != "" {
+		config.Database.Database = name
+	}
+	if user := viper.GetString("DB_USER"); user != "" {
+		config.Database.Username = user
+	}
+	if pass := viper.GetString("DB_PASSWORD"); pass != "" {
+		config.Database.Password = pass
+	}
+	if secret := viper.GetString("JWT_SECRET"); secret != "" {
+		config.JWT.Secret = secret
+	}
+	if apiKey := viper.GetString("VOLCENGINE_API_KEY"); apiKey != "" {
+		config.VolcEngine.APIKey = apiKey
+	}
+	if apiKey := viper.GetString("VOLCENGINE_IMAGE_API_KEY"); apiKey != "" {
+		config.VolcEngineImage.APIKey = apiKey
+	}
 }
 
 // GetDSN 获取数据库连接字符串

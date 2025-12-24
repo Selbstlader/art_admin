@@ -1,0 +1,11 @@
+# Nixpacks 构建配置
+# Nixpacks build configuration
+
+[phases.setup]
+nixPkgs = ["go_1_22"]
+
+[phases.build]
+cmds = ["go build -o server ./cmd/server"]
+
+[start]
+cmd = "./server"

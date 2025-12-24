@@ -5,7 +5,8 @@
       "style": {
         "navigationBarTitleText": "项目列表",
         "enablePullDownRefresh": true,
-        "onReachBottomDistance": 50
+        "onReachBottomDistance": 50,
+        "navigationStyle": "custom"
       }
     },
     {
@@ -19,28 +20,32 @@
       "path": "pages/project/detail",
       "style": {
         "navigationBarTitleText": "项目详情",
-        "enablePullDownRefresh": false
+        "enablePullDownRefresh": false,
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/project/documents",
       "style": {
         "navigationBarTitleText": "文档分析",
-        "enablePullDownRefresh": true
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/project/cost",
       "style": {
         "navigationBarTitleText": "成本报告",
-        "enablePullDownRefresh": false
+        "enablePullDownRefresh": false,
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/project/designs",
       "style": {
         "navigationBarTitleText": "设计图",
-        "enablePullDownRefresh": true
+        "enablePullDownRefresh": false,
+        "navigationStyle": "custom"
       }
     },
     {
@@ -83,7 +88,6 @@
       "path": "pages/mine/index",
       "style": {
         "navigationBarTitleText": "我的",
-        "navigationStyle": "custom",
         "enablePullDownRefresh": false
       }
     }
@@ -98,41 +102,30 @@
     "onReachBottomDistance": 50
   },
   "tabBar": {
-    "color": "#999999",
+    "custom": true,
+    "color": "#94A3B8",
     "selectedColor": "#3B82F6",
-    "borderStyle": "black",
+    "borderStyle": "white",
     "backgroundColor": "#FFFFFF",
     "list": [
       {
         "pagePath": "pages/index/index",
-        "iconPath": "static/tabbar/home.png",
-        "selectedIconPath": "static/tabbar/home-active.png",
         "text": "首页"
       },
       {
         "pagePath": "pages/material/index",
-        "iconPath": "static/tabbar/material.png",
-        "selectedIconPath": "static/tabbar/material-active.png",
         "text": "材料库"
       },
       {
         "pagePath": "pages/chat/index",
-        "iconPath": "static/tabbar/chat.png",
-        "selectedIconPath": "static/tabbar/chat-active.png",
-        "text": "AI对话",
-        "visible": true
+        "text": "AI对话"
       },
       {
         "pagePath": "pages/message/index",
-        "iconPath": "static/tabbar/message.png",
-        "selectedIconPath": "static/tabbar/message-active.png",
-        "text": "消息",
-        "visible": true
+        "text": "消息"
       },
       {
         "pagePath": "pages/mine/index",
-        "iconPath": "static/tabbar/mine.png",
-        "selectedIconPath": "static/tabbar/mine-active.png",
         "text": "我的"
       }
     ]

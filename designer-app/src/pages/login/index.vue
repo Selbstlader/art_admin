@@ -6,7 +6,7 @@
       <view class="bg-circle bg-circle-2"></view>
       <view class="bg-circle bg-circle-3"></view>
     </view>
-    
+
     <!-- 登录卡片 - Login card with glass morphism -->
     <view class="login-card">
       <!-- Logo 区域 - Logo area -->
@@ -28,51 +28,35 @@
         <view class="input-group">
           <view class="input-wrapper" :class="{ 'input-focus': usernameFocus }">
             <view class="input-icon-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
             </view>
-            <input
-              class="form-input"
-              type="text"
-              placeholder="请输入账号"
-              v-model="formData.username"
-              @focus="usernameFocus = true"
-              @blur="usernameFocus = false"
-              @confirm="handleLogin"
-            />
+            <input class="form-input" type="text" placeholder="请输入账号" v-model="formData.username"
+              @focus="usernameFocus = true" @blur="usernameFocus = false" @confirm="handleLogin" />
           </view>
         </view>
 
         <view class="input-group">
           <view class="input-wrapper" :class="{ 'input-focus': passwordFocus }">
             <view class="input-icon-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </view>
-            <input
-              class="form-input"
-              type="password"
-              placeholder="请输入密码"
-              v-model="formData.password"
-              @focus="passwordFocus = true"
-              @blur="passwordFocus = false"
-              @confirm="handleLogin"
-            />
+            <input class="form-input" type="password" placeholder="请输入密码" v-model="formData.password"
+              @focus="passwordFocus = true" @blur="passwordFocus = false" @confirm="handleLogin" />
           </view>
         </view>
 
         <!-- 登录按钮 - Login button with 3D effect -->
         <view class="btn-container">
-          <button
-            class="login-btn"
-            :class="{ 'btn-loading': loading, 'btn-disabled': !isFormValid }"
-            :disabled="loading || !isFormValid"
-            @click="handleLogin"
-          >
+          <button class="login-btn" :class="{ 'btn-loading': loading, 'btn-disabled': !isFormValid }"
+            :disabled="loading || !isFormValid" @click="handleLogin">
             <view v-if="loading" class="loading-spinner"></view>
             <text class="btn-text">{{ loading ? '登录中...' : '登录' }}</text>
           </button>
@@ -118,7 +102,7 @@ const handleLogin = async () => {
   loading.value = true
   try {
     await userStore.login(formData.value.username, formData.value.password)
-    
+
     uni.showToast({
       title: '登录成功',
       icon: 'success',
@@ -141,6 +125,7 @@ const handleLogin = async () => {
 </script>
 
 <style lang="scss" scoped>
+/*** Login page styles - C4D style premium UI with glass morphism ***/
 .login-page {
   min-height: 100vh;
   display: flex;
@@ -148,12 +133,12 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   padding: 40rpx;
-  background: linear-gradient(180deg, #E8F4FD 0%, #FFFFFF 50%, #F0F7FF 100%);
+  background: linear-gradient(165deg, #E3F0FF 0%, #FFFFFF 40%, #F8FBFF 70%, #EDF5FF 100%);
   position: relative;
   overflow: hidden;
 }
 
-/* 背景装饰圆 - Background decoration circles */
+/*** Background decoration circles - 背景装饰圆 ***/
 .bg-decoration {
   position: absolute;
   top: 0;
@@ -167,81 +152,84 @@ const handleLogin = async () => {
 .bg-circle {
   position: absolute;
   border-radius: 50%;
-  opacity: 0.6;
 }
 
 .bg-circle-1 {
-  width: 400rpx;
-  height: 400rpx;
-  top: -100rpx;
-  right: -100rpx;
-  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
-  filter: blur(60rpx);
+  width: 500rpx;
+  height: 500rpx;
+  top: -150rpx;
+  right: -120rpx;
+  background: linear-gradient(180deg, #A5D0FF 0%, #60A5FA 50%, #3B82F6 100%);
+  opacity: 0.35;
+  filter: blur(80rpx);
 }
 
 .bg-circle-2 {
-  width: 300rpx;
-  height: 300rpx;
-  bottom: 200rpx;
-  left: -80rpx;
-  background: linear-gradient(135deg, #93C5FD 0%, #60A5FA 100%);
-  filter: blur(50rpx);
+  width: 400rpx;
+  height: 400rpx;
+  bottom: 100rpx;
+  left: -150rpx;
+  background: linear-gradient(180deg, #BFDBFE 0%, #93C5FD 100%);
+  opacity: 0.4;
+  filter: blur(70rpx);
 }
 
 .bg-circle-3 {
-  width: 200rpx;
-  height: 200rpx;
-  top: 40%;
-  right: -50rpx;
-  background: linear-gradient(135deg, #BFDBFE 0%, #93C5FD 100%);
-  filter: blur(40rpx);
+  width: 250rpx;
+  height: 250rpx;
+  top: 35%;
+  right: -80rpx;
+  background: linear-gradient(180deg, #DBEAFE 0%, #BFDBFE 100%);
+  opacity: 0.5;
+  filter: blur(50rpx);
 }
 
-/* 登录卡片 - Login card with glass morphism */
+/*** Login card with glass morphism - 登录卡片玻璃拟态 ***/
 .login-card {
-  width: 100%;
+  width: 88%;
   max-width: 680rpx;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(40rpx);
-  -webkit-backdrop-filter: blur(40rpx);
-  border-radius: 40rpx;
-  padding: 60rpx 48rpx;
-  box-shadow: 
-    0 8rpx 32rpx rgba(59, 130, 246, 0.08),
-    0 2rpx 8rpx rgba(0, 0, 0, 0.04),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
-  border: 1rpx solid rgba(255, 255, 255, 0.6);
+  // background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(60rpx);
+  -webkit-backdrop-filter: blur(60rpx);
+  border-radius: 48rpx;
+  padding: 72rpx 56rpx 56rpx;
+  box-shadow:
+    0 20rpx 60rpx rgba(59, 130, 246, 0.08),
+    0 8rpx 24rpx rgba(0, 0, 0, 0.03),
+    inset 0 2rpx 0 rgba(255, 255, 255, 0.9);
+  border: 1rpx solid rgba(255, 255, 255, 0.7);
   position: relative;
   z-index: 10;
 }
 
-/* Logo 区域 - Logo area */
+/*** Logo area - Logo 区域 ***/
 .logo-area {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 56rpx;
+  margin-bottom: 64rpx;
 }
 
 .logo-container {
   position: relative;
-  margin-bottom: 28rpx;
+  margin-bottom: 32rpx;
 }
 
 .logo-icon {
-  width: 120rpx;
-  height: 120rpx;
-  background: linear-gradient(145deg, #4F9CF9 0%, #2563EB 50%, #1D4ED8 100%);
-  border-radius: 28rpx;
+  width: 140rpx;
+  height: 140rpx;
+  background: linear-gradient(155deg, #60A5FA 0%, #3B82F6 40%, #2563EB 100%);
+  border-radius: 36rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   z-index: 2;
-  transform: perspective(500rpx) rotateX(5deg);
-  box-shadow: 
-    0 4rpx 0 #1E40AF,
-    0 8rpx 16rpx rgba(37, 99, 235, 0.3);
+  transform: perspective(600rpx) rotateX(8deg) rotateY(-3deg);
+  box-shadow:
+    0 6rpx 0 #1D4ED8,
+    0 12rpx 24rpx rgba(37, 99, 235, 0.35),
+    inset 0 2rpx 4rpx rgba(255, 255, 255, 0.3);
 }
 
 .logo-inner {
@@ -250,47 +238,48 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 28rpx;
-  background: linear-gradient(145deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+  border-radius: 36rpx;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.25) 0%, transparent 60%);
 }
 
 .logo-text {
-  font-size: 40rpx;
+  font-size: 48rpx;
   font-weight: 700;
   color: #FFFFFF;
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.15);
+  letter-spacing: 2rpx;
 }
 
 .logo-shadow {
   position: absolute;
-  bottom: -16rpx;
+  bottom: -20rpx;
   left: 50%;
   transform: translateX(-50%);
-  width: 80rpx;
-  height: 16rpx;
-  background: radial-gradient(ellipse, rgba(37, 99, 235, 0.3) 0%, transparent 70%);
+  width: 100rpx;
+  height: 20rpx;
+  background: radial-gradient(ellipse, rgba(37, 99, 235, 0.25) 0%, transparent 70%);
   border-radius: 50%;
 }
 
 .app-name {
-  font-size: 44rpx;
+  font-size: 48rpx;
   font-weight: 700;
   color: #1E293B;
-  margin-bottom: 12rpx;
-  letter-spacing: 2rpx;
+  margin-bottom: 16rpx;
+  letter-spacing: 4rpx;
 }
 
 .app-desc {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #64748B;
-  letter-spacing: 1rpx;
+  letter-spacing: 2rpx;
 }
 
-/* 表单区域 - Form area */
+/*** Form area - 表单区域 ***/
 .form-area {
   display: flex;
   flex-direction: column;
-  gap: 28rpx;
+  gap: 32rpx;
 }
 
 .input-group {
@@ -300,32 +289,33 @@ const handleLogin = async () => {
 .input-wrapper {
   display: flex;
   align-items: center;
-  background: rgba(248, 250, 252, 0.8);
-  border-radius: 20rpx;
-  padding: 0 28rpx;
-  height: 100rpx;
-  border: 2rpx solid rgba(226, 232, 240, 0.8);
-  transition: all 0.3s ease;
-  box-shadow: inset 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
+  background: rgba(248, 250, 252, 0.9);
+  border-radius: 24rpx;
+  padding: 0 32rpx;
+  height: 108rpx;
+  border: 2rpx solid rgba(226, 232, 240, 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2rpx 6rpx rgba(0, 0, 0, 0.02);
 }
 
 .input-wrapper.input-focus {
-  border-color: #3B82F6;
+  border-color: rgba(59, 130, 246, 0.5);
   background: #FFFFFF;
-  box-shadow: 
-    0 0 0 4rpx rgba(59, 130, 246, 0.1),
-    inset 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0 0 0 6rpx rgba(59, 130, 246, 0.08),
+    inset 0 2rpx 6rpx rgba(0, 0, 0, 0.01);
 }
 
 .input-icon-wrapper {
-  width: 48rpx;
-  height: 48rpx;
+  width: 52rpx;
+  height: 52rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #94A3B8;
-  margin-right: 20rpx;
+  margin-right: 24rpx;
   flex-shrink: 0;
+  transition: color 0.3s ease;
 }
 
 .input-focus .input-icon-wrapper {
@@ -334,55 +324,69 @@ const handleLogin = async () => {
 
 .form-input {
   flex: 1;
-  font-size: 30rpx;
+  font-size: 32rpx;
   color: #1E293B;
   height: 100%;
+  background: transparent;
 }
 
 .form-input::placeholder {
   color: #94A3B8;
+  font-size: 30rpx;
 }
 
-/* 登录按钮 - Login button with 3D effect */
+/*** Login button with 3D effect - 登录按钮3D效果 ***/
 .btn-container {
   position: relative;
-  margin-top: 16rpx;
+  margin-top: 24rpx;
 }
 
 .login-btn {
   width: 100%;
-  height: 100rpx;
-  background: linear-gradient(145deg, #4F9CF9 0%, #2563EB 50%, #1D4ED8 100%);
+  height: 108rpx;
+  background: linear-gradient(155deg, #60A5FA 0%, #3B82F6 40%, #2563EB 100%);
   border: none;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   z-index: 2;
-  transition: all 0.2s ease;
-  box-shadow: 
-    0 4rpx 0 #1E40AF,
-    0 8rpx 20rpx rgba(37, 99, 235, 0.35);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 6rpx 0 #1D4ED8,
+    0 12rpx 28rpx rgba(37, 99, 235, 0.35);
 }
+
+// .login-btn::before {
+//   content: '';
+//   position: absolute;
+//   top: 0;
+//   left: 0;
+//   right: 0;
+//   height: 50%;
+//   background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+//   border-radius: 24rpx 24rpx 0 0;
+//   pointer-events: none;
+// }
 
 .login-btn::after {
   border: none;
 }
 
 .login-btn:active {
-  transform: translateY(4rpx);
-  box-shadow: 
-    0 0 0 #1E40AF,
-    0 4rpx 12rpx rgba(37, 99, 235, 0.25);
+  transform: translateY(6rpx);
+  box-shadow:
+    0 0 0 #1D4ED8,
+    0 6rpx 16rpx rgba(37, 99, 235, 0.25);
 }
 
-.login-btn.btn-disabled {
-  background: linear-gradient(145deg, #CBD5E1 0%, #94A3B8 100%);
-  box-shadow: 
-    0 4rpx 0 #64748B,
-    0 8rpx 20rpx rgba(100, 116, 139, 0.2);
-}
+// .login-btn.btn-disabled {
+//   background: linear-gradient(155deg, #E2E8F0 0%, #CBD5E1 40%, #94A3B8 100%);
+//   box-shadow:
+//     0 6rpx 0 #64748B,
+//     0 12rpx 28rpx rgba(100, 116, 139, 0.2);
+// }
 
 .login-btn.btn-loading {
   opacity: 0.9;
@@ -390,58 +394,62 @@ const handleLogin = async () => {
 
 .btn-shadow {
   position: absolute;
-  bottom: -12rpx;
+  bottom: -16rpx;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  height: 20rpx;
-  background: radial-gradient(ellipse, rgba(37, 99, 235, 0.2) 0%, transparent 70%);
+  width: 75%;
+  height: 24rpx;
+  background: radial-gradient(ellipse, rgba(37, 99, 235, 0.18) 0%, transparent 70%);
   border-radius: 50%;
   z-index: 1;
 }
 
 .loading-spinner {
-  width: 36rpx;
-  height: 36rpx;
-  border: 3rpx solid rgba(255, 255, 255, 0.3);
+  width: 40rpx;
+  height: 40rpx;
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
   border-top-color: #FFFFFF;
   border-radius: 50%;
-  margin-right: 16rpx;
+  margin-right: 20rpx;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .btn-text {
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 600;
   color: #FFFFFF;
-  letter-spacing: 2rpx;
+  letter-spacing: 4rpx;
 }
 
-/* 底部提示 - Bottom tip */
+/*** Bottom tip - 底部提示 ***/
 .bottom-tip {
-  margin-top: 48rpx;
+  margin-top: 56rpx;
   text-align: center;
 }
 
 .tip-text {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #94A3B8;
+  letter-spacing: 1rpx;
 }
 
-/* 版本信息 - Version info */
+/*** Version info - 版本信息 ***/
 .version-info {
   position: absolute;
-  bottom: 60rpx;
+  bottom: 80rpx;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .version-text {
   font-size: 24rpx;
-  color: #94A3B8;
+  color: #B0BEC5;
+  letter-spacing: 1rpx;
 }
 </style>

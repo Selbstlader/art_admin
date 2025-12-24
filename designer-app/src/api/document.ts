@@ -11,9 +11,12 @@ export const documentApi = {
   /*** 获取文档列表 - Get document list ***/
   getList(projectId: number, params: PageParams): Promise<ApiResponse<PageResponse<Document>>> {
     return request({
-      url: `/api/designer/projects/${projectId}/documents`,
+      url: `/api/designer/documents`,
       method: 'GET',
-      data: params
+      data: {
+        ...params,
+        projectId
+      }
     })
   },
 

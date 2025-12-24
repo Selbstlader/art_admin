@@ -41,11 +41,20 @@ import (
 // @name Authorization
 // @description Type "Bearer" followed by a space and JWT token.
 func main() {
-	// 自动生成 Swagger 文档
-	generateSwaggerDocs()
+	// 自动生成 Swagger 文档（生产环境跳过）
+	// Skip swagger generation in production
+	if os.Getenv("GIN_MODE") != "release" {
+		generateSwaggerDocs()
+	}
+
+	// 根据环境选择配置文件 / Select config file based on environment
+	configPath := "config/config.yaml"
+	if os.Getenv("GIN_MODE") == "release" {
+		configPath = "config/config.production.yaml"
+	}
 
 	// 加载配置
-	cfg, err := config.LoadConfig("config/config.yaml")
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
 		log.Fatalf("加载配置失败: %v", err)
 	}
@@ -95,9 +104,15 @@ func main() {
 	// 静态文件服务 - 用于访问上传的文件
 	r.Static("/uploads", "./uploads")
 
+	// 获取基础URL / Get base URL for file service
+	baseURL := os.Getenv("BASE_URL")
+	if baseURL == "" {
+		baseURL = fmt.Sprintf("http://localhost:%d", cfg.Server.Port)
+	}
+
 	// 初始化文件管理服务
 	fileRepo := repository.NewFileRepository(database.GetDB())
-	fileService := fileSvc.NewFileService(fileRepo, "./uploads", fmt.Sprintf("http://localhost:%d", cfg.Server.Port))
+	fileService := fileSvc.NewFileService(fileRepo, "./uploads", baseURL)
 	v1.SetFileService(fileService)
 	logger.Info("文件管理服务初始化完成")
 
@@ -107,7 +122,7 @@ func main() {
 	v1.SetDesignerProjectService(designerProjectService)
 	logger.Info("设计师项目管理服务初始化完成")
 
-	// 初始化火山AI客户端 / Initialize VolcEngine AI client
+	// 火山AI客户端初始化 / Initialize VolcEngine AI client
 	volcClient := volcengine.NewClient(
 		cfg.VolcEngine.APIKey,
 		cfg.VolcEngine.BaseURL,
@@ -129,7 +144,7 @@ func main() {
 		designerProjectRepo,
 		volcClient,
 		"./uploads",
-		fmt.Sprintf("http://localhost:%d", cfg.Server.Port),
+		baseURL,
 	)
 	v1.SetDocumentService(documentService)
 	logger.Info("文档分析服务初始化完成")
@@ -146,7 +161,7 @@ func main() {
 		cadFileRepo,
 		volcClient,
 		"./uploads",
-		fmt.Sprintf("http://localhost:%d", cfg.Server.Port),
+		baseURL,
 	)
 	v1.SetDesignCompareService(designCompareService)
 	logger.Info("设计比对服务初始化完成")
@@ -163,7 +178,7 @@ func main() {
 	cadFileService := cadSvc.NewCadService(
 		cadFileRepo,
 		"./uploads",
-		fmt.Sprintf("http://localhost:%d", cfg.Server.Port),
+		baseURL,
 		converterType,
 		odaPath,
 		libredwgPath,

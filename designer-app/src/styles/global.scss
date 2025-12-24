@@ -1,0 +1,424 @@
+/**
+ * 全局通用样式
+ * Global common styles for Designer App
+ * 
+ * C4D风格高级UI - 玻璃拟态、悬浮卡片、3D立体效果
+ * C4D style premium UI - Glass morphism, floating cards, 3D effects
+ */
+
+/* ============================================
+   玻璃拟态样式类 - Glass Morphism Classes
+   ============================================ */
+
+/*** 玻璃拟态基础样式 - Basic glass morphism ***/
+.glass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8rpx 32rpx rgba(0, 0, 0, 0.06),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
+}
+
+/*** 玻璃拟态 - 浅色 - Light glass morphism ***/
+.glass-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2rpx solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+/*** 玻璃拟态 - 主题色 - Primary glass morphism ***/
+.glass-primary {
+  background: rgba(59, 130, 246, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2rpx solid rgba(59, 130, 246, 0.15);
+  box-shadow: 
+    0 8rpx 24rpx rgba(59, 130, 246, 0.1),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.5);
+}
+
+/*** 玻璃拟态 - 深色 - Dark glass morphism ***/
+.glass-dark {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2rpx solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8rpx 32rpx rgba(0, 0, 0, 0.2),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+}
+
+/* ============================================
+   悬浮卡片样式类 - Floating Card Classes
+   ============================================ */
+
+/*** 悬浮卡片基础样式 - Basic floating card ***/
+.card-float {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  box-shadow: 
+    0 8rpx 32rpx rgba(59, 130, 246, 0.08),
+    0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 
+      0 4rpx 16rpx rgba(59, 130, 246, 0.06),
+      0 2rpx 6rpx rgba(0, 0, 0, 0.03);
+  }
+}
+
+/*** 悬浮卡片 - 带3D阴影 - Floating card with 3D shadow ***/
+.card-float-3d {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  box-shadow: 
+    0 8rpx 32rpx rgba(59, 130, 246, 0.08),
+    0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -8rpx;
+    left: 24rpx;
+    right: 24rpx;
+    height: 16rpx;
+    background: radial-gradient(ellipse, rgba(0, 0, 0, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+  }
+}
+
+/*** 悬浮卡片 - 主题色边框 - Floating card with primary border ***/
+.card-float-primary {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  border: 2rpx solid rgba(59, 130, 246, 0.1);
+  box-shadow: 
+    0 8rpx 24rpx rgba(59, 130, 246, 0.1),
+    0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+/* ============================================
+   渐变背景样式类 - Gradient Background Classes
+   ============================================ */
+
+/*** 主题色渐变背景 - Primary gradient background ***/
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
+/*** 浅色主题渐变背景 - Light primary gradient background ***/
+.bg-gradient-primary-light {
+  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+}
+
+/*** 页面渐变背景 - Page gradient background ***/
+.bg-gradient-page {
+  background: linear-gradient(180deg, #F0F7FF 0%, #F5F7FA 100%);
+}
+
+/*** 成功色渐变背景 - Success gradient background ***/
+.bg-gradient-success {
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+}
+
+/*** 警告色渐变背景 - Warning gradient background ***/
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+}
+
+/*** 危险色渐变背景 - Danger gradient background ***/
+.bg-gradient-danger {
+  background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+}
+
+/* ============================================
+   按钮样式类 - Button Classes
+   ============================================ */
+
+/*** 玻璃拟态按钮 - Glass morphism button ***/
+.btn-glass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 48rpx;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 24rpx;
+  box-shadow: 
+    0 4rpx 16rpx rgba(0, 0, 0, 0.06),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1E293B;
+  transition: all 0.2s ease;
+  
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+/*** 主题色渐变按钮 - Primary gradient button ***/
+.btn-primary-gradient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 48rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-radius: 24rpx;
+  box-shadow: 
+    0 8rpx 24rpx rgba(59, 130, 246, 0.25),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.2);
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  transition: all 0.2s ease;
+  
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+/*** 圆形图标按钮 - Circle icon button ***/
+.btn-icon-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80rpx;
+  height: 80rpx;
+  background: #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.95);
+  }
+}
+
+/* ============================================
+   阴影样式类 - Shadow Classes
+   ============================================ */
+
+/*** 小阴影 - Small shadow ***/
+.shadow-sm {
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+/*** 中等阴影 - Medium shadow ***/
+.shadow-md {
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+}
+
+/*** 大阴影 - Large shadow ***/
+.shadow-lg {
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+}
+
+/*** 主题色阴影 - Primary shadow ***/
+.shadow-primary {
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.2);
+}
+
+/*** 卡片阴影 - Card shadow ***/
+.shadow-card {
+  box-shadow: 
+    0 8rpx 32rpx rgba(59, 130, 246, 0.08),
+    0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+/* ============================================
+   文本样式类 - Text Classes
+   ============================================ */
+
+/*** 渐变文本 - Gradient text ***/
+.text-gradient-primary {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/*** 主要文本 - Primary text ***/
+.text-primary {
+  color: #1E293B;
+}
+
+/*** 次要文本 - Secondary text ***/
+.text-secondary {
+  color: #64748B;
+}
+
+/*** 辅助文本 - Tertiary text ***/
+.text-tertiary {
+  color: #94A3B8;
+}
+
+/* ============================================
+   动画样式类 - Animation Classes
+   ============================================ */
+
+/*** 淡入动画 - Fade in animation ***/
+.animate-fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*** 上滑淡入动画 - Slide up fade in animation ***/
+.animate-slide-up {
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*** 缩放动画 - Scale animation ***/
+.animate-scale {
+  animation: scale 0.2s ease;
+}
+
+@keyframes scale {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/*** 脉冲动画 - Pulse animation ***/
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ============================================
+   布局工具类 - Layout Utility Classes
+   ============================================ */
+
+/*** Flex 居中 - Flex center ***/
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*** Flex 两端对齐 - Flex space between ***/
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/*** Flex 列布局 - Flex column ***/
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/*** 安全区域底部 - Safe area bottom ***/
+.safe-area-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ============================================
+   状态指示器样式 - Status Indicator Styles
+   ============================================ */
+
+/*** 状态点 - Status dot ***/
+.status-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  
+  &.status-success {
+    background: #10B981;
+  }
+  
+  &.status-warning {
+    background: #F59E0B;
+  }
+  
+  &.status-danger {
+    background: #EF4444;
+  }
+  
+  &.status-info {
+    background: #3B82F6;
+  }
+  
+  &.status-default {
+    background: #94A3B8;
+  }
+}
+
+/*** 红点徽章 - Red dot badge ***/
+.badge-dot {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  width: 16rpx;
+  height: 16rpx;
+  background: #EF4444;
+  border-radius: 50%;
+  border: 2rpx solid #FFFFFF;
+}
+
+/*** 数字徽章 - Number badge ***/
+.badge-number {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  background: #EF4444;
+  border-radius: 16rpx;
+  border: 2rpx solid #FFFFFF;
+  font-size: 20rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

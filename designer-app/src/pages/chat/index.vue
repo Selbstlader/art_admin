@@ -164,6 +164,9 @@
       <text class="not-supported-title">功能暂不可用</text>
       <text class="not-supported-desc">AI 对话功能仅在 App 端可用，请下载 App 体验完整功能</text>
     </view>
+    
+    <!-- 自定义底部导航栏 - Custom TabBar (小程序端不显示此页面，但保留组件) -->
+    <CustomTabBar />
   </view>
   <!-- #endif -->
 </template>
@@ -178,6 +181,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useChatStore } from '@/store/chat'
 import { platform } from '@/utils/platform'
 import { ChatBubble } from '@/components'
+import CustomTabBar from '@/components/CustomTabBar.vue'
 
 /*** Store 实例 - Store instance ***/
 const chatStore = useChatStore()

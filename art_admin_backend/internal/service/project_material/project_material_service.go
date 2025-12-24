@@ -268,9 +268,33 @@ func (s *ProjectMaterialService) GetProjectCostSummary(projectID uint) (*respons
 		return nil, errors.New("项目不存在 / Project not found")
 	}
 
-	// 计算材料费 / Calculate material cost
+	// 获取材料明细列表 / Get material items list
+	var materials []model.ProjectMaterial
+	s.db.Where("project_id = ?", projectID).Find(&materials)
+
+	// 转换材料明细为响应格式 / Convert materials to response format
+	materialItems := make([]response.ProjectMaterialItem, len(materials))
 	var materialCost float64
-	s.db.Model(&model.ProjectMaterial{}).Where("project_id = ?", projectID).Select("COALESCE(SUM(total_price), 0)").Scan(&materialCost)
+	for i, m := range materials {
+		materialItems[i] = response.ProjectMaterialItem{
+			ID:            m.ID,
+			ProjectID:     m.ProjectID,
+			MaterialID:    m.MaterialID,
+			Name:          m.Name,
+			Category:      m.Category,
+			Specification: m.Specification,
+			Unit:          m.Unit,
+			UnitPrice:     m.UnitPrice,
+			Quantity:      m.Quantity,
+			TotalPrice:    m.TotalPrice,
+			Brand:         m.Brand,
+			Supplier:      m.Supplier,
+			Remark:        m.Remark,
+			CreatedAt:     m.CreatedAt,
+			UpdatedAt:     m.UpdatedAt,
+		}
+		materialCost += m.TotalPrice
+	}
 
 	// 获取成本估算配置 / Get cost estimate config
 	var costEstimate model.CostEstimate
@@ -306,6 +330,7 @@ func (s *ProjectMaterialService) GetProjectCostSummary(projectID uint) (*respons
 		BudgetLimit:     costEstimate.BudgetLimit,
 		BudgetExceeded:  budgetExceeded,
 		ExceededAmount:  exceededAmount,
+		MaterialItems:   materialItems,
 	}, nil
 }
 
