@@ -15,8 +15,8 @@ type ConstructionAnnotation struct {
 	CadFileID        uint           `gorm:"index;not null" json:"cadFileId"`                       // 关联CAD文件ID / Associated CAD file ID
 	ImagePath        string         `gorm:"size:500;not null" json:"imagePath"`                    // 施工图图片路径 / Construction drawing image path
 	AnalysisStatus   string         `gorm:"size:50;default:'pending';index" json:"analysisStatus"` // 分析状态 / Analysis status (pending/processing/completed/failed)
-	ElementsDetected string         `gorm:"type:json;default:'[]'" json:"elementsDetected"`        // 检测到的元素(JSON) / Detected elements in JSON format
-	Annotations      string         `gorm:"type:json;default:'[]'" json:"annotations"`             // 标注数据(JSON) / Annotation data in JSON format
+	ElementsDetected string         `gorm:"type:json" json:"elementsDetected"`                     // 检测到的元素(JSON) / Detected elements in JSON format
+	Annotations      string         `gorm:"type:json" json:"annotations"`                          // 标注数据(JSON) / Annotation data in JSON format
 	ErrorMessage     string         `gorm:"size:500" json:"errorMessage"`                          // 错误信息 / Error message if analysis failed
 	CreatedBy        uint           `gorm:"index" json:"createdBy"`                                // 创建者ID / Creator user ID
 	CreatedAt        time.Time      `json:"createdAt"`

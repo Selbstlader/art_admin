@@ -10,14 +10,14 @@ import (
 // Cost estimate model for project budget calculation
 type CostEstimate struct {
 	ID             uint           `gorm:"primaryKey" json:"id"`
-	ProjectID      uint           `gorm:"uniqueIndex;not null" json:"projectId"` // 关联项目ID(唯一) / Associated project ID (unique)
-	MaterialCost   float64        `gorm:"default:0" json:"materialCost"`         // 材料费 / Material cost
-	LaborCost      float64        `gorm:"default:0" json:"laborCost"`            // 人工费 / Labor cost
-	EquipmentCost  float64        `gorm:"default:0" json:"equipmentCost"`        // 设备费 / Equipment cost
-	ManagementCost float64        `gorm:"default:0" json:"managementCost"`       // 管理费 / Management cost
-	TotalCost      float64        `gorm:"default:0" json:"totalCost"`            // 总计 / Total cost
-	BudgetLimit    float64        `gorm:"default:0" json:"budgetLimit"`          // 预算上限 / Budget limit
-	Items          string         `gorm:"type:json" json:"items"`                // 明细项(JSON) / Cost items in JSON format
+	ProjectID      uint           `gorm:"not null;index:idx_cost_estimates_project_id,unique" json:"projectId"` // 关联项目ID(唯一) / Associated project ID (unique)
+	MaterialCost   float64        `gorm:"default:0" json:"materialCost"`                                        // 材料费 / Material cost
+	LaborCost      float64        `gorm:"default:0" json:"laborCost"`                                           // 人工费 / Labor cost
+	EquipmentCost  float64        `gorm:"default:0" json:"equipmentCost"`                                       // 设备费 / Equipment cost
+	ManagementCost float64        `gorm:"default:0" json:"managementCost"`                                      // 管理费 / Management cost
+	TotalCost      float64        `gorm:"default:0" json:"totalCost"`                                           // 总计 / Total cost
+	BudgetLimit    float64        `gorm:"default:0" json:"budgetLimit"`                                         // 预算上限 / Budget limit
+	Items          string         `gorm:"type:json" json:"items"`                                               // 明细项(JSON) / Cost items in JSON format
 	CreatedAt      time.Time      `json:"createdAt"`
 	UpdatedAt      time.Time      `json:"updatedAt"`
 	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`

@@ -73,11 +73,19 @@ func main() {
 	}
 	logger.Info("数据库连接成功")
 
-	// 执行数据库迁移
-	if err := database.RunMigrations(); err != nil {
-		logger.Fatal(fmt.Sprintf("数据库迁移失败: %v", err))
+	// 执行 GORM 自动迁移（创建所有表结构）
+	// GORM AutoMigrate handles all table creation and schema updates
+	if err := database.AutoMigrate(); err != nil {
+		logger.Fatal(fmt.Sprintf("GORM自动迁移失败: %v", err))
 	}
-	logger.Info("数据库迁移完成")
+	logger.Info("GORM自动迁移完成")
+
+	// 初始化基础数据（管理员、角色、菜单等）
+	// Initialize seed data (admin users, roles, menus, etc.)
+	if err := database.SeedData(); err != nil {
+		logger.Info(fmt.Sprintf("基础数据初始化警告: %v", err))
+	}
+	logger.Info("基础数据初始化完成")
 
 	// 设置 Gin 模式
 	gin.SetMode(cfg.Server.Mode)

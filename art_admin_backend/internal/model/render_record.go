@@ -24,10 +24,10 @@ type RenderRecord struct {
 	UpdatedAt      time.Time      `json:"updatedAt"`
 	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 
-	// 关联关系 / Associations
-	User    *User            `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	Project *DesignerProject `gorm:"foreignKey:ProjectID" json:"project,omitempty"`
-	CadFile *CadFile         `gorm:"foreignKey:CadFileID" json:"cadFile,omitempty"`
+	// 注意：移除 GORM 关联定义以避免迁移时的索引冲突
+	// 如需关联查询，请使用 Preload 或手动 Join
+	// Note: Removed GORM associations to avoid index conflicts during migration
+	// Use Preload or manual Join for association queries if needed
 }
 
 // TableName 表名
@@ -39,10 +39,10 @@ func (RenderRecord) TableName() string {
 // User render quota for daily limit control
 type UserRenderQuota struct {
 	ID            uint      `gorm:"primaryKey" json:"id"`
-	UserID        int64     `gorm:"uniqueIndex;not null" json:"userId"` // 用户ID / User ID
-	DailyLimit    int       `gorm:"default:3" json:"dailyLimit"`        // 每日限制次数 / Daily limit
-	UsedToday     int       `gorm:"default:0" json:"usedToday"`         // 今日已使用次数 / Used today
-	LastResetDate time.Time `json:"lastResetDate"`                      // 上次重置日期 / Last reset date
+	UserID        int64     `gorm:"not null;index:idx_user_render_quotas_user_id,unique" json:"userId"` // 用户ID / User ID
+	DailyLimit    int       `gorm:"default:3" json:"dailyLimit"`                                        // 每日限制次数 / Daily limit
+	UsedToday     int       `gorm:"default:0" json:"usedToday"`                                         // 今日已使用次数 / Used today
+	LastResetDate time.Time `json:"lastResetDate"`                                                      // 上次重置日期 / Last reset date
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`
 }

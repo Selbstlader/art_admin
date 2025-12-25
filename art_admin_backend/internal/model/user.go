@@ -9,7 +9,7 @@ import (
 // User 用户模型
 type User struct {
 	ID         int64          `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserName   string         `gorm:"type:varchar(50);uniqueIndex;not null" json:"userName"`
+	UserName   string         `gorm:"type:varchar(50);not null;index:idx_user_name,unique" json:"userName"`
 	NickName   string         `gorm:"type:varchar(50)" json:"nickName"`
 	Password   string         `gorm:"type:varchar(255);not null" json:"-"`
 	Email      string         `gorm:"type:varchar(100);index" json:"email"`

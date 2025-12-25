@@ -18,7 +18,7 @@ type CadFile struct {
 	FileFormat    string         `gorm:"size:20" json:"fileFormat"`                          // 文件格式 / File format (dwg/dxf)
 	ParseStatus   string         `gorm:"size:50;default:'pending';index" json:"parseStatus"` // 解析状态 / Parse status (pending/processing/completed/failed)
 	LayerCount    int            `gorm:"default:0" json:"layerCount"`                        // 图层数量 / Layer count
-	Layers        string         `gorm:"type:json;default:'[]'" json:"layers"`               // 图层列表(JSON) / Layer list in JSON format
+	Layers        string         `gorm:"type:json" json:"layers"`                            // 图层列表(JSON) / Layer list in JSON format
 	Has3D         bool           `gorm:"column:has_3d;default:false" json:"has3d"`           // 是否包含3D信息 / Whether contains 3D information
 	FileSize      int64          `gorm:"default:0" json:"fileSize"`                          // 文件大小(字节) / File size in bytes
 	IsAIGenerated bool           `gorm:"default:false" json:"isAiGenerated"`                 // 是否AI生成 / Whether AI generated

@@ -10,7 +10,7 @@ import (
 type Role struct {
 	RoleID      int64          `gorm:"primaryKey;autoIncrement" json:"roleId"`
 	RoleName    string         `gorm:"type:varchar(50);not null" json:"roleName"`
-	RoleCode    string         `gorm:"type:varchar(50);uniqueIndex;not null" json:"roleCode"`
+	RoleCode    string         `gorm:"type:varchar(50);not null;index:idx_role_code,unique" json:"roleCode"`
 	Description string         `gorm:"type:varchar(200)" json:"description"`
 	Enabled     bool           `gorm:"type:tinyint(1);default:1;index" json:"enabled"`
 	CreateTime  time.Time      `gorm:"autoCreateTime" json:"createTime"`
